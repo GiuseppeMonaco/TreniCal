@@ -12,7 +12,7 @@ import java.sql.Statement;
 
 public record SQLiteTicket(int id, User user, String name, String surname, float price, Trip trip, Promotion promotion, boolean isPaid) implements Ticket, SQLiteTable {
 
-    static private final String TABLE_NAME = "Ticket";
+    static private final String TABLE_NAME = "Tickets";
     static private final int COLUMNS_NUMBER = 10;
 
     static private final String COLUMNS =

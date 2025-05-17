@@ -9,7 +9,7 @@ import java.sql.Statement;
 
 public record SQLiteStation(String name, String address, String town, String province) implements Station, SQLiteTable {
 
-    static private final String TABLE_NAME = "Station";
+    static private final String TABLE_NAME = "Stations";
     static private final int COLUMNS_NUMBER = 4;
 
     static private final String COLUMNS =
