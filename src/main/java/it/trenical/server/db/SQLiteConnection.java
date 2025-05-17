@@ -1,8 +1,11 @@
 package it.trenical.server.db;
 
 import java.sql.*;
+import java.util.logging.Logger;
 
 class SQLiteConnection implements DatabaseConnection {
+
+    private static final Logger logger = Logger.getLogger(SQLiteConnection.class.getName());
 
     private static final String DATABASE_PATH = "./database.db";
 
@@ -32,7 +35,7 @@ class SQLiteConnection implements DatabaseConnection {
             SQLitePaidTicket.initTable(statement);
 
         } catch (SQLException e) {
-            System.err.println("[CRITICAL] Cannot initialize database connection"); // TODO logger
+            logger.severe("Cannot initialize database connection. Please contact software developer.");
             System.exit(-1);
         }
     }
@@ -59,7 +62,7 @@ class SQLiteConnection implements DatabaseConnection {
             new SQLiteUser("mario.rossi@gmail.com", "passwordbella123").insertRecord(db);
             new SQLiteFidelityUser("mario.rossi@gmail.com").insertRecord(db);
         } catch (SQLException e) {
-            System.out.println(e.getMessage());
+            logger.warning(e.getMessage());
         }
 
         try (ResultSet rs = db.executeQuery("*","Users, FidelityUsers F", "Users.email = F.userEmail")) {
@@ -69,7 +72,7 @@ class SQLiteConnection implements DatabaseConnection {
                 System.out.println(" --- Psw: " + rs.getString("password"));
             }
         } catch (Exception e) {
-            System.out.println(e.getMessage());
+            logger.warning(e.getMessage());
         }
     }
 }
