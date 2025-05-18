@@ -2,12 +2,9 @@ package it.trenical.server.db;
 
 import it.trenical.common.User;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 
-record SQLiteUser(String email, String password) implements User, SQLiteTable {
+public record SQLiteUser(String email, String password) implements User, SQLiteTable {
 
     static private final String TABLE_NAME = "Users";
     static private final int COLUMNS_NUMBER = 2;
@@ -52,4 +49,14 @@ record SQLiteUser(String email, String password) implements User, SQLiteTable {
     public void updateRecord(DatabaseConnection db) throws SQLException {
         // TODO
     }
+
+    public boolean checkIfExists(DatabaseConnection db) throws SQLException {
+        Connection c = db.getConnection();
+        PreparedStatement st = c.prepareStatement("SELECT * FROM " + TABLE_NAME + " WHERE email=? AND password=?;");
+        st.setString(1,email);
+        st.setString(2,password);
+        ResultSet res = st.executeQuery();
+        return res.next();
+    }
+
 }
