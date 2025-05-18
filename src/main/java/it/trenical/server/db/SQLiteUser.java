@@ -39,11 +39,19 @@ public class SQLiteUser extends UserData implements SQLiteTable {
         // TODO
     }
 
-    public boolean checkIfExists(DatabaseConnection db) throws SQLException {
+    public boolean checkPassword(DatabaseConnection db) throws SQLException {
         Connection c = db.getConnection();
         PreparedStatement st = c.prepareStatement("SELECT * FROM " + TABLE_NAME + " WHERE email=? AND password=?;");
         st.setString(1, getEmail());
         st.setString(2, getPassword());
+        ResultSet res = st.executeQuery();
+        return res.next();
+    }
+
+    public boolean checkIfExists(DatabaseConnection db) throws SQLException {
+        Connection c = db.getConnection();
+        PreparedStatement st = c.prepareStatement("SELECT * FROM " + TABLE_NAME + " WHERE email=?;");
+        st.setString(1, getEmail());
         ResultSet res = st.executeQuery();
         return res.next();
     }
