@@ -42,4 +42,9 @@ public class SQLiteTrainType extends TrainTypeData implements SQLiteTable {
     public void updateRecord(DatabaseConnection db) throws SQLException {
         // TODO
     }
+
+    @Override
+    public SQLiteTrainType getRecord(DatabaseConnection db) throws SQLException {
+        throw new UnsupportedOperationException("getRecord");
+    }
 }

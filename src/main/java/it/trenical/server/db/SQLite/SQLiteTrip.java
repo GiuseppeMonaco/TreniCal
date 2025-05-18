@@ -1,5 +1,6 @@
 package it.trenical.server.db.SQLite;
 
+import it.trenical.common.Data;
 import it.trenical.common.TripData;
 import it.trenical.server.db.DatabaseConnection;
 
@@ -62,5 +63,10 @@ public class SQLiteTrip extends TripData implements SQLiteTable {
     @Override
     public void updateRecord(DatabaseConnection db) throws SQLException {
         // TODO
+    }
+
+    @Override
+    public SQLiteTrip getRecord(DatabaseConnection db) throws SQLException {
+        throw new UnsupportedOperationException("getRecord");
     }
 }

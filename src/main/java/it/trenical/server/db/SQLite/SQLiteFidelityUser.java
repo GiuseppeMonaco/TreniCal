@@ -1,5 +1,6 @@
 package it.trenical.server.db.SQLite;
 
+import it.trenical.common.Data;
 import it.trenical.server.db.DatabaseConnection;
 
 import java.sql.Connection;
@@ -7,7 +8,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-public record SQLiteFidelityUser(String userEmail) implements SQLiteTable {
+public record SQLiteFidelityUser(String userEmail) implements SQLiteTable, Data {
 
     static private final String TABLE_NAME = "FidelityUsers";
     static private final int COLUMNS_NUMBER = 1;
@@ -35,5 +36,10 @@ public record SQLiteFidelityUser(String userEmail) implements SQLiteTable {
     @Override
     public void updateRecord(DatabaseConnection db) throws SQLException {
         // TODO
+    }
+
+    @Override
+    public SQLiteFidelityUser getRecord(DatabaseConnection db) throws SQLException {
+        throw new UnsupportedOperationException("getRecord");
     }
 }

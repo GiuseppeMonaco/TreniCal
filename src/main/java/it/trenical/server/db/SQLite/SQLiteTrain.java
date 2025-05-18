@@ -62,4 +62,9 @@ public class SQLiteTrain extends TrainData implements SQLiteTable {
     public void updateRecord(DatabaseConnection db) throws SQLException {
         // TODO
     }
+
+    @Override
+    public SQLiteTrain getRecord(DatabaseConnection db) throws SQLException {
+        throw new UnsupportedOperationException("getRecord");
+    }
 }

@@ -47,4 +47,9 @@ public class SQLiteRoute extends RouteData implements SQLiteTable {
     public void updateRecord(DatabaseConnection db) throws SQLException {
         // TODO
     }
+
+    @Override
+    public SQLiteRoute getRecord(DatabaseConnection db) throws SQLException {
+        throw new UnsupportedOperationException("getRecord");
+    }
 }

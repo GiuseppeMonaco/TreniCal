@@ -1,5 +1,6 @@
 package it.trenical.server.db.SQLite;
 
+import it.trenical.common.Data;
 import it.trenical.server.db.DatabaseConnection;
 
 import java.sql.Connection;
@@ -7,7 +8,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-public record SQLitePaidTicket(String userEmail, int id) implements SQLiteTable {
+public record SQLitePaidTicket(String userEmail, int id) implements SQLiteTable, Data {
 
     static private final String TABLE_NAME = "PaidTickets";
     static private final int COLUMNS_NUMBER = 2;
@@ -37,5 +38,10 @@ public record SQLitePaidTicket(String userEmail, int id) implements SQLiteTable 
     @Override
     public void updateRecord(DatabaseConnection db) throws SQLException {
         // TODO
+    }
+
+    @Override
+    public SQLitePaidTicket getRecord(DatabaseConnection db) throws SQLException {
+        throw new UnsupportedOperationException("getRecord");
     }
 }

@@ -77,4 +77,9 @@ public class SQLiteTicket extends TicketData implements SQLiteTable {
     public void updateRecord(DatabaseConnection db) throws SQLException {
         // TODO
     }
+
+    @Override
+    public SQLiteTicket getRecord(DatabaseConnection db) throws SQLException {
+        throw new UnsupportedOperationException("getRecord");
+    }
 }

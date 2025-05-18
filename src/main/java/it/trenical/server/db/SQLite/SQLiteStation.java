@@ -57,4 +57,9 @@ public class SQLiteStation extends StationData implements SQLiteTable {
     public void updateRecord(DatabaseConnection db) throws SQLException {
         // TODO
     }
+
+    @Override
+    public SQLiteStation getRecord(DatabaseConnection db) throws SQLException {
+        throw new UnsupportedOperationException("getRecord");
+    }
 }
