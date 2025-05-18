@@ -1,7 +1,8 @@
-package it.trenical.server.db;
+package it.trenical.server.db.SQLite;
 
 import it.trenical.common.RouteData;
 import it.trenical.common.Station;
+import it.trenical.server.db.DatabaseConnection;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;

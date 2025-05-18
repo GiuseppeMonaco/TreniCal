@@ -1,4 +1,6 @@
-package it.trenical.server.db;
+package it.trenical.server.db.SQLite;
+
+import it.trenical.server.db.DatabaseConnection;
 
 import java.sql.*;
 import java.util.logging.Logger;

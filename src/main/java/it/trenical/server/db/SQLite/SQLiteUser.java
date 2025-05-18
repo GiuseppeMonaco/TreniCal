@@ -1,6 +1,9 @@
-package it.trenical.server.db;
+package it.trenical.server.db.SQLite;
 
+import it.trenical.common.Data;
+import it.trenical.common.User;
 import it.trenical.common.UserData;
+import it.trenical.server.db.DatabaseConnection;
 
 import java.sql.*;
 
@@ -54,6 +57,17 @@ public class SQLiteUser extends UserData implements SQLiteTable {
         st.setString(1, getEmail());
         ResultSet res = st.executeQuery();
         return res.next();
+    }
+
+    @Override
+    public SQLiteUser getRecord(DatabaseConnection db) throws SQLException {
+        Connection c = db.getConnection();
+        PreparedStatement st = c.prepareStatement("SELECT * FROM " + TABLE_NAME + " WHERE email=?;");
+        st.setString(1, getEmail());
+        ResultSet res = st.executeQuery();
+
+        if (!res.next()) return null;
+        return new SQLiteUser(res.getString(1),res.getString(2));
     }
 
 }

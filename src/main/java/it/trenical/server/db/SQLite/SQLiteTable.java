@@ -1,4 +1,7 @@
-package it.trenical.server.db;
+package it.trenical.server.db.SQLite;
+
+import it.trenical.common.Data;
+import it.trenical.server.db.DatabaseConnection;
 
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -16,4 +19,5 @@ interface SQLiteTable {
 
     void insertRecord(DatabaseConnection db) throws SQLException;
     void updateRecord(DatabaseConnection db) throws SQLException;
+    Data getRecord(DatabaseConnection db) throws SQLException;
 }
