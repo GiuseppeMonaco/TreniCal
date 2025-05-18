@@ -1,0 +1,37 @@
+syntax = "proto3";
+
+option java_package = "it.trenical.grpc";
+option java_multiple_files = true;
+
+service AuthService {
+  rpc Login (LoginRequest) returns (LoginReply);
+  rpc Logout (LogoutRequest) returns (LogoutReply);
+
+  rpc Signup (SignupRequest) returns (SignupReply);
+}
+
+message LoginRequest {
+  string email = 1;
+  string password = 2;
+}
+
+message LoginReply {
+  string token = 1;
+}
+
+message LogoutRequest {
+  string token = 1;
+}
+
+message LogoutReply {
+  bool isDone = 1;
+}
+
+message SignupRequest {
+  string email = 1;
+  string password = 2;
+}
+
+message SignupReply {
+  string token = 1;
+}
