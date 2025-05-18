@@ -2,7 +2,7 @@ package it.trenical.common;
 
 import java.util.Calendar;
 
-public interface Trip {
+public interface Trip extends Data {
 
     Train getTrain();
     Calendar getDepartureTime();

@@ -1,6 +1,6 @@
 package it.trenical.common;
 
-public interface User {
+public interface User extends Data {
 
     String getEmail();
 

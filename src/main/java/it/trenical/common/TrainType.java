@@ -1,6 +1,6 @@
 package it.trenical.common;
 
-public interface TrainType {
+public interface TrainType extends Data {
 
     String getName();
 
