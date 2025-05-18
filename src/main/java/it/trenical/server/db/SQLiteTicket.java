@@ -1,16 +1,13 @@
 package it.trenical.server.db;
 
-import it.trenical.common.Promotion;
-import it.trenical.common.Ticket;
-import it.trenical.common.Trip;
-import it.trenical.common.User;
+import it.trenical.common.*;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-public record SQLiteTicket(int id, User user, String name, String surname, float price, Trip trip, Promotion promotion, boolean isPaid) implements Ticket, SQLiteTable {
+public class SQLiteTicket extends TicketData implements SQLiteTable {
 
     static private final String TABLE_NAME = "Tickets";
     static private final int COLUMNS_NUMBER = 10;
@@ -35,64 +32,43 @@ public record SQLiteTicket(int id, User user, String name, String surname, float
     static private final String INSERT_QUERY =
             SQLiteTable.buildInsertQuery(TABLE_NAME,COLUMNS_NUMBER);
 
+    public static Builder newBuilder(int id, User user) {
+        return new Builder(id, user);
+    }
+
+    private SQLiteTicket(Builder builder) {
+        super(builder);
+    }
+
+    public static class Builder extends TicketData.Builder {
+        private Builder(int id, User user) {
+            super(id, user);
+        }
+
+        @Override
+        public SQLiteTicket build() {
+            return (SQLiteTicket) super.build();
+        }
+    }
+
     static void initTable(Statement statement) throws SQLException {
         SQLiteTable.initTable(statement, TABLE_NAME, COLUMNS);
-    }
-
-    @Override
-    public int getId() {
-        return id;
-    }
-
-    @Override
-    public User getUser() {
-        return user;
-    }
-
-    @Override
-    public String getName() {
-        return name;
-    }
-
-    @Override
-    public String getSurname() {
-        return surname;
-    }
-
-    @Override
-    public float getPrice() {
-        return price;
-    }
-
-    @Override
-    public Promotion getPromotion() {
-        return promotion;
-    }
-
-    @Override
-    public Trip getTrip() {
-        return trip;
-    }
-
-    @Override
-    public boolean isPaid() {
-        return isPaid;
     }
 
     @Override
     public void insertRecord(DatabaseConnection db) throws SQLException {
         Connection c = db.getConnection();
         PreparedStatement st = c.prepareStatement(INSERT_QUERY);
-        st.setInt(1, id);
-        st.setString(2, user.getEmail());
-        st.setString(3, name);
-        st.setString(4, surname);
-        st.setFloat(5, price);
-        st.setString(6,promotion.getCode());
-        st.setInt(7,trip.getTrain().getId());
-        st.setLong(8,trip.getDepartureTime().getTimeInMillis());
-        st.setString(9,trip.getRoute().getDepartureStation().getName());
-        st.setString(COLUMNS_NUMBER,trip.getRoute().getArrivalStation().getName());
+        st.setInt(1, getId());
+        st.setString(2, getUser().getEmail());
+        st.setString(3, getName());
+        st.setString(4, getSurname());
+        st.setFloat(5, getPrice());
+        st.setString(6,getPromotion().getCode());
+        st.setInt(7,getTrip().getTrain().getId());
+        st.setLong(8,getTrip().getDepartureTime().getTimeInMillis());
+        st.setString(9,getTrip().getRoute().getDepartureStation().getName());
+        st.setString(COLUMNS_NUMBER,getTrip().getRoute().getArrivalStation().getName());
         st.executeUpdate();
     }
 

@@ -1,16 +1,13 @@
 package it.trenical.server.db;
 
-import it.trenical.common.Route;
-import it.trenical.common.Train;
-import it.trenical.common.Trip;
+import it.trenical.common.TripData;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Calendar;
 
-public record SQLiteTrip(Train train, Route route, Calendar departureTime, int availableEconomySeats, int availableBusinessSeats) implements Trip, SQLiteTable {
+public class SQLiteTrip extends TripData implements SQLiteTable {
 
     static private final String TABLE_NAME = "Trips";
     static private final int COLUMNS_NUMBER = 6;
@@ -33,41 +30,31 @@ public record SQLiteTrip(Train train, Route route, Calendar departureTime, int a
         SQLiteTable.initTable(statement, TABLE_NAME, COLUMNS);
     }
 
-    @Override
-    public Train getTrain() {
-        return train;
+    public static Builder newBuilder() {
+        return new Builder();
     }
 
-    @Override
-    public Calendar getDepartureTime() {
-        return departureTime;
+    private SQLiteTrip(Builder builder) {
+        super(builder);
     }
 
-    @Override
-    public Route getRoute() {
-        return route;
-    }
-
-    @Override
-    public int getAvailableEconomySeats() {
-        return availableEconomySeats;
-    }
-
-    @Override
-    public int getAvailableBusinessSeats() {
-        return availableBusinessSeats;
+    public static class Builder extends TripData.Builder {
+        @Override
+        public SQLiteTrip build() {
+            return (SQLiteTrip) super.build();
+        }
     }
 
     @Override
     public void insertRecord(DatabaseConnection db) throws SQLException {
         Connection c = db.getConnection();
         PreparedStatement st = c.prepareStatement(INSERT_QUERY);
-        st.setInt(1,train.getId());
-        st.setLong(2,departureTime.getTimeInMillis());
-        st.setString(3,route.getDepartureStation().getName());
-        st.setString(4,route.getArrivalStation().getName());
-        st.setInt(5,availableEconomySeats);
-        st.setInt(COLUMNS_NUMBER,availableBusinessSeats);
+        st.setInt(1,getTrain().getId());
+        st.setLong(2,getDepartureTime().getTimeInMillis());
+        st.setString(3,getRoute().getDepartureStation().getName());
+        st.setString(4,getRoute().getArrivalStation().getName());
+        st.setInt(5,getAvailableEconomySeats());
+        st.setInt(COLUMNS_NUMBER,getAvailableBusinessSeats());
         st.executeUpdate();
     }
 

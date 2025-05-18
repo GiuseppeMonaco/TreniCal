@@ -1,13 +1,13 @@
 package it.trenical.server.db;
 
-import it.trenical.common.Promotion;
+import it.trenical.common.PromotionData;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-public record SQLitePromotion(String code, String name, String description, boolean onlyFidelityUser, float discount) implements Promotion, SQLiteTable {
+public class SQLitePromotion extends PromotionData implements SQLiteTable {
 
     static private final String TABLE_NAME = "Promotions";
     static private final int COLUMNS_NUMBER = 5;
@@ -23,44 +23,38 @@ public record SQLitePromotion(String code, String name, String description, bool
     static private final String INSERT_QUERY =
             SQLiteTable.buildInsertQuery(TABLE_NAME,COLUMNS_NUMBER);
 
+    public static Builder newBuilder(String code) {
+        return new Builder(code);
+    }
+
+    private SQLitePromotion(Builder builder) {
+        super(builder);
+    }
+
+    public static class Builder extends PromotionData.Builder {
+        private Builder(String code) {
+            super(code);
+        }
+
+        @Override
+        public SQLitePromotion build() {
+            return (SQLitePromotion) super.build();
+        }
+    }
+
     static void initTable(Statement statement) throws SQLException {
         SQLiteTable.initTable(statement, TABLE_NAME, COLUMNS);
-    }
-
-    @Override
-    public String getCode() {
-        return code;
-    }
-
-    @Override
-    public String getName() {
-        return name;
-    }
-
-    @Override
-    public String getDescription() {
-        return description;
-    }
-
-    @Override
-    public boolean isOnlyFidelityUser() {
-        return onlyFidelityUser;
-    }
-
-    @Override
-    public float getDiscount() {
-        return discount;
     }
 
     @Override
     public void insertRecord(DatabaseConnection db) throws SQLException {
         Connection c = db.getConnection();
         PreparedStatement st = c.prepareStatement(INSERT_QUERY);
-        st.setString(1, code);
-        st.setString(2, name);
-        st.setString(3, description);
-        st.setBoolean(4, onlyFidelityUser);
-        st.setDouble(COLUMNS_NUMBER, discount);
+        st.setString(1, getCode());
+        st.setString(2, getName());
+        st.setString(3, getDescription());
+        st.setBoolean(4, isOnlyFidelityUser());
+        st.setDouble(COLUMNS_NUMBER, getDiscount());
         st.executeUpdate();
     }
 
