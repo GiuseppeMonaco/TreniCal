@@ -44,39 +44,30 @@ public class MainFrame extends JFrame {
         setVisible(true);
     }
 
-    void loginDialog() {
-        LoginDialog dialog = new LoginDialog();
+    private void showDialog(JDialog dialog) {
         dialog.pack();
         dialog.setLocationRelativeTo(null);
         dialog.setVisible(true);
+    }
+
+    void loginDialog() {
+        showDialog(new LoginDialog());
     }
 
     void signupDialog() {
-        SignupDialog dialog = new SignupDialog();
-        dialog.pack();
-        dialog.setLocationRelativeTo(null);
-        dialog.setVisible(true);
+        showDialog(new SignupDialog());
     }
 
     void invalidLoginDialog() {
-        InvalidLoginDialog dialog = new InvalidLoginDialog();
-        dialog.pack();
-        dialog.setLocationRelativeTo(null);
-        dialog.setVisible(true);
+        showDialog(new InvalidLoginDialog());
     }
 
     void invalidSignupDialog() {
-        InvalidSignupDialog dialog = new InvalidSignupDialog();
-        dialog.pack();
-        dialog.setLocationRelativeTo(null);
-        dialog.setVisible(true);
+        showDialog(new InvalidSignupDialog());
     }
 
     void unreachableServerDialog() {
-        UnreachableServerDialog dialog = new UnreachableServerDialog();
-        dialog.pack();
-        dialog.setLocationRelativeTo(null);
-        dialog.setVisible(true);
+        showDialog(new UnreachableServerDialog());
     }
 
     private void setAuthLabel(User user) {
