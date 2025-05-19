@@ -41,6 +41,7 @@ public class SQLiteConnection implements DatabaseConnection {
             logger.severe("Cannot initialize database connection. Please contact software developer.");
             System.exit(-1);
         }
+        logger.info(String.format("Database at %s initialized successfully", DATABASE_PATH));
     }
 
     public static synchronized SQLiteConnection getInstance() {
