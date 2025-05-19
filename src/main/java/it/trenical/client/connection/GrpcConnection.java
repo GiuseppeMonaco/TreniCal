@@ -22,12 +22,12 @@ public class GrpcConnection {
         ).build();
     }
 
-    public static GrpcConnection getInstance() {
+    public static synchronized GrpcConnection getInstance() {
         if (instance == null) instance = new GrpcConnection();
         return instance;
     }
 
-    public static Channel getChannel() {
+    public static synchronized Channel getChannel() {
         if (instance == null) instance = new GrpcConnection();
         return instance.channel;
     }
