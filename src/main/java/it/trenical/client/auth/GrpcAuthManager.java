@@ -5,10 +5,10 @@ import it.trenical.client.auth.exceptions.InvalidCredentialsException;
 import it.trenical.client.auth.exceptions.InvalidSessionTokenException;
 import it.trenical.client.auth.exceptions.UserAlreadyExistsException;
 import it.trenical.client.connection.GrpcConnection;
+import it.trenical.client.connection.exceptions.UnreachableServer;
 import it.trenical.common.User;
 import it.trenical.grpc.*;
 
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class GrpcAuthManager implements AuthManager {
@@ -22,7 +22,7 @@ public class GrpcAuthManager implements AuthManager {
     }
 
     @Override
-    public SessionToken login(User user) throws InvalidCredentialsException {
+    public SessionToken login(User user) throws InvalidCredentialsException, UnreachableServer {
 
         LoginRequest request = LoginRequest.newBuilder()
                 .setEmail(user.getEmail())
@@ -35,13 +35,13 @@ public class GrpcAuthManager implements AuthManager {
                 throw new InvalidCredentialsException(String.format("Credentials are not valid for %s",user.getEmail()));
             return reply;
         } catch (StatusRuntimeException e) {
-            logger.log(Level.WARNING, "RPC failed: {0}", e.getStatus());
-            return SessionToken.newInvalidToken();
+            logger.warning("Server irraggiungibile");
+            throw new UnreachableServer("Server irraggiungibile");
         }
     }
 
     @Override
-    public void logout(SessionToken token) throws InvalidSessionTokenException {
+    public void logout(SessionToken token) throws InvalidSessionTokenException, UnreachableServer {
 
         LogoutRequest request = LogoutRequest.newBuilder()
                 .setToken(token.token())
@@ -51,12 +51,13 @@ public class GrpcAuthManager implements AuthManager {
             if (!blockingStub.logout(request).getIsDone())
                 throw new InvalidSessionTokenException(String.format("%s is not a valid token", token.token()));
         } catch (StatusRuntimeException e) {
-            logger.log(Level.WARNING, "RPC failed: {0}", e.getStatus());
+            logger.warning("Server irraggiungibile");
+            throw new UnreachableServer("Server irraggiungibile");
         }
     }
 
     @Override
-    public SessionToken signup(User user) throws InvalidCredentialsException, UserAlreadyExistsException { // TODO gestire l'eccezione
+    public SessionToken signup(User user) throws InvalidCredentialsException, UserAlreadyExistsException, UnreachableServer { // TODO gestire l'eccezione
 
         SignupRequest request = SignupRequest.newBuilder()
                 .setEmail(user.getEmail())
@@ -69,8 +70,8 @@ public class GrpcAuthManager implements AuthManager {
                 throw new UserAlreadyExistsException(String.format("User %s already exists",user.getEmail()));
             return reply;
         } catch (StatusRuntimeException e) {
-            logger.log(Level.WARNING, "RPC failed: {0}", e.getStatus());
-            return SessionToken.newInvalidToken();
+            logger.warning("Server irraggiungibile");
+            throw new UnreachableServer("Server irraggiungibile");
         }
     }
 }
