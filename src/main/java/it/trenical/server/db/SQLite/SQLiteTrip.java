@@ -1,6 +1,5 @@
 package it.trenical.server.db.SQLite;
 
-import it.trenical.common.Data;
 import it.trenical.common.TripData;
 import it.trenical.server.db.DatabaseConnection;
 
