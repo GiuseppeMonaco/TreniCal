@@ -7,7 +7,7 @@ public class TrainData implements Train {
     private final int economyCapacity;
     private final int businessCapacity;
 
-    protected TrainData(Builder builder) {
+    private TrainData(Builder builder) {
         this.id = builder.id;
         this.type = builder.type;
         this.economyCapacity = builder.economyCapacity;
@@ -24,7 +24,7 @@ public class TrainData implements Train {
         private int economyCapacity;
         private int businessCapacity;
 
-        protected Builder(int id) {
+        private Builder(int id) {
             this.id = id;
         }
 

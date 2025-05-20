@@ -1,14 +1,17 @@
 package it.trenical.server.db.SQLite;
 
-import it.trenical.common.TripData;
+import it.trenical.common.Route;
+import it.trenical.common.Train;
+import it.trenical.common.Trip;
 import it.trenical.server.db.DatabaseConnection;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Calendar;
 
-public class SQLiteTrip extends TripData implements SQLiteTable {
+public class SQLiteTrip implements SQLiteTable<Trip>, Trip {
 
     static private final String TABLE_NAME = "Trips";
     static private final int COLUMNS_NUMBER = 6;
@@ -31,19 +34,10 @@ public class SQLiteTrip extends TripData implements SQLiteTable {
         SQLiteTable.initTable(statement, TABLE_NAME, COLUMNS);
     }
 
-    public static Builder newBuilder() {
-        return new Builder();
-    }
+    private final Trip data;
 
-    private SQLiteTrip(Builder builder) {
-        super(builder);
-    }
-
-    public static class Builder extends TripData.Builder {
-        @Override
-        public SQLiteTrip build() {
-            return (SQLiteTrip) super.build();
-        }
+    public SQLiteTrip(Trip data) {
+        this.data = data;
     }
 
     @Override
@@ -61,11 +55,36 @@ public class SQLiteTrip extends TripData implements SQLiteTable {
 
     @Override
     public void updateRecord(DatabaseConnection db) throws SQLException {
-        // TODO
+        throw new UnsupportedOperationException("updateRecord"); // TODO
     }
 
     @Override
     public SQLiteTrip getRecord(DatabaseConnection db) throws SQLException {
-        throw new UnsupportedOperationException("getRecord");
+        throw new UnsupportedOperationException("getRecord"); // TODO
+    }
+
+    @Override
+    public Train getTrain() {
+        return data.getTrain();
+    }
+
+    @Override
+    public Calendar getDepartureTime() {
+        return data.getDepartureTime();
+    }
+
+    @Override
+    public Route getRoute() {
+        return data.getRoute();
+    }
+
+    @Override
+    public int getAvailableEconomySeats() {
+        return data.getAvailableEconomySeats();
+    }
+
+    @Override
+    public int getAvailableBusinessSeats() {
+        return data.getAvailableBusinessSeats();
     }
 }

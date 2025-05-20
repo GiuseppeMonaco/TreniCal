@@ -7,7 +7,7 @@ public class StationData implements Station {
     private final String town;
     private final String province;
 
-    protected StationData(Builder builder) {
+    private StationData(Builder builder) {
         this.name = builder.name;
         this.address = builder.address;
         this.town = builder.town;
@@ -24,7 +24,7 @@ public class StationData implements Station {
         private String town;
         private String province;
 
-        protected Builder(){}
+        private Builder(){}
 
         public Builder setName(String name) {
             this.name = name;

@@ -1,5 +1,6 @@
 package it.trenical.server.db.SQLite;
 
+import it.trenical.common.Route;
 import it.trenical.common.RouteData;
 import it.trenical.common.Station;
 import it.trenical.server.db.DatabaseConnection;
@@ -9,7 +10,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-public class SQLiteRoute extends RouteData implements SQLiteTable {
+public class SQLiteRoute implements SQLiteTable<Route>, Route {
 
     static private final String TABLE_NAME = "Routes";
     static private final int COLUMNS_NUMBER = 3;
@@ -25,8 +26,14 @@ public class SQLiteRoute extends RouteData implements SQLiteTable {
     static private final String INSERT_QUERY =
             SQLiteTable.buildInsertQuery(TABLE_NAME,COLUMNS_NUMBER);
 
+    private final Route data;
+
+    public SQLiteRoute(Route data) {
+        this.data = data;
+    }
+
     public SQLiteRoute(Station departureStation, Station arrivalStation, int distance) {
-        super(departureStation, arrivalStation, distance);
+        this(new RouteData(departureStation,arrivalStation,distance));
     }
 
     static void initTable(Statement statement) throws SQLException {
@@ -45,11 +52,26 @@ public class SQLiteRoute extends RouteData implements SQLiteTable {
 
     @Override
     public void updateRecord(DatabaseConnection db) throws SQLException {
-        // TODO
+        throw new UnsupportedOperationException("updateRecord"); // TODO
     }
 
     @Override
     public SQLiteRoute getRecord(DatabaseConnection db) throws SQLException {
-        throw new UnsupportedOperationException("getRecord");
+        throw new UnsupportedOperationException("getRecord"); // TODO
+    }
+
+    @Override
+    public Station getDepartureStation() {
+        return data.getDepartureStation();
+    }
+
+    @Override
+    public Station getArrivalStation() {
+        return data.getArrivalStation();
+    }
+
+    @Override
+    public int getDistance() {
+        return data.getDistance();
     }
 }

@@ -1,6 +1,6 @@
 package it.trenical.server.db.SQLite;
 
-import it.trenical.common.StationData;
+import it.trenical.common.Station;
 import it.trenical.server.db.DatabaseConnection;
 
 import java.sql.Connection;
@@ -8,7 +8,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-public class SQLiteStation extends StationData implements SQLiteTable {
+public class SQLiteStation implements SQLiteTable<Station>, Station {
 
     static private final String TABLE_NAME = "Stations";
     static private final int COLUMNS_NUMBER = 4;
@@ -23,19 +23,10 @@ public class SQLiteStation extends StationData implements SQLiteTable {
     static private final String INSERT_QUERY =
             SQLiteTable.buildInsertQuery(TABLE_NAME,COLUMNS_NUMBER);
 
-    public static Builder newBuilder() {
-        return new Builder();
-    }
+    private final Station data;
 
-    private SQLiteStation(Builder builder) {
-        super(builder);
-    }
-
-    public static class Builder extends StationData.Builder {
-        @Override
-        public SQLiteStation build() {
-            return (SQLiteStation) super.build();
-        }
+    public SQLiteStation(Station data) {
+        this.data = data;
     }
 
     static void initTable(Statement statement) throws SQLException {
@@ -46,20 +37,40 @@ public class SQLiteStation extends StationData implements SQLiteTable {
     public void insertRecord(DatabaseConnection db) throws SQLException {
         Connection c = db.getConnection();
         PreparedStatement st = c.prepareStatement(INSERT_QUERY);
-        st.setString(1, getName());
-        st.setString(2, getAddress());
-        st.setString(3, getTown());
-        st.setString(COLUMNS_NUMBER, getProvince());
+        st.setString(1, data.getName());
+        st.setString(2, data.getAddress());
+        st.setString(3, data.getTown());
+        st.setString(COLUMNS_NUMBER, data.getProvince());
         st.executeUpdate();
     }
 
     @Override
     public void updateRecord(DatabaseConnection db) throws SQLException {
-        // TODO
+        throw new UnsupportedOperationException("updateRecord"); // TODO
     }
 
     @Override
     public SQLiteStation getRecord(DatabaseConnection db) throws SQLException {
-        throw new UnsupportedOperationException("getRecord");
+        throw new UnsupportedOperationException("getRecord"); // TODO
+    }
+
+    @Override
+    public String getName() {
+        return data.getName();
+    }
+
+    @Override
+    public String getAddress() {
+        return data.getAddress();
+    }
+
+    @Override
+    public String getTown() {
+        return data.getTown();
+    }
+
+    @Override
+    public String getProvince() {
+        return data.getProvince();
     }
 }

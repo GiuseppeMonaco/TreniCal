@@ -1,5 +1,6 @@
 package it.trenical.server.db.SQLite;
 
+import it.trenical.common.TrainType;
 import it.trenical.common.TrainTypeData;
 import it.trenical.server.db.DatabaseConnection;
 
@@ -8,7 +9,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-public class SQLiteTrainType extends TrainTypeData implements SQLiteTable {
+public class SQLiteTrainType implements SQLiteTable<TrainType>, TrainType {
 
     static private final String TABLE_NAME = "TrainTypes";
     static private final int COLUMNS_NUMBER = 2;
@@ -21,8 +22,14 @@ public class SQLiteTrainType extends TrainTypeData implements SQLiteTable {
     static private final String INSERT_QUERY =
             SQLiteTable.buildInsertQuery(TABLE_NAME,COLUMNS_NUMBER);
 
+    private final TrainType data;
+
+    public SQLiteTrainType(TrainType data) {
+        this.data = data;
+    }
+
     public SQLiteTrainType(String name, float price) {
-        super(name, price);
+        this(new TrainTypeData(name, price));
     }
 
     static void initTable(Statement statement) throws SQLException {
@@ -40,11 +47,21 @@ public class SQLiteTrainType extends TrainTypeData implements SQLiteTable {
 
     @Override
     public void updateRecord(DatabaseConnection db) throws SQLException {
-        // TODO
+        throw new UnsupportedOperationException("updateRecord"); // TODO
     }
 
     @Override
     public SQLiteTrainType getRecord(DatabaseConnection db) throws SQLException {
-        throw new UnsupportedOperationException("getRecord");
+        throw new UnsupportedOperationException("getRecord"); // TODO
+    }
+
+    @Override
+    public String getName() {
+        return data.getName();
+    }
+
+    @Override
+    public float getPrice() {
+        return data.getPrice();
     }
 }

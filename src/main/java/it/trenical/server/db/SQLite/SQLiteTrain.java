@@ -1,6 +1,7 @@
 package it.trenical.server.db.SQLite;
 
-import it.trenical.common.TrainData;
+import it.trenical.common.Train;
+import it.trenical.common.TrainType;
 import it.trenical.server.db.DatabaseConnection;
 
 import java.sql.Connection;
@@ -8,7 +9,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-public class SQLiteTrain extends TrainData implements SQLiteTable {
+public class SQLiteTrain implements SQLiteTable<Train>, Train {
 
     static private final String TABLE_NAME = "Trains";
     static private final int COLUMNS_NUMBER = 4;
@@ -24,23 +25,10 @@ public class SQLiteTrain extends TrainData implements SQLiteTable {
     static private final String INSERT_QUERY =
             SQLiteTable.buildInsertQuery(TABLE_NAME,COLUMNS_NUMBER);
 
-    public static Builder newBuilder(int id) {
-        return new Builder(id);
-    }
+    private final Train data;
 
-    private SQLiteTrain(Builder builder) {
-        super(builder);
-    }
-
-    public static class Builder extends TrainData.Builder {
-        private Builder(int id) {
-            super(id);
-        }
-
-        @Override
-        public SQLiteTrain build() {
-            return (SQLiteTrain) super.build();
-        }
+    public SQLiteTrain(Train data) {
+        this.data = data;
     }
 
     static void initTable(Statement statement) throws SQLException {
@@ -60,11 +48,31 @@ public class SQLiteTrain extends TrainData implements SQLiteTable {
 
     @Override
     public void updateRecord(DatabaseConnection db) throws SQLException {
-        // TODO
+        throw new UnsupportedOperationException("updateRecord"); // TODO
     }
 
     @Override
     public SQLiteTrain getRecord(DatabaseConnection db) throws SQLException {
-        throw new UnsupportedOperationException("getRecord");
+        throw new UnsupportedOperationException("getRecord"); // TODO
+    }
+
+    @Override
+    public int getId() {
+        return data.getId();
+    }
+
+    @Override
+    public TrainType getType() {
+        return data.getType();
+    }
+
+    @Override
+    public int getEconomyCapacity() {
+        return data.getEconomyCapacity();
+    }
+
+    @Override
+    public int getBusinessCapacity() {
+        return data.getBusinessCapacity();
     }
 }

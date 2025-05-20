@@ -1,11 +1,12 @@
 package it.trenical.server.db.SQLite;
 
+import it.trenical.common.User;
 import it.trenical.common.UserData;
 import it.trenical.server.db.DatabaseConnection;
 
 import java.sql.*;
 
-public class SQLiteUser extends UserData implements SQLiteTable {
+public class SQLiteUser implements SQLiteTable<User>, User {
     
     static private final String TABLE_NAME = "Users";
     static private final int COLUMNS_NUMBER = 2;
@@ -18,8 +19,14 @@ public class SQLiteUser extends UserData implements SQLiteTable {
     static private final String INSERT_QUERY =
             SQLiteTable.buildInsertQuery(TABLE_NAME,COLUMNS_NUMBER);
 
+    private final User data;
+
+    public SQLiteUser(User data) {
+        this.data = data;
+    }
+
     public SQLiteUser(String email, String password) {
-        super(email, password);
+        this(new UserData(email, password));
     }
 
     static void initTable(Statement statement) throws SQLException {
@@ -37,7 +44,7 @@ public class SQLiteUser extends UserData implements SQLiteTable {
 
     @Override
     public void updateRecord(DatabaseConnection db) throws SQLException {
-        // TODO
+        throw new UnsupportedOperationException("updateRecord"); // TODO
     }
 
     public boolean checkIfExists(DatabaseConnection db) throws SQLException {
@@ -55,4 +62,18 @@ public class SQLiteUser extends UserData implements SQLiteTable {
         return new SQLiteUser(res.getString(1),res.getString(2));
     }
 
+    @Override
+    public String getEmail() {
+        return data.getEmail();
+    }
+
+    @Override
+    public String getPassword() {
+        return data.getPassword();
+    }
+
+    @Override
+    public boolean isFidelity() {
+        return false;
+    }
 }

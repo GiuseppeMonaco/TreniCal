@@ -1,6 +1,6 @@
 package it.trenical.common;
 
-public interface Route extends Data {
+public interface Route {
 
     Station getDepartureStation();
     Station getArrivalStation();

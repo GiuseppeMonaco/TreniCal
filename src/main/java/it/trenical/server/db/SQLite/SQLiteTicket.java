@@ -8,7 +8,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-public class SQLiteTicket extends TicketData implements SQLiteTable {
+public class SQLiteTicket implements SQLiteTable<Ticket>, Ticket {
 
     static private final String TABLE_NAME = "Tickets";
     static private final int COLUMNS_NUMBER = 10;
@@ -33,27 +33,14 @@ public class SQLiteTicket extends TicketData implements SQLiteTable {
     static private final String INSERT_QUERY =
             SQLiteTable.buildInsertQuery(TABLE_NAME,COLUMNS_NUMBER);
 
-    public static Builder newBuilder(int id, User user) {
-        return new Builder(id, user);
-    }
-
-    private SQLiteTicket(Builder builder) {
-        super(builder);
-    }
-
-    public static class Builder extends TicketData.Builder {
-        private Builder(int id, User user) {
-            super(id, user);
-        }
-
-        @Override
-        public SQLiteTicket build() {
-            return (SQLiteTicket) super.build();
-        }
-    }
-
     static void initTable(Statement statement) throws SQLException {
         SQLiteTable.initTable(statement, TABLE_NAME, COLUMNS);
+    }
+
+    private final Ticket data;
+
+    public SQLiteTicket(Ticket data) {
+        this.data = data;
     }
 
     @Override
@@ -75,11 +62,51 @@ public class SQLiteTicket extends TicketData implements SQLiteTable {
 
     @Override
     public void updateRecord(DatabaseConnection db) throws SQLException {
-        // TODO
+        throw new UnsupportedOperationException("updateRecord"); // TODO
     }
 
     @Override
     public SQLiteTicket getRecord(DatabaseConnection db) throws SQLException {
-        throw new UnsupportedOperationException("getRecord");
+        throw new UnsupportedOperationException("getRecord"); // TODO
+    }
+
+    @Override
+    public int getId() {
+        return data.getId();
+    }
+
+    @Override
+    public User getUser() {
+        return data.getUser();
+    }
+
+    @Override
+    public String getName() {
+        return data.getName();
+    }
+
+    @Override
+    public String getSurname() {
+        return data.getSurname();
+    }
+
+    @Override
+    public float getPrice() {
+        return data.getPrice();
+    }
+
+    @Override
+    public Promotion getPromotion() {
+        return data.getPromotion();
+    }
+
+    @Override
+    public Trip getTrip() {
+        return data.getTrip();
+    }
+
+    @Override
+    public boolean isPaid() {
+        return data.isPaid();
     }
 }

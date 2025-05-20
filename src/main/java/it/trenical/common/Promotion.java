@@ -1,6 +1,6 @@
 package it.trenical.common;
 
-public interface Promotion extends Data {
+public interface Promotion {
 
     String getCode();
 

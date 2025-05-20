@@ -11,7 +11,7 @@ public class TicketData implements Ticket {
     private final Promotion promotion;
     private final boolean isPaid;
 
-    protected TicketData(Builder builder) {
+    private TicketData(Builder builder) {
         this.id = builder.id;
         this.user = builder.user;
         this.name = builder.name;
@@ -36,7 +36,7 @@ public class TicketData implements Ticket {
         private Promotion promotion;
         private boolean isPaid;
 
-        protected Builder(int id, User user) {
+        private Builder(int id, User user) {
             this.id = id;
             this.user = user;
         }

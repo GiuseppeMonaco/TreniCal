@@ -1,6 +1,6 @@
 package it.trenical.common;
 
-public interface Train extends Data {
+public interface Train {
 
     int getId();
 

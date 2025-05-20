@@ -1,6 +1,6 @@
 package it.trenical.common;
 
-public interface Station extends Data {
+public interface Station {
 
     String getName();
 

@@ -8,7 +8,7 @@ public class PromotionData implements Promotion {
     private final boolean onlyFidelityUser;
     private final float discount;
 
-    protected PromotionData(Builder builder) {
+    private PromotionData(Builder builder) {
         this.code = builder.code;
         this.name = builder.name;
         this.description = builder.description;
@@ -27,7 +27,7 @@ public class PromotionData implements Promotion {
         private boolean onlyFidelityUser;
         private float discount;
 
-        protected Builder(String code) {
+        private Builder(String code) {
             this.code = code;
         }
 

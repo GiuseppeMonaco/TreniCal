@@ -1,6 +1,6 @@
 package it.trenical.common;
 
-public interface Ticket extends Data {
+public interface Ticket {
 
     int getId();
     User getUser();

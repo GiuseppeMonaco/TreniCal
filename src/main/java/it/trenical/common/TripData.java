@@ -10,7 +10,7 @@ public class TripData implements Trip {
     private final int availableEconomySeats;
     private final int availableBusinessSeats;
 
-    protected TripData(Builder builder) {
+    private TripData(Builder builder) {
         this.train = builder.train;
         this.route = builder.route;
         this.departureTime = builder.departureTime;
@@ -29,7 +29,7 @@ public class TripData implements Trip {
         private int availableEconomySeats;
         private int availableBusinessSeats;
 
-        protected Builder(){}
+        private Builder(){}
 
         public Builder setTrain(Train train) {
             this.train = train;

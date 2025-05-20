@@ -1,6 +1,6 @@
 package it.trenical.server.db.SQLite;
 
-import it.trenical.common.PromotionData;
+import it.trenical.common.Promotion;
 import it.trenical.server.db.DatabaseConnection;
 
 import java.sql.Connection;
@@ -8,7 +8,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-public class SQLitePromotion extends PromotionData implements SQLiteTable {
+public class SQLitePromotion implements SQLiteTable<Promotion>, Promotion {
 
     static private final String TABLE_NAME = "Promotions";
     static private final int COLUMNS_NUMBER = 5;
@@ -24,27 +24,14 @@ public class SQLitePromotion extends PromotionData implements SQLiteTable {
     static private final String INSERT_QUERY =
             SQLiteTable.buildInsertQuery(TABLE_NAME,COLUMNS_NUMBER);
 
-    public static Builder newBuilder(String code) {
-        return new Builder(code);
-    }
-
-    private SQLitePromotion(Builder builder) {
-        super(builder);
-    }
-
-    public static class Builder extends PromotionData.Builder {
-        private Builder(String code) {
-            super(code);
-        }
-
-        @Override
-        public SQLitePromotion build() {
-            return (SQLitePromotion) super.build();
-        }
-    }
-
     static void initTable(Statement statement) throws SQLException {
         SQLiteTable.initTable(statement, TABLE_NAME, COLUMNS);
+    }
+
+    private final Promotion data;
+
+    public SQLitePromotion(Promotion data) {
+        this.data = data;
     }
 
     @Override
@@ -61,11 +48,36 @@ public class SQLitePromotion extends PromotionData implements SQLiteTable {
 
     @Override
     public void updateRecord(DatabaseConnection db) throws SQLException {
-        // TODO
+        throw new UnsupportedOperationException("updateRecord"); // TODO
     }
 
     @Override
     public SQLitePromotion getRecord(DatabaseConnection db) throws SQLException {
-        throw new UnsupportedOperationException("getRecord");
+        throw new UnsupportedOperationException("getRecord"); // TODO
+    }
+
+    @Override
+    public String getCode() {
+        return data.getCode();
+    }
+
+    @Override
+    public String getName() {
+        return data.getName();
+    }
+
+    @Override
+    public String getDescription() {
+        return data.getDescription();
+    }
+
+    @Override
+    public boolean isOnlyFidelityUser() {
+        return data.isOnlyFidelityUser();
+    }
+
+    @Override
+    public float getDiscount() {
+        return data.getDiscount();
     }
 }
