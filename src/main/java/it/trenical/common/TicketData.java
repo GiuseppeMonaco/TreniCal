@@ -41,28 +41,34 @@ public class TicketData implements Ticket {
             this.user = user;
         }
 
-        public void setName(String name) {
+        public Builder setName(String name) {
             this.name = name;
+            return this;
         }
 
-        public void setSurname(String surname) {
+        public Builder setSurname(String surname) {
             this.surname = surname;
+            return this;
         }
 
-        public void setPrice(float price) {
+        public Builder setPrice(float price) {
             this.price = price;
+            return this;
         }
 
-        public void setTrip(Trip trip) {
+        public Builder setTrip(Trip trip) {
             this.trip = trip;
+            return this;
         }
 
-        public void setPromotion(Promotion promotion) {
+        public Builder setPromotion(Promotion promotion) {
             this.promotion = promotion;
+            return this;
         }
 
-        public void setPaid(boolean paid) {
+        public Builder setPaid(boolean paid) {
             isPaid = paid;
+            return this;
         }
 
         public TicketData build() {

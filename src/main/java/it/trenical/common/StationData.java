@@ -24,20 +24,26 @@ public class StationData implements Station {
         private String town;
         private String province;
 
-        public void setName(String name) {
+        protected Builder(){}
+
+        public Builder setName(String name) {
             this.name = name;
+            return this;
         }
 
-        public void setAddress(String address) {
+        public Builder setAddress(String address) {
             this.address = address;
+            return this;
         }
 
-        public void setTown(String town) {
+        public Builder setTown(String town) {
             this.town = town;
+            return this;
         }
 
-        public void setProvince(String province) {
+        public Builder setProvince(String province) {
             this.province = province;
+            return this;
         }
 
         public StationData build() {

@@ -31,20 +31,24 @@ public class PromotionData implements Promotion {
             this.code = code;
         }
 
-        public void setName(String name) {
+        public Builder setName(String name) {
             this.name = name;
+            return this;
         }
 
-        public void setDescription(String description) {
+        public Builder setDescription(String description) {
             this.description = description;
+            return this;
         }
 
-        public void setOnlyFidelityUser(boolean onlyFidelityUser) {
+        public Builder setOnlyFidelityUser(boolean onlyFidelityUser) {
             this.onlyFidelityUser = onlyFidelityUser;
+            return this;
         }
 
-        public void setDiscount(float discount) {
+        public Builder setDiscount(float discount) {
             this.discount = discount;
+            return this;
         }
 
         public PromotionData build() {

@@ -29,6 +29,8 @@ public class TripData implements Trip {
         private int availableEconomySeats;
         private int availableBusinessSeats;
 
+        protected Builder(){}
+
         public Builder setTrain(Train train) {
             this.train = train;
             return this;
