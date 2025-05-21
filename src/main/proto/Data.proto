@@ -1,0 +1,72 @@
+syntax = "proto3";
+
+package Data;
+
+option java_package = "it.trenical.grpc";
+option java_multiple_files = true;
+
+message Promotion {
+  string code = 1;
+
+  optional string name = 2;
+  optional string description = 3;
+  optional bool isOnlyFidelityUser = 4;
+  optional float discount = 5;
+}
+
+message Route {
+  Station departureStation = 1;
+  Station arrivalStation = 2;
+
+  optional uint32 distance = 3;
+}
+
+message Station {
+  string name = 1;
+
+  optional string address = 2;
+  optional string town = 3;
+  optional string province = 4;
+}
+
+message Ticket {
+  uint32 id = 1;
+  User user = 2;
+
+  optional string name = 3;
+  optional string surname = 4;
+  optional float price = 5;
+  optional Promotion promotion = 6;
+  optional Trip trip = 7;
+  optional bool isPaid = 8;
+}
+
+message Train {
+  uint32 id = 1;
+
+  optional TrainType type = 2;
+  optional uint32 economyCapacity = 3;
+  optional uint32 businessCapacity = 4;
+}
+
+message TrainType {
+  string name = 1;
+
+  optional float price = 2;
+}
+
+message Trip {
+  Train train = 1;
+  uint64 departureTime = 2;
+  Route route = 3;
+
+  optional uint32 availableEconomySeats = 4;
+  optional uint32 availableBusinessSeats = 5;
+}
+
+message User {
+  string email = 1;
+
+  optional string password = 2;
+  optional bool isFidelity = 3;
+}

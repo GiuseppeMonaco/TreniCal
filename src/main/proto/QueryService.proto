@@ -1,0 +1,43 @@
+syntax = "proto3";
+
+package QueryService;
+
+option java_package = "it.trenical.grpc";
+option java_multiple_files = true;
+
+import "Data.proto";
+
+service QueryService {
+  rpc QueryTrips (QueryTripsRequest) returns (QueryTripsResponse);
+  rpc QueryTrainTypes (QueryTrainTypesRequest) returns (QueryTrainTypesResponse);
+  rpc QueryStations (QueryStationsRequest) returns (QueryStationsResponse);
+  rpc QueryTickets (QueryTicketsRequest) returns (QueryTicketsResponse);
+}
+
+message QueryTripsRequest {
+  Data.Trip trip = 1;
+}
+
+message QueryTripsResponse {
+  repeated Data.Trip trips = 1;
+}
+
+message QueryTrainTypesRequest {}
+
+message QueryTrainTypesResponse {
+  repeated Data.TrainType types = 1;
+}
+
+message QueryStationsRequest {}
+
+message QueryStationsResponse {
+  repeated Data.Station stations = 1;
+}
+
+message QueryTicketsRequest {
+  string token = 1;
+}
+
+message QueryTicketsResponse {
+  repeated Data.Ticket tickets = 1;
+}
