@@ -14,21 +14,19 @@ public class StationData implements Station {
         this.province = builder.province;
     }
 
-    public static Builder newBuilder() {
-        return new Builder();
+    public static Builder newBuilder(String name) {
+        return new Builder(name);
     }
 
     public static class Builder {
-        private String name;
+        private final String name;
         private String address;
         private String town;
         private String province;
 
-        private Builder(){}
-
-        public Builder setName(String name) {
+        private Builder(String name){
+            if(name == null) throw new IllegalArgumentException("name cannot be null");
             this.name = name;
-            return this;
         }
 
         public Builder setAddress(String address) {

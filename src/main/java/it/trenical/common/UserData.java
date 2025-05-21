@@ -7,6 +7,7 @@ public class UserData implements User {
     private final boolean isFidelity;
 
     public UserData(String email, String password, boolean isFidelity) {
+        if (email == null) throw new IllegalArgumentException("email cannot be null");
         this.email = email;
         this.password = password;
         this.isFidelity = isFidelity;

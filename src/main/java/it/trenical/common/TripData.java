@@ -18,26 +18,24 @@ public class TripData implements Trip {
         this.availableBusinessSeats = builder.availableBusinessSeats;
     }
 
-    public static Builder newBuilder() {
-        return new Builder();
+    public static Builder newBuilder(Route route) {
+        return new Builder(route);
     }
 
     public static class Builder {
         private Train train;
-        private Route route;
+        private final Route route;
         private Calendar departureTime;
         private int availableEconomySeats;
         private int availableBusinessSeats;
 
-        private Builder(){}
+        private Builder(Route route){
+            if(route == null) throw new IllegalArgumentException("route cannot be null");
+            this.route = route;
+        }
 
         public Builder setTrain(Train train) {
             this.train = train;
-            return this;
-        }
-
-        public Builder setRoute(Route route) {
-            this.route = route;
             return this;
         }
 

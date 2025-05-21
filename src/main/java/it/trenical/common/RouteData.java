@@ -7,6 +7,8 @@ public class RouteData implements Route {
     private final int distance;
 
     public RouteData(Station departureStation, Station arrivalStation, int distance) {
+        if(departureStation == null) throw new IllegalArgumentException("departureStation cannot be null");
+        if(arrivalStation == null) throw new IllegalArgumentException("arrivalStation cannot be null");
         this.departureStation = departureStation;
         this.arrivalStation = arrivalStation;
         this.distance = distance;
