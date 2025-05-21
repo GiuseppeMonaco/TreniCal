@@ -1,4 +1,4 @@
-package it.trenical.client.ticket;
+package it.trenical.client.query;
 
 import it.trenical.client.auth.SessionToken;
 import it.trenical.client.connection.exceptions.UnreachableServer;

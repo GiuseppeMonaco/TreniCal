@@ -1,4 +1,4 @@
-package it.trenical.client.ticket;
+package it.trenical.client.query;
 
 import io.grpc.StatusRuntimeException;
 import it.trenical.client.auth.SessionToken;
