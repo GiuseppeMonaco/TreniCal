@@ -24,7 +24,7 @@ public class LoginDialog extends JDialog {
         buttonLogin.setEnabled(false);
         buttonLogin.addActionListener(e -> {
             // Ulteriore controllo per evitare che il cliente inserisca qualche campo vuoto
-            if (emailField.getText().isBlank() || passwordField.getPassword().length == 0) return;
+            if (!canEnableLogin()) return;
             onLogin();
         });
 
