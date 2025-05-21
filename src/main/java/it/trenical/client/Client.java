@@ -8,6 +8,7 @@ import it.trenical.client.auth.exceptions.InvalidSessionTokenException;
 import it.trenical.client.auth.exceptions.UserAlreadyExistsException;
 import it.trenical.client.connection.exceptions.UnreachableServer;
 import it.trenical.common.User;
+import it.trenical.common.UserData;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -21,6 +22,7 @@ public class Client {
 
     private final AuthManager auth;
 
+    private User currentUser;
     private SessionToken token;
 
     private Client() {
@@ -34,6 +36,7 @@ public class Client {
 
     public void login(User user) throws InvalidCredentialsException, UnreachableServer {
         token = auth.login(user);
+        currentUser = new UserData(user.getEmail());
         logger.log(Level.INFO, "Login effettuato come {0}", user.getEmail());
     }
 
@@ -45,15 +48,21 @@ public class Client {
             logger.log(Level.WARNING, "Token was invalid: {0}", token.token());
         }
         token = null;
+        currentUser = null;
     }
 
     public void signup(User user) throws InvalidCredentialsException, UserAlreadyExistsException, UnreachableServer {
         token = auth.signup(user);
+        currentUser = new UserData(user.getEmail());
         logger.log(Level.INFO, "Signup effettuato come {0}", user.getEmail());
     }
 
     public boolean isAuthenticated() {
-        return token != null;
+        return token != null && currentUser != null;
+    }
+
+    public User getCurrentUser() {
+        return currentUser;
     }
 
 }
