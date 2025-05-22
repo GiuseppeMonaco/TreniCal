@@ -1,13 +1,12 @@
 package it.trenical.server.db.SQLite;
 
 import it.trenical.common.Train;
+import it.trenical.common.TrainData;
 import it.trenical.common.TrainType;
+import it.trenical.common.TrainTypeData;
 import it.trenical.server.db.DatabaseConnection;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 
 public class SQLiteTrain implements SQLiteTable<Train>, Train {
 
@@ -23,16 +22,38 @@ public class SQLiteTrain implements SQLiteTable<Train>, Train {
             "FOREIGN KEY (type) REFERENCES TrainTypes(name)";
 
     static private final String INSERT_QUERY =
-            SQLiteTable.buildInsertQuery(TABLE_NAME,COLUMNS_NUMBER);
+            SQLiteTable.getInsertQuery(TABLE_NAME, COLUMNS_NUMBER);
 
+    static private final String ALL_QUERY =
+            SQLiteTable.getAllQuery(TABLE_NAME);
+
+    static void initTable(Statement statement) throws SQLException {
+        SQLiteTable.initTable(statement, TABLE_NAME, COLUMNS);
+    }
+
+    @Override
+    public String getTableName() {
+        return TABLE_NAME;
+    }
+
+    @Override
+    public int getColumnsNumber() {
+        return COLUMNS_NUMBER;
+    }
+
+    @Override
+    public String getInsertQuery() {
+        return INSERT_QUERY;
+    }
+
+    @Override
+    public String getAllQuery() {
+        return ALL_QUERY;
+    }
     private final Train data;
 
     public SQLiteTrain(Train data) {
         this.data = data;
-    }
-
-    static void initTable(Statement statement) throws SQLException {
-        SQLiteTable.initTable(statement, TABLE_NAME, COLUMNS);
     }
 
     @Override
@@ -54,6 +75,17 @@ public class SQLiteTrain implements SQLiteTable<Train>, Train {
     @Override
     public SQLiteTrain getRecord(DatabaseConnection db) throws SQLException {
         throw new UnsupportedOperationException("getRecord"); // TODO
+    }
+
+    @Override
+    public Train toRecord(ResultSet rs) throws SQLException {
+        return new SQLiteTrain(
+                TrainData.newBuilder(rs.getInt("id"))
+                        .setType(new TrainTypeData(rs.getString("name")))
+                        .setEconomyCapacity(rs.getInt("economyCapacity"))
+                        .setBusinessCapacity(rs.getInt("businessCapacity"))
+                        .build()
+        );
     }
 
     @Override

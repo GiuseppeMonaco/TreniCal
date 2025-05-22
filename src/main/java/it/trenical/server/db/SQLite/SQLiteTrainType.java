@@ -4,10 +4,7 @@ import it.trenical.common.TrainType;
 import it.trenical.common.TrainTypeData;
 import it.trenical.server.db.DatabaseConnection;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 
 public class SQLiteTrainType implements SQLiteTable<TrainType>, TrainType {
 
@@ -20,7 +17,34 @@ public class SQLiteTrainType implements SQLiteTable<TrainType>, TrainType {
             "PRIMARY KEY (name)";
 
     static private final String INSERT_QUERY =
-            SQLiteTable.buildInsertQuery(TABLE_NAME,COLUMNS_NUMBER);
+            SQLiteTable.getInsertQuery(TABLE_NAME, COLUMNS_NUMBER);
+
+    static private final String ALL_QUERY =
+            SQLiteTable.getAllQuery(TABLE_NAME);
+
+    static void initTable(Statement statement) throws SQLException {
+        SQLiteTable.initTable(statement, TABLE_NAME, COLUMNS);
+    }
+
+    @Override
+    public String getTableName() {
+        return TABLE_NAME;
+    }
+
+    @Override
+    public int getColumnsNumber() {
+        return COLUMNS_NUMBER;
+    }
+
+    @Override
+    public String getInsertQuery() {
+        return INSERT_QUERY;
+    }
+
+    @Override
+    public String getAllQuery() {
+        return ALL_QUERY;
+    }
 
     private final TrainType data;
 
@@ -32,8 +56,8 @@ public class SQLiteTrainType implements SQLiteTable<TrainType>, TrainType {
         this(new TrainTypeData(name, price));
     }
 
-    static void initTable(Statement statement) throws SQLException {
-        SQLiteTable.initTable(statement, TABLE_NAME, COLUMNS);
+    public SQLiteTrainType(String name) {
+        this(new TrainTypeData(name));
     }
 
     @Override
@@ -53,6 +77,14 @@ public class SQLiteTrainType implements SQLiteTable<TrainType>, TrainType {
     @Override
     public SQLiteTrainType getRecord(DatabaseConnection db) throws SQLException {
         throw new UnsupportedOperationException("getRecord"); // TODO
+    }
+
+    @Override
+    public TrainType toRecord(ResultSet rs) throws SQLException {
+        return new SQLiteTrainType(
+                rs.getString("name"),
+                rs.getFloat("price")
+        );
     }
 
     @Override

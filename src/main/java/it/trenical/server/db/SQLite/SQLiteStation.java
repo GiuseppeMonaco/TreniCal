@@ -1,12 +1,10 @@
 package it.trenical.server.db.SQLite;
 
 import it.trenical.common.Station;
+import it.trenical.common.StationData;
 import it.trenical.server.db.DatabaseConnection;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 
 public class SQLiteStation implements SQLiteTable<Station>, Station {
 
@@ -21,7 +19,34 @@ public class SQLiteStation implements SQLiteTable<Station>, Station {
             "PRIMARY KEY (name)";
 
     static private final String INSERT_QUERY =
-            SQLiteTable.buildInsertQuery(TABLE_NAME,COLUMNS_NUMBER);
+            SQLiteTable.getInsertQuery(TABLE_NAME, COLUMNS_NUMBER);
+
+    static private final String ALL_QUERY =
+            SQLiteTable.getAllQuery(TABLE_NAME);
+
+    static void initTable(Statement statement) throws SQLException {
+        SQLiteTable.initTable(statement, TABLE_NAME, COLUMNS);
+    }
+
+    @Override
+    public String getTableName() {
+        return TABLE_NAME;
+    }
+
+    @Override
+    public int getColumnsNumber() {
+        return COLUMNS_NUMBER;
+    }
+
+    @Override
+    public String getInsertQuery() {
+        return INSERT_QUERY;
+    }
+
+    @Override
+    public String getAllQuery() {
+        return ALL_QUERY;
+    }
 
     private final Station data;
 
@@ -29,8 +54,8 @@ public class SQLiteStation implements SQLiteTable<Station>, Station {
         this.data = data;
     }
 
-    static void initTable(Statement statement) throws SQLException {
-        SQLiteTable.initTable(statement, TABLE_NAME, COLUMNS);
+    public SQLiteStation(String name) {
+        this.data = StationData.newBuilder(name).build();
     }
 
     @Override
@@ -52,6 +77,17 @@ public class SQLiteStation implements SQLiteTable<Station>, Station {
     @Override
     public SQLiteStation getRecord(DatabaseConnection db) throws SQLException {
         throw new UnsupportedOperationException("getRecord"); // TODO
+    }
+
+    @Override
+    public Station toRecord(ResultSet rs) throws SQLException {
+        return new SQLiteStation(
+                StationData.newBuilder(rs.getString("name"))
+                        .setAddress(rs.getString("address"))
+                        .setTown(rs.getString("town"))
+                        .setProvince(rs.getString("province"))
+                        .build()
+        );
     }
 
     @Override

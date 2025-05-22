@@ -3,12 +3,10 @@ package it.trenical.server.db.SQLite;
 import it.trenical.common.Route;
 import it.trenical.common.RouteData;
 import it.trenical.common.Station;
+import it.trenical.common.StationData;
 import it.trenical.server.db.DatabaseConnection;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 
 public class SQLiteRoute implements SQLiteTable<Route>, Route {
 
@@ -24,7 +22,34 @@ public class SQLiteRoute implements SQLiteTable<Route>, Route {
             "FOREIGN KEY (arrivalStation) REFERENCES Stations(name)";
 
     static private final String INSERT_QUERY =
-            SQLiteTable.buildInsertQuery(TABLE_NAME,COLUMNS_NUMBER);
+            SQLiteTable.getInsertQuery(TABLE_NAME, COLUMNS_NUMBER);
+
+    static private final String ALL_QUERY =
+            SQLiteTable.getAllQuery(TABLE_NAME);
+
+    static void initTable(Statement statement) throws SQLException {
+        SQLiteTable.initTable(statement, TABLE_NAME, COLUMNS);
+    }
+
+    @Override
+    public String getTableName() {
+        return TABLE_NAME;
+    }
+
+    @Override
+    public int getColumnsNumber() {
+        return COLUMNS_NUMBER;
+    }
+
+    @Override
+    public String getInsertQuery() {
+        return INSERT_QUERY;
+    }
+
+    @Override
+    public String getAllQuery() {
+        return ALL_QUERY;
+    }
 
     private final Route data;
 
@@ -34,10 +59,6 @@ public class SQLiteRoute implements SQLiteTable<Route>, Route {
 
     public SQLiteRoute(Station departureStation, Station arrivalStation, int distance) {
         this(new RouteData(departureStation,arrivalStation,distance));
-    }
-
-    static void initTable(Statement statement) throws SQLException {
-        SQLiteTable.initTable(statement, TABLE_NAME, COLUMNS);
     }
 
     @Override
@@ -58,6 +79,15 @@ public class SQLiteRoute implements SQLiteTable<Route>, Route {
     @Override
     public SQLiteRoute getRecord(DatabaseConnection db) throws SQLException {
         throw new UnsupportedOperationException("getRecord"); // TODO
+    }
+
+    @Override
+    public Route toRecord(ResultSet rs) throws SQLException {
+        return new SQLiteRoute(
+                StationData.newBuilder(rs.getString("departureStation")).build(),
+                StationData.newBuilder(rs.getString("arrivalStation")).build(),
+                rs.getInt("distance")
+        );
     }
 
     @Override

@@ -3,10 +3,10 @@ package it.trenical.server.db.SQLite;
 import it.trenical.common.*;
 import it.trenical.server.db.DatabaseConnection;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.LinkedList;
 
 public class SQLiteTicket implements SQLiteTable<Ticket>, Ticket {
 
@@ -19,7 +19,7 @@ public class SQLiteTicket implements SQLiteTable<Ticket>, Ticket {
             "name TEXT(100) NOT NULL," +
             "surname TEXT(100) NOT NULL," +
             "price REAL NOT NULL," +
-            "promotion INTEGER NOT NULL," +
+            "promotion INTEGER," +
             "tripTrain INTEGER NOT NULL," +
             "tripDepartureTime INTEGER NOT NULL," +
             "tripDepartureStation TEXT NOT NULL," +
@@ -31,16 +31,43 @@ public class SQLiteTicket implements SQLiteTable<Ticket>, Ticket {
             "REFERENCES Trips(train,departureTime,departureStation,arrivalStation)";
 
     static private final String INSERT_QUERY =
-            SQLiteTable.buildInsertQuery(TABLE_NAME,COLUMNS_NUMBER);
+            SQLiteTable.getInsertQuery(TABLE_NAME, COLUMNS_NUMBER);
+
+    static private final String ALL_QUERY =
+            SQLiteTable.getAllQuery(TABLE_NAME);
 
     static void initTable(Statement statement) throws SQLException {
         SQLiteTable.initTable(statement, TABLE_NAME, COLUMNS);
+    }
+
+    @Override
+    public String getTableName() {
+        return TABLE_NAME;
+    }
+
+    @Override
+    public int getColumnsNumber() {
+        return COLUMNS_NUMBER;
+    }
+
+    @Override
+    public String getInsertQuery() {
+        return INSERT_QUERY;
+    }
+
+    @Override
+    public String getAllQuery() {
+        return ALL_QUERY;
     }
 
     private final Ticket data;
 
     public SQLiteTicket(Ticket data) {
         this.data = data;
+    }
+
+    public SQLiteTicket(int id, String userEmail) {
+        this.data = TicketData.newBuilder(id, new UserData(userEmail)).build();
     }
 
     @Override
@@ -52,7 +79,7 @@ public class SQLiteTicket implements SQLiteTable<Ticket>, Ticket {
         st.setString(3, getName());
         st.setString(4, getSurname());
         st.setFloat(5, getPrice());
-        st.setString(6,getPromotion().getCode());
+        if(getPromotion() != null) st.setString(6,getPromotion().getCode());
         st.setInt(7,getTrip().getTrain().getId());
         st.setLong(8,getTrip().getDepartureTime().getTimeInMillis());
         st.setString(9,getTrip().getRoute().getDepartureStation().getName());
@@ -68,6 +95,43 @@ public class SQLiteTicket implements SQLiteTable<Ticket>, Ticket {
     @Override
     public SQLiteTicket getRecord(DatabaseConnection db) throws SQLException {
         throw new UnsupportedOperationException("getRecord"); // TODO
+    }
+
+    @Override
+    public Ticket toRecord(ResultSet rs) throws SQLException {
+        Calendar c = Calendar.getInstance();
+        c.setTimeInMillis(rs.getLong("tripDepartureTime"));
+        Route r = new RouteData(
+                StationData.newBuilder(rs.getString("tripDepartureStation")).build(),
+                StationData.newBuilder(rs.getString("tripArrivalStation")).build()
+        );
+
+        TicketData.Builder b = TicketData.newBuilder(rs.getInt("id"),new UserData(rs.getString("userEmail")))
+                .setName(rs.getString("name"))
+                .setSurname(rs.getString("surname"))
+                .setPrice(rs.getInt("price"))
+                .setTrip(TripData.newBuilder(r)
+                        .setTrain(TrainData.newBuilder(rs.getInt("tripTrain")).build())
+                        .setDepartureTime(c)
+                        .build()
+                );
+
+        String promotion = rs.getString("promotion");
+        if(promotion != null) b.setPromotion(PromotionData.newBuilder(rs.getString("promotion")).build());
+
+        return new SQLiteTicket(b.build());
+    }
+
+    @Override
+    public Collection<Ticket> getSimilarRecords(DatabaseConnection db) throws SQLException {
+        Connection c = db.getConnection();
+        PreparedStatement st = c.prepareStatement(String.format("SELECT * FROM %s WHERE userEmail=?",TABLE_NAME));
+        st.setString(1, getUser().getEmail());
+        ResultSet rs = st.executeQuery();
+
+        Collection<Ticket> ret = new LinkedList<>();
+        while (rs.next()) ret.add(toRecord(rs));
+        return ret;
     }
 
     @Override

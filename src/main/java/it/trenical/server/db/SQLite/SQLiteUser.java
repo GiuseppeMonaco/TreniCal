@@ -17,7 +17,34 @@ public class SQLiteUser implements SQLiteTable<User>, User {
             "PRIMARY KEY (email)";
 
     static private final String INSERT_QUERY =
-            SQLiteTable.buildInsertQuery(TABLE_NAME,COLUMNS_NUMBER);
+            SQLiteTable.getInsertQuery(TABLE_NAME, COLUMNS_NUMBER);
+
+    static private final String ALL_QUERY =
+            SQLiteTable.getAllQuery(TABLE_NAME);
+
+    static void initTable(Statement statement) throws SQLException {
+        SQLiteTable.initTable(statement, TABLE_NAME, COLUMNS);
+    }
+
+    @Override
+    public String getTableName() {
+        return TABLE_NAME;
+    }
+
+    @Override
+    public int getColumnsNumber() {
+        return COLUMNS_NUMBER;
+    }
+
+    @Override
+    public String getInsertQuery() {
+        return INSERT_QUERY;
+    }
+
+    @Override
+    public String getAllQuery() {
+        return ALL_QUERY;
+    }
 
     private final User data;
 
@@ -27,10 +54,6 @@ public class SQLiteUser implements SQLiteTable<User>, User {
 
     public SQLiteUser(String email, String password) {
         this(new UserData(email, password));
-    }
-
-    static void initTable(Statement statement) throws SQLException {
-        SQLiteTable.initTable(statement, TABLE_NAME, COLUMNS);
     }
 
     @Override
@@ -60,6 +83,14 @@ public class SQLiteUser implements SQLiteTable<User>, User {
 
         if (!res.next()) return null;
         return new SQLiteUser(res.getString(1),res.getString(2));
+    }
+
+    @Override
+    public User toRecord(ResultSet rs) throws SQLException {
+        return new SQLiteUser(
+                rs.getString("email"),
+                rs.getString("password")
+        );
     }
 
     @Override

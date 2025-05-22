@@ -1,12 +1,10 @@
 package it.trenical.server.db.SQLite;
 
 import it.trenical.common.Promotion;
+import it.trenical.common.PromotionData;
 import it.trenical.server.db.DatabaseConnection;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 
 public class SQLitePromotion implements SQLiteTable<Promotion>, Promotion {
 
@@ -22,10 +20,33 @@ public class SQLitePromotion implements SQLiteTable<Promotion>, Promotion {
             "PRIMARY KEY (code)";
 
     static private final String INSERT_QUERY =
-            SQLiteTable.buildInsertQuery(TABLE_NAME,COLUMNS_NUMBER);
+            SQLiteTable.getInsertQuery(TABLE_NAME, COLUMNS_NUMBER);
+
+    static private final String ALL_QUERY =
+            SQLiteTable.getAllQuery(TABLE_NAME);
 
     static void initTable(Statement statement) throws SQLException {
         SQLiteTable.initTable(statement, TABLE_NAME, COLUMNS);
+    }
+
+    @Override
+    public String getTableName() {
+        return TABLE_NAME;
+    }
+
+    @Override
+    public int getColumnsNumber() {
+        return COLUMNS_NUMBER;
+    }
+
+    @Override
+    public String getInsertQuery() {
+        return INSERT_QUERY;
+    }
+
+    @Override
+    public String getAllQuery() {
+        return ALL_QUERY;
     }
 
     private final Promotion data;
@@ -54,6 +75,16 @@ public class SQLitePromotion implements SQLiteTable<Promotion>, Promotion {
     @Override
     public SQLitePromotion getRecord(DatabaseConnection db) throws SQLException {
         throw new UnsupportedOperationException("getRecord"); // TODO
+    }
+
+    @Override
+    public Promotion toRecord(ResultSet rs) throws SQLException {
+        return PromotionData.newBuilder(rs.getString("code"))
+                .setName(rs.getString("name"))
+                .setDescription(rs.getString("description"))
+                .setOnlyFidelityUser(rs.getBoolean("onlyFidelity"))
+                .setDiscount(rs.getFloat("discount"))
+                .build();
     }
 
     @Override

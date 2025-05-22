@@ -2,10 +2,7 @@ package it.trenical.server.db.SQLite;
 
 import it.trenical.server.db.DatabaseConnection;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 
 public record SQLitePaidTicket(String userEmail, int id) implements SQLiteTable<SQLitePaidTicket> {
 
@@ -19,10 +16,33 @@ public record SQLitePaidTicket(String userEmail, int id) implements SQLiteTable<
             "FOREIGN KEY (id,userEmail) REFERENCES Tickets(id,userEmail)";
 
     static private final String INSERT_QUERY =
-            SQLiteTable.buildInsertQuery(TABLE_NAME,COLUMNS_NUMBER);
+            SQLiteTable.getInsertQuery(TABLE_NAME, COLUMNS_NUMBER);
+
+    static private final String ALL_QUERY =
+            SQLiteTable.getAllQuery(TABLE_NAME);
 
     static void initTable(Statement statement) throws SQLException {
         SQLiteTable.initTable(statement, TABLE_NAME, COLUMNS);
+    }
+
+    @Override
+    public String getTableName() {
+        return TABLE_NAME;
+    }
+
+    @Override
+    public int getColumnsNumber() {
+        return COLUMNS_NUMBER;
+    }
+
+    @Override
+    public String getInsertQuery() {
+        return INSERT_QUERY;
+    }
+
+    @Override
+    public String getAllQuery() {
+        return ALL_QUERY;
     }
 
     @Override
@@ -42,5 +62,10 @@ public record SQLitePaidTicket(String userEmail, int id) implements SQLiteTable<
     @Override
     public SQLitePaidTicket getRecord(DatabaseConnection db) throws SQLException {
         throw new UnsupportedOperationException("getRecord"); // TODO
+    }
+
+    @Override
+    public SQLitePaidTicket toRecord(ResultSet rs) throws SQLException {
+        return new SQLitePaidTicket(rs.getString("userEmail"),rs.getInt("id"));
     }
 }
