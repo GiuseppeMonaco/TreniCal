@@ -35,4 +35,16 @@ public class UserData implements User {
     public boolean isFidelity() {
         return isFidelity;
     }
+
+    @Override
+    public final boolean equals(Object o) {
+        if(o == this) return true;
+        if (!(o instanceof UserData userData)) return false;
+        return email.equals(userData.email);
+    }
+
+    @Override
+    public int hashCode() {
+        return email.hashCode();
+    }
 }
