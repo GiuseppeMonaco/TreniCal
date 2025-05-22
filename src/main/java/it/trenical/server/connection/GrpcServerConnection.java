@@ -11,25 +11,26 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
-public class GrpcServer {
+public class GrpcServerConnection implements ServerConnection {
 
     // Singleton class
-    private static GrpcServer instance;
+    private static GrpcServerConnection instance;
 
-    private final Logger logger = Logger.getLogger(GrpcServer.class.getName());
+    private final Logger logger = Logger.getLogger(GrpcServerConnection.class.getName());
 
     private static final int PORT = 8008;
     private static final int THREAD_NUMBER = 4;
 
     private Server server;
 
-    private GrpcServer() {}
+    private GrpcServerConnection() {}
 
-    public static synchronized GrpcServer getInstance() {
-        if (instance == null) instance = new GrpcServer();
+    public static synchronized GrpcServerConnection getInstance() {
+        if (instance == null) instance = new GrpcServerConnection();
         return instance;
     }
 
+    @Override
     public void start() throws IOException {
 
         ExecutorService executor = Executors.newFixedThreadPool(THREAD_NUMBER);
@@ -42,7 +43,7 @@ public class GrpcServer {
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             // Use stderr here since the logger may have been reset by its JVM shutdown hook.
-            System.err.println("*** shutting down gRPC server since JVM is shutting down");
+            System.err.println("Shutting down gRPC server since JVM is shutting down");
             try {
                 this.stop();
             } catch (InterruptedException e) {
@@ -53,7 +54,7 @@ public class GrpcServer {
             } finally {
                 executor.shutdown();
             }
-            System.err.println("*** server shut down");
+            System.err.println("Server shut down");
         }));
     }
 
@@ -66,6 +67,7 @@ public class GrpcServer {
     /**
      * Await termination on the main thread since the grpc library uses daemon threads.
      */
+    @Override
     public void blockUntilShutdown() throws InterruptedException {
         if (server != null) {
             server.awaitTermination();
