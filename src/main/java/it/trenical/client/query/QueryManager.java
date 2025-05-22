@@ -1,6 +1,7 @@
 package it.trenical.client.query;
 
 import it.trenical.client.auth.SessionToken;
+import it.trenical.client.auth.exceptions.InvalidSessionTokenException;
 import it.trenical.client.connection.exceptions.UnreachableServer;
 import it.trenical.common.Station;
 import it.trenical.common.Ticket;
@@ -49,6 +50,6 @@ public interface QueryManager {
      * @return a collection containing user's ticket
      * @throws UnreachableServer if server is unreachable
      */
-    Collection<Ticket> queryTickets(SessionToken token) throws UnreachableServer;
+    Collection<Ticket> queryTickets(SessionToken token) throws UnreachableServer, InvalidSessionTokenException;
 
 }

@@ -15,7 +15,8 @@ service QueryService {
 }
 
 message QueryTripsRequest {
-  Data.Trip trip = 1;
+  bool all = 1;
+  Data.Trip trip = 2;
 }
 
 message QueryTripsResponse {
@@ -40,4 +41,5 @@ message QueryTicketsRequest {
 
 message QueryTicketsResponse {
   repeated Data.Ticket tickets = 1;
+  bool wasTokenValid = 2;
 }
