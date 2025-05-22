@@ -14,6 +14,10 @@ public class RouteData implements Route {
         this.distance = distance;
     }
 
+    public RouteData(Station departureStation, Station arrivalStation) {
+        this(departureStation,arrivalStation,0);
+    }
+
     @Override
     public Station getDepartureStation() {
         return departureStation;
