@@ -28,6 +28,7 @@ public class PromotionData implements Promotion {
         private float discount;
 
         private Builder(String code) {
+            if(code == null) throw new IllegalArgumentException("code cannot be null");
             this.code = code;
         }
 
