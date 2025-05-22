@@ -11,6 +11,10 @@ public class TrainTypeData implements TrainType {
         this.price = price;
     }
 
+    public TrainTypeData(String name) {
+        this(name, 0);
+    }
+
     @Override
     public String getName() {
         return name;
