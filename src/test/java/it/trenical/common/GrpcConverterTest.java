@@ -1,7 +1,5 @@
 package it.trenical.common;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.Calendar;
@@ -50,7 +48,18 @@ class GrpcConverterTest {
             .setPaid(true)
             .build();
 
+    static User nullUser = new UserData("example@mail.com");
+    static Promotion nullPromotion = PromotionData.newBuilder("exampleCode").build();
+    static TrainType nullTrainType = new TrainTypeData("exampleType");
+    static Train nullTrain = TrainData.newBuilder(6).build();
+    static Station nullStation = StationData.newBuilder("exampleStation").build();
+    static Station nullStation2 = StationData.newBuilder("exampleStation2").build();
+    static Route nullRoute = new RouteData(nullStation, nullStation2);
+    static Trip nullTrip = TripData.newBuilder(nullRoute).build();
+    static Ticket nullTicket = TicketData.newBuilder(45, nullUser).build();
+
     private void assertPromotionEquals(Promotion expected, Promotion actual) {
+        if(expected == actual) return;
         assertNotNull(expected, "Expected Promotion should not be null");
         assertNotNull(actual, "Actual Promotion should not be null");
         assertEquals(expected.getCode(), actual.getCode(), "Promotion code differs");
@@ -61,6 +70,7 @@ class GrpcConverterTest {
     }
 
     private void assertStationEquals(Station expected, Station actual) {
+        if(expected == actual) return;
         assertNotNull(expected, "Expected Station should not be null");
         assertNotNull(actual, "Actual Station should not be null");
         assertEquals(expected.getName(), actual.getName(), "Station name differs");
@@ -70,6 +80,7 @@ class GrpcConverterTest {
     }
 
     private void assertRouteEquals(Route expected, Route actual) {
+        if(expected == actual) return;
         assertNotNull(expected, "Expected Route should not be null");
         assertNotNull(actual, "Actual Route should not be null");
         assertStationEquals(expected.getDepartureStation(), actual.getDepartureStation());
@@ -78,6 +89,7 @@ class GrpcConverterTest {
     }
 
     private void assertTrainTypeEquals(TrainType expected, TrainType actual) {
+        if(expected == actual) return;
         assertNotNull(expected, "Expected TrainType should not be null");
         assertNotNull(actual, "Actual TrainType should not be null");
         assertEquals(expected.getName(), actual.getName(), "TrainType name differs");
@@ -85,6 +97,7 @@ class GrpcConverterTest {
     }
 
     private void assertTrainEquals(Train expected, Train actual) {
+        if(expected == actual) return;
         assertNotNull(expected, "Expected Train should not be null");
         assertNotNull(actual, "Actual Train should not be null");
         assertEquals(expected.getId(), actual.getId(), "Train ID differs");
@@ -94,6 +107,7 @@ class GrpcConverterTest {
     }
 
     private void assertUserEquals(User expected, User actual) {
+        if(expected == actual) return;
         assertNotNull(expected, "Expected User should not be null");
         assertNotNull(actual, "Actual User should not be null");
         assertEquals(expected.getEmail(), actual.getEmail(), "User email differs");
@@ -102,20 +116,18 @@ class GrpcConverterTest {
     }
 
     private void assertTripEquals(Trip expected, Trip actual) {
+        if(expected == actual) return;
         assertNotNull(expected, "Expected Trip should not be null");
         assertNotNull(actual, "Actual Trip should not be null");
         assertTrainEquals(expected.getTrain(), actual.getTrain());
-        Calendar expTime = expected.getDepartureTime();
-        Calendar actTime = actual.getDepartureTime();
-        assertNotNull(expTime, "Expected departure time should not be null");
-        assertNotNull(actTime, "Actual departure time should not be null");
-        assertEquals(expTime.getTimeInMillis(), actTime.getTimeInMillis(), "Departure time differs");
+        assertEquals(expected.getDepartureTime(),actual.getDepartureTime(), "Departure time differs");
         assertRouteEquals(expected.getRoute(), actual.getRoute());
         assertEquals(expected.getAvailableEconomySeats(), actual.getAvailableEconomySeats(), "Available economy seats differs");
         assertEquals(expected.getAvailableBusinessSeats(), actual.getAvailableBusinessSeats(), "Available business seats differs");
     }
 
     private void assertTicketEquals(Ticket expected, Ticket actual) {
+        if(expected == actual) return;
         assertNotNull(expected, "Expected Ticket should not be null");
         assertNotNull(actual, "Actual Ticket should not be null");
         assertEquals(expected.getId(), actual.getId(), "Ticket ID differs");
@@ -128,53 +140,54 @@ class GrpcConverterTest {
         assertEquals(expected.isPaid(), actual.isPaid(), "Ticket paid flag differs");
     }
 
-    @BeforeEach
-    void setUp() {
-    }
-
-    @AfterEach
-    void tearDown() {
-    }
-
     @Test
     void convertUser() {
         assertUserEquals(user,convert(convert(user)));
+        assertUserEquals(nullUser,convert(convert(nullUser)));
     }
 
     @Test
     void convertPromotion() {
         assertPromotionEquals(promotion,convert(convert(promotion)));
+        assertPromotionEquals(nullPromotion,convert(convert(nullPromotion)));
     }
 
     @Test
     void convertTicket() {
         assertTicketEquals(ticket,convert(convert(ticket)));
+        assertTicketEquals(nullTicket,convert(convert(nullTicket)));
     }
 
     @Test
     void convertTrip() {
         assertTripEquals(trip,convert(convert(trip)));
+        assertTripEquals(nullTrip,convert(convert(nullTrip)));
     }
 
     @Test
     void convertTrain() {
         assertTrainEquals(train,convert(convert(train)));
+        assertTrainEquals(nullTrain,convert(convert(nullTrain)));
     }
 
     @Test
     void convertStation() {
         assertStationEquals(station,convert(convert(station)));
         assertStationEquals(station2,convert(convert(station2)));
+        assertStationEquals(nullStation,convert(convert(nullStation)));
+        assertStationEquals(nullStation2,convert(convert(nullStation2)));
     }
 
     @Test
     void convertRoute() {
         assertRouteEquals(route,convert(convert(route)));
+        assertRouteEquals(nullRoute,convert(convert(nullRoute)));
     }
 
     @Test
     void convertTrainType() {
         assertTrainTypeEquals(trainType,convert(convert(trainType)));
+        assertTrainTypeEquals(nullTrainType,convert(convert(nullTrainType)));
     }
 
 }
