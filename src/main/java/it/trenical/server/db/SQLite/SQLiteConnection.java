@@ -54,6 +54,15 @@ public class SQLiteConnection implements DatabaseConnection {
         return connection;
     }
 
+    @Override
+    public void close() {
+        try {
+            connection.close();
+        } catch (SQLException e) {
+            logger.warning("Error closing SQLite database connection.\n" + e.getMessage());
+        }
+    }
+
     public static void main(String[] args) {
         SQLiteConnection db = SQLiteConnection.getInstance();
 
