@@ -149,6 +149,13 @@ public class SQLiteTicket implements SQLiteTable<Ticket>, Ticket {
             """,
             ALL_QUERY);
 
+    static private final String SIMILAR_QUERY = String.format("""
+            %s AND
+            tk.userEmail=?;
+            """,
+            ALL_QUERY
+            );
+
     static void initTable(Statement statement) throws SQLException {
         SQLiteTable.initTable(statement, TABLE_NAME, COLUMNS);
     }
@@ -283,7 +290,7 @@ public class SQLiteTicket implements SQLiteTable<Ticket>, Ticket {
     @Override
     public Collection<Ticket> getSimilarRecords(DatabaseConnection db) throws SQLException {
         Connection c = db.getConnection();
-        PreparedStatement st = c.prepareStatement(String.format("SELECT * FROM %s WHERE userEmail=?",TABLE_NAME));
+        PreparedStatement st = c.prepareStatement(SIMILAR_QUERY);
         st.setString(1, getUser().getEmail());
         ResultSet rs = st.executeQuery();
 
