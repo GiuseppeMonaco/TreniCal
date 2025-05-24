@@ -8,14 +8,15 @@ import it.trenical.server.db.SQLite.SQLiteConnection;
 import it.trenical.server.db.SQLite.SQLiteUser;
 
 import java.sql.SQLException;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static it.trenical.server.auth.PasswordUtils.verifyPassword;
 import static it.trenical.server.auth.PasswordUtils.hashPassword;
 
 public class GrpcAuthImpl extends AuthServiceGrpc.AuthServiceImplBase {
 
-    private static final Logger logger = Logger.getLogger(GrpcAuthImpl.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(GrpcAuthImpl.class);
 
     private final DatabaseConnection db = SQLiteConnection.getInstance();
 
@@ -30,16 +31,16 @@ public class GrpcAuthImpl extends AuthServiceGrpc.AuthServiceImplBase {
         try {
             realUser = user.getRecord(db);
         } catch (SQLException e) {
-            logger.warning(e.getMessage());
+            logger.warn(e.getMessage());
         }
 
         SessionToken token;
         if (realUser != null && verifyPassword(user.getPassword(),realUser.getPassword())) {
             token = tokenManager.getToken(user);
-            logger.info(String.format("User authenticated successfully: %s", user.getEmail()));
+            logger.info("User authenticated successfully: {}", user.getEmail());
         } else {
             token = SessionToken.newInvalidToken();
-            logger.info(String.format("Failed authentication attempt: %s", user.getEmail()));
+            logger.info("Failed authentication attempt: {}", user.getEmail());
         }
 
         LoginReply reply = LoginReply.newBuilder()
@@ -53,7 +54,7 @@ public class GrpcAuthImpl extends AuthServiceGrpc.AuthServiceImplBase {
     public void logout(LogoutRequest request, StreamObserver<LogoutReply> responseObserver) {
 
         boolean done = tokenManager.remove(new SessionToken(request.getToken()));
-        if (done) logger.info(String.format("Deauthenticated user: %s", request.getToken()));
+        if (done) logger.info("Deauthenticated user: {}", request.getToken());
 
         LogoutReply reply = LogoutReply.newBuilder().setIsDone(done).build();
         responseObserver.onNext(reply);
@@ -72,7 +73,7 @@ public class GrpcAuthImpl extends AuthServiceGrpc.AuthServiceImplBase {
                 new SQLiteUser(user.getEmail(), hashPassword(user.getPassword())).insertRecord(db);
             }
         } catch (SQLException e) {
-            logger.warning(e.getMessage());
+            logger.warn(e.getMessage());
         }
 
         SessionToken token;
@@ -80,7 +81,7 @@ public class GrpcAuthImpl extends AuthServiceGrpc.AuthServiceImplBase {
             token = SessionToken.newInvalidToken();
         } else {
             token = tokenManager.getToken(user);
-            logger.info(String.format("User signed up successfully: %s", user.getEmail()));
+            logger.info("User signed up successfully: {}", user.getEmail());
         }
 
         SignupReply reply = SignupReply.newBuilder().setToken(token.token()).build();

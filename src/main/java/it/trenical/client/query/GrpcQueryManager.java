@@ -13,11 +13,12 @@ import it.trenical.common.Trip;
 import it.trenical.grpc.*;
 
 import java.util.Collection;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class GrpcQueryManager implements QueryManager {
 
-    private static final Logger logger = Logger.getLogger(GrpcQueryManager.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(GrpcQueryManager.class);
 
     private final QueryServiceGrpc.QueryServiceBlockingStub blockingStub;
 
@@ -42,8 +43,8 @@ public class GrpcQueryManager implements QueryManager {
         try {
             return blockingStub.queryTrips(request).getTripsList().stream().map(GrpcConverter::convert).toList();
         } catch (StatusRuntimeException e) {
-            logger.warning("Server irraggiungibile");
-            throw new UnreachableServer("Server irraggiungibile");
+            logger.warn("Unreachable server");
+            throw new UnreachableServer("Unreachable server");
         }
     }
 
@@ -60,8 +61,8 @@ public class GrpcQueryManager implements QueryManager {
         try {
             return blockingStub.queryTrainTypes(request).getTypesList().stream().map(GrpcConverter::convert).toList();
         } catch (StatusRuntimeException e) {
-            logger.warning("Server irraggiungibile");
-            throw new UnreachableServer("Server irraggiungibile");
+            logger.warn("Unreachable server");
+            throw new UnreachableServer("Unreachable server");
         }
 
     }
@@ -79,8 +80,8 @@ public class GrpcQueryManager implements QueryManager {
         try {
             return blockingStub.queryStations(request).getStationsList().stream().map(GrpcConverter::convert).toList();
         } catch (StatusRuntimeException e) {
-            logger.warning("Server irraggiungibile");
-            throw new UnreachableServer("Server irraggiungibile");
+            logger.warn("Unreachable server");
+            throw new UnreachableServer("Unreachable server");
         }
 
     }
@@ -101,8 +102,8 @@ public class GrpcQueryManager implements QueryManager {
             if(!reply.getWasTokenValid()) throw new InvalidSessionTokenException("Given token is invalid");
             return blockingStub.queryTickets(request).getTicketsList().stream().map(GrpcConverter::convert).toList();
         } catch (StatusRuntimeException e) {
-            logger.warning("Server irraggiungibile");
-            throw new UnreachableServer("Server irraggiungibile");
+            logger.warn("Unreachable server");
+            throw new UnreachableServer("Unreachable server");
         }
     }
 }

@@ -10,14 +10,15 @@ import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class GrpcServerConnection implements ServerConnection {
 
     // Singleton class
     private static GrpcServerConnection instance;
 
-    private final Logger logger = Logger.getLogger(GrpcServerConnection.class.getName());
+    private final Logger logger = LoggerFactory.getLogger(GrpcServerConnection.class);
 
     private static final int PORT = 8008;
     private static final int THREAD_NUMBER = 4;
@@ -41,7 +42,7 @@ public class GrpcServerConnection implements ServerConnection {
                 .addService(new GrpcQueryImpl())
                 .build()
                 .start();
-        logger.info("Server started, listening on " + PORT);
+        logger.info("Server started, listening on port {}", PORT);
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             // Use stderr here since the logger may have been reset by its JVM shutdown hook.

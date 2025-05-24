@@ -17,11 +17,13 @@ import it.trenical.server.db.SQLite.*;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.logging.Logger;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class GrpcQueryImpl extends QueryServiceGrpc.QueryServiceImplBase {
 
-    private static final Logger logger = Logger.getLogger(GrpcQueryImpl.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(GrpcQueryImpl.class);
 
     private final DatabaseConnection db = SQLiteConnection.getInstance();
 
@@ -40,7 +42,7 @@ public class GrpcQueryImpl extends QueryServiceGrpc.QueryServiceImplBase {
             else
                 ret = trip.getSimilarRecords(db);
         } catch (SQLException e) {
-            logger.warning(e.getMessage());
+            logger.warn(e.getMessage());
             ret = new ArrayList<>();
         }
 
@@ -59,7 +61,7 @@ public class GrpcQueryImpl extends QueryServiceGrpc.QueryServiceImplBase {
         try {
             ret = new SQLiteTrainType("").getAllRecords(db);
         } catch (SQLException e) {
-            logger.warning(e.getMessage());
+            logger.warn(e.getMessage());
             ret = new ArrayList<>();
         }
 
@@ -78,7 +80,7 @@ public class GrpcQueryImpl extends QueryServiceGrpc.QueryServiceImplBase {
         try {
             ret = new SQLiteStation("").getAllRecords(db);
         } catch (SQLException e) {
-            logger.warning(e.getMessage());
+            logger.warn(e.getMessage());
             ret = new ArrayList<>();
         }
 
@@ -109,7 +111,7 @@ public class GrpcQueryImpl extends QueryServiceGrpc.QueryServiceImplBase {
         try {
             ret = new SQLiteTicket(-1,user.getEmail()).getSimilarRecords(db);
         } catch (SQLException e) {
-            logger.warning(e.getMessage());
+            logger.warn(e.getMessage());
             ret = new ArrayList<>();
         }
 

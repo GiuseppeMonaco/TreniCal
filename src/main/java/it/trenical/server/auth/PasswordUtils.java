@@ -5,12 +5,12 @@ import javax.crypto.spec.PBEKeySpec;
 import java.security.SecureRandom;
 import java.security.spec.KeySpec;
 import java.util.Base64;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class PasswordUtils {
 
-    private static final Logger logger = Logger.getLogger(PasswordUtils.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(PasswordUtils.class);
 
     private static final String ALGORITHM = "PBKDF2WithHmacSHA256";
     private static final int SALT_LENGTH = 16;
@@ -39,7 +39,7 @@ public class PasswordUtils {
             String hashB64 = Base64.getEncoder().encodeToString(hash);
             return saltB64 + ":" + hashB64;
         } catch (Exception e) {
-            logger.log(Level.SEVERE, "Errore hash password: {0}", e.getMessage());
+            logger.error("Error hashing password: {}", e.getMessage());
             System.exit(-1);
         }
         return null;
@@ -65,7 +65,7 @@ public class PasswordUtils {
             }
             return diff == 0;
         } catch (Exception e) {
-            logger.log(Level.SEVERE, "Errore check password: {0}", e.getMessage());
+            logger.error("Error checking password: {}", e.getMessage());
             return false;
         }
     }

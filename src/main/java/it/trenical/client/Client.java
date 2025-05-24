@@ -10,15 +10,15 @@ import it.trenical.client.connection.exceptions.UnreachableServer;
 import it.trenical.common.User;
 import it.trenical.common.UserData;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Client {
 
     // Singleton class
     private static Client instance;
 
-    Logger logger = Logger.getLogger(Client.class.getName());
+    Logger logger = LoggerFactory.getLogger(Client.class);
 
     private final AuthManager auth;
 
@@ -37,7 +37,7 @@ public class Client {
     public void login(User user) throws InvalidCredentialsException, UnreachableServer {
         token = auth.login(user);
         currentUser = new UserData(user.getEmail());
-        logger.log(Level.INFO, "Login effettuato come {0}", user.getEmail());
+        logger.info("Login effettuato come {}", user.getEmail());
     }
 
     public void logout() throws UnreachableServer {
@@ -45,7 +45,7 @@ public class Client {
             auth.logout(token);
             logger.info("Logout effettuato");
         } catch (InvalidSessionTokenException e) {
-            logger.log(Level.WARNING, "Token was invalid: {0}", token.token());
+            logger.warn("Token was invalid: {}", token.token());
         }
         token = null;
         currentUser = null;
@@ -54,7 +54,7 @@ public class Client {
     public void signup(User user) throws InvalidCredentialsException, UserAlreadyExistsException, UnreachableServer {
         token = auth.signup(user);
         currentUser = new UserData(user.getEmail());
-        logger.log(Level.INFO, "Signup effettuato come {0}", user.getEmail());
+        logger.info("Signup effettuato come {}", user.getEmail());
     }
 
     public boolean isAuthenticated() {

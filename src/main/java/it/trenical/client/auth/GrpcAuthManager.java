@@ -9,11 +9,12 @@ import it.trenical.client.connection.exceptions.UnreachableServer;
 import it.trenical.common.User;
 import it.trenical.grpc.*;
 
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class GrpcAuthManager implements AuthManager {
 
-    private static final Logger logger = Logger.getLogger(GrpcAuthManager.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(GrpcAuthManager.class);
 
     private final AuthServiceGrpc.AuthServiceBlockingStub blockingStub;
 
@@ -35,8 +36,8 @@ public class GrpcAuthManager implements AuthManager {
                 throw new InvalidCredentialsException(String.format("Credentials are not valid for %s",user.getEmail()));
             return reply;
         } catch (StatusRuntimeException e) {
-            logger.warning("Server irraggiungibile");
-            throw new UnreachableServer("Server irraggiungibile");
+            logger.warn("Unreachable server");
+            throw new UnreachableServer("Unreachable server");
         }
     }
 
@@ -51,8 +52,8 @@ public class GrpcAuthManager implements AuthManager {
             if (!blockingStub.logout(request).getIsDone())
                 throw new InvalidSessionTokenException(String.format("%s is not a valid token", token.token()));
         } catch (StatusRuntimeException e) {
-            logger.warning("Server irraggiungibile");
-            throw new UnreachableServer("Server irraggiungibile");
+            logger.warn("Unreachable server");
+            throw new UnreachableServer("Unreachable server");
         }
     }
 
@@ -70,8 +71,8 @@ public class GrpcAuthManager implements AuthManager {
                 throw new UserAlreadyExistsException(String.format("User %s already exists",user.getEmail()));
             return reply;
         } catch (StatusRuntimeException e) {
-            logger.warning("Server irraggiungibile");
-            throw new UnreachableServer("Server irraggiungibile");
+            logger.warn("Unreachable server");
+            throw new UnreachableServer("Unreachable server");
         }
     }
 }

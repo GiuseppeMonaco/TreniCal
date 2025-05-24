@@ -6,7 +6,8 @@ import org.junit.jupiter.api.*;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static it.trenical.common.DataEquals.*;
 import static org.junit.jupiter.api.Assertions.*;
@@ -14,7 +15,7 @@ import static it.trenical.common.DataSamples.*;
 
 class SQLiteTest {
 
-    static private final Logger logger = Logger.getLogger(SQLiteTest.class.getName());
+    static private final Logger logger = LoggerFactory.getLogger(SQLiteTest.class);
 
     static private Path dbTempPath;
     static private DatabaseConnection db;
@@ -49,9 +50,9 @@ class SQLiteTest {
         db.close();
         try {
             Files.deleteIfExists(dbTempPath);
-            logger.info(String.format("Database at %s deleted successfully",dbTempPath));
+            logger.info("Database at {} deleted successfully", dbTempPath);
         } catch (IOException e) {
-            logger.warning(String.format("Cannot delete test database file at %s.\n",dbTempPath) + e.getMessage());
+            logger.warn("Cannot delete test database file at {}.\n{}", dbTempPath, e.getMessage());
         }
     }
 

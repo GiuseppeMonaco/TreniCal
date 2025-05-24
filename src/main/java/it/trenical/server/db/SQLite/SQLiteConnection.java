@@ -8,7 +8,8 @@ import java.nio.file.Path;
 import java.sql.*;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SQLiteConnection implements DatabaseConnection {
 
@@ -18,7 +19,7 @@ public class SQLiteConnection implements DatabaseConnection {
      */
     private static final Map<Path,SQLiteConnection> instances = new HashMap<>();
 
-    private static final Logger logger = Logger.getLogger(SQLiteConnection.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(SQLiteConnection.class);
 
     private static final String DEFAULT_PATH = "./database.db";
 
@@ -47,13 +48,13 @@ public class SQLiteConnection implements DatabaseConnection {
 
         } catch (SQLException e) {
             if (e.getErrorCode() == 8) {
-                logger.severe(e.getMessage());
+                logger.error(e.getMessage());
             } else {
-                logger.severe("Cannot initialize database connection. Please contact software developer.\n" + e.getErrorCode());
+                logger.error("Cannot initialize database connection. Please contact software developer.\n{}", e.getErrorCode());
             }
             System.exit(-1);
         }
-        logger.info(String.format("Database at %s initialized successfully", dbPath));
+        logger.info("Database at {} initialized successfully", dbPath);
     }
 
     private static boolean areFilesEqual(Path p1, Path p2) {
@@ -95,7 +96,7 @@ public class SQLiteConnection implements DatabaseConnection {
         try {
             connection.close();
         } catch (SQLException e) {
-            logger.warning("Error closing SQLite database connection.\n" + e.getMessage());
+            logger.warn("Error closing SQLite database connection.\n{}", e.getMessage());
         }
     }
 
@@ -106,7 +107,7 @@ public class SQLiteConnection implements DatabaseConnection {
             new SQLiteUser("mario.rossi@gmail.com", "passwordbella123").insertRecord(db);
             new SQLiteFidelityUser("mario.rossi@gmail.com").insertRecord(db);
         } catch (SQLException e) {
-            logger.warning(e.getMessage());
+            logger.warn(e.getMessage());
         }
 
         try (ResultSet rs = db.statement.executeQuery("SELECT * FROM Users, FidelityUsers F WHERE Users.email = F.userEmail")) {
@@ -116,7 +117,7 @@ public class SQLiteConnection implements DatabaseConnection {
                 System.out.println(" --- Psw: " + rs.getString("password"));
             }
         } catch (Exception e) {
-            logger.warning(e.getMessage());
+            logger.warn(e.getMessage());
         }
     }
 }
