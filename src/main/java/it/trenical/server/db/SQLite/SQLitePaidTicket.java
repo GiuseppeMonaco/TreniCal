@@ -6,7 +6,7 @@ import java.sql.*;
 
 public record SQLitePaidTicket(String userEmail, int id) implements SQLiteTable<SQLitePaidTicket> {
 
-    static private final String TABLE_NAME = "PaidTickets";
+    static final String TABLE_NAME = "PaidTickets";
     static private final int COLUMNS_NUMBER = 2;
 
     static private final String COLUMNS =
@@ -15,7 +15,7 @@ public record SQLitePaidTicket(String userEmail, int id) implements SQLiteTable<
             "PRIMARY KEY (id,userEmail)," +
             "FOREIGN KEY (id,userEmail) REFERENCES Tickets(id,userEmail)";
 
-    static private final String INSERT_QUERY =
+    static final String INSERT_QUERY =
             SQLiteTable.getInsertQuery(TABLE_NAME, COLUMNS_NUMBER);
 
     static private final String ALL_QUERY =

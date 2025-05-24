@@ -8,8 +8,8 @@ import java.sql.*;
 
 public class SQLiteTrainType implements SQLiteTable<TrainType>, TrainType {
 
-    static private final String TABLE_NAME = "TrainTypes";
-    static private final int COLUMNS_NUMBER = 2;
+    static final String TABLE_NAME = "TrainTypes";
+    static final int COLUMNS_NUMBER = 2;
 
     static private final String COLUMNS =
             "name TEXT(100) NOT NULL," +
@@ -76,12 +76,18 @@ public class SQLiteTrainType implements SQLiteTable<TrainType>, TrainType {
 
     @Override
     public SQLiteTrainType getRecord(DatabaseConnection db) throws SQLException {
-        throw new UnsupportedOperationException("getRecord"); // TODO
+        Connection c = db.getConnection();
+        PreparedStatement st = c.prepareStatement("SELECT * FROM " + TABLE_NAME + " WHERE name=?;");
+        st.setString(1, getName());
+        ResultSet rs = st.executeQuery();
+
+        if (!rs.next()) return null;
+        return new SQLiteTrainType(toRecord(rs));
     }
 
     @Override
     public TrainType toRecord(ResultSet rs) throws SQLException {
-        return new SQLiteTrainType(
+        return new TrainTypeData(
                 rs.getString("name"),
                 rs.getFloat("price")
         );

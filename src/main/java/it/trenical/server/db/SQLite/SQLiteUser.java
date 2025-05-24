@@ -8,7 +8,7 @@ import java.sql.*;
 
 public class SQLiteUser implements SQLiteTable<User>, User {
     
-    static private final String TABLE_NAME = "Users";
+    static final String TABLE_NAME = "Users";
     static private final int COLUMNS_NUMBER = 2;
 
     static private final String COLUMNS =
@@ -19,8 +19,27 @@ public class SQLiteUser implements SQLiteTable<User>, User {
     static private final String INSERT_QUERY =
             SQLiteTable.getInsertQuery(TABLE_NAME, COLUMNS_NUMBER);
 
-    static private final String ALL_QUERY =
-            SQLiteTable.getAllQuery(TABLE_NAME);
+    static private final String ALL_QUERY = String.format("""
+            SELECT
+            u.email,
+            u.password,
+            -- Fidelity User
+            CASE WHEN (
+              SELECT uf.userEmail
+              FROM %s uf
+              WHERE uf.userEmail = u.email
+            ) IS NULL THEN 0 ELSE 1 END          AS is_fidelity
+            FROM %s u
+            """,
+            SQLiteFidelityUser.TABLE_NAME,
+            TABLE_NAME
+            );
+
+    static private final String GET_QUERY = String.format("""
+            %s WHERE email=?;
+            """,
+            ALL_QUERY
+            );
 
     static void initTable(Statement statement) throws SQLException {
         SQLiteTable.initTable(statement, TABLE_NAME, COLUMNS);
@@ -63,6 +82,10 @@ public class SQLiteUser implements SQLiteTable<User>, User {
         st.setString(1, getEmail());
         st.setString(COLUMNS_NUMBER, getPassword());
         st.executeUpdate();
+        if(!isFidelity()) return;
+        st = c.prepareStatement(SQLiteFidelityUser.INSERT_QUERY);
+        st.setString(1, getEmail());
+        st.executeUpdate();
     }
 
     @Override
@@ -77,19 +100,20 @@ public class SQLiteUser implements SQLiteTable<User>, User {
     @Override
     public SQLiteUser getRecord(DatabaseConnection db) throws SQLException {
         Connection c = db.getConnection();
-        PreparedStatement st = c.prepareStatement("SELECT * FROM " + TABLE_NAME + " WHERE email=?;");
+        PreparedStatement st = c.prepareStatement(GET_QUERY);
         st.setString(1, getEmail());
-        ResultSet res = st.executeQuery();
+        ResultSet rs = st.executeQuery();
 
-        if (!res.next()) return null;
-        return new SQLiteUser(res.getString(1),res.getString(2));
+        if (!rs.next()) return null;
+        return new SQLiteUser(toRecord(rs));
     }
 
     @Override
     public User toRecord(ResultSet rs) throws SQLException {
-        return new SQLiteUser(
+        return new UserData(
                 rs.getString("email"),
-                rs.getString("password")
+                rs.getString("password"),
+                rs.getBoolean("is_fidelity")
         );
     }
 
@@ -105,6 +129,6 @@ public class SQLiteUser implements SQLiteTable<User>, User {
 
     @Override
     public boolean isFidelity() {
-        return false;
+        return data.isFidelity();
     }
 }

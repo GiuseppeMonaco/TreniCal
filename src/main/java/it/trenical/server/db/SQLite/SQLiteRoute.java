@@ -10,7 +10,7 @@ import java.sql.*;
 
 public class SQLiteRoute implements SQLiteTable<Route>, Route {
 
-    static private final String TABLE_NAME = "Routes";
+    static final String TABLE_NAME = "Routes";
     static private final int COLUMNS_NUMBER = 3;
 
     static private final String COLUMNS =
@@ -25,7 +25,31 @@ public class SQLiteRoute implements SQLiteTable<Route>, Route {
             SQLiteTable.getInsertQuery(TABLE_NAME, COLUMNS_NUMBER);
 
     static private final String ALL_QUERY =
-            SQLiteTable.getAllQuery(TABLE_NAME);
+            String.format("""
+                            SELECT
+                              r.departureStation,
+                              s1.address AS departure_address,
+                              s1.town AS departure_town,
+                              s1.province AS departure_province,
+                              r.arrivalStation,
+                              s2.address AS arrival_address,
+                              s2.town AS arrival_town,
+                              s2.province AS arrival_province,
+                              r.distance
+                            FROM %s r, %s s1, %s s2
+                            WHERE r.departureStation = s1.name
+                              AND r.arrivalStation = s2.name
+                            """,
+                            TABLE_NAME,
+                            SQLiteStation.TABLE_NAME,
+                            SQLiteStation.TABLE_NAME);
+
+    static private final String GET_QUERY = String.format("""
+            %s AND
+            r.departureStation=? AND
+            r.arrivalStation=?;
+            """,
+            ALL_QUERY);
 
     static void initTable(Statement statement) throws SQLException {
         SQLiteTable.initTable(statement, TABLE_NAME, COLUMNS);
@@ -78,14 +102,29 @@ public class SQLiteRoute implements SQLiteTable<Route>, Route {
 
     @Override
     public SQLiteRoute getRecord(DatabaseConnection db) throws SQLException {
-        throw new UnsupportedOperationException("getRecord"); // TODO
+        Connection c = db.getConnection();
+        PreparedStatement st = c.prepareStatement(GET_QUERY);
+        st.setString(1, getDepartureStation().getName());
+        st.setString(2, getArrivalStation().getName());
+        ResultSet rs = st.executeQuery();
+
+        if (!rs.next()) return null;
+        return new SQLiteRoute(toRecord(rs));
     }
 
     @Override
     public Route toRecord(ResultSet rs) throws SQLException {
-        return new SQLiteRoute(
-                StationData.newBuilder(rs.getString("departureStation")).build(),
-                StationData.newBuilder(rs.getString("arrivalStation")).build(),
+        return new RouteData(
+                StationData.newBuilder(rs.getString("departureStation"))
+                        .setAddress(rs.getString("departure_address"))
+                        .setProvince(rs.getString("departure_province"))
+                        .setTown(rs.getString("departure_town"))
+                        .build(),
+                StationData.newBuilder(rs.getString("arrivalStation"))
+                        .setAddress(rs.getString("arrival_address"))
+                        .setProvince(rs.getString("arrival_province"))
+                        .setTown(rs.getString("arrival_town"))
+                        .build(),
                 rs.getInt("distance")
         );
     }

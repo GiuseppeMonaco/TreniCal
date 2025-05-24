@@ -10,7 +10,7 @@ import java.util.LinkedList;
 
 public class SQLiteTrip implements SQLiteTable<Trip>, Trip {
 
-    static private final String TABLE_NAME = "Trips";
+    static final String TABLE_NAME = "Trips";
     static private final int COLUMNS_NUMBER = 6;
 
     static private final String COLUMNS =
@@ -28,7 +28,49 @@ public class SQLiteTrip implements SQLiteTable<Trip>, Trip {
             SQLiteTable.getInsertQuery(TABLE_NAME, COLUMNS_NUMBER);
 
     static private final String ALL_QUERY =
-            SQLiteTable.getAllQuery(TABLE_NAME);
+            String.format("""
+                    SELECT
+                      tr.train,
+                      tr.departureTime,
+                      tr.departureStation,
+                      s1.address AS departure_address,
+                      s1.town AS departure_town,
+                      s1.province AS departure_province,
+                      tr.arrivalStation,
+                      s2.address AS arrival_address,
+                      s2.town AS arrival_town,
+                      s2.province AS arrival_province,
+                      r.distance,
+                      tr.availableEconomySeats,
+                      tr.availableBusinessSeats,
+                      tt.name AS train_type,
+                      tt.price AS type_price,
+                      t.economyCapacity,
+                      t.businessCapacity
+                    FROM %s tr, %s t, %s tt, %s r, %s s1, %s s2
+                    WHERE tr.train = t.id
+                      AND tr.departureStation = r.departureStation
+                      AND tr.arrivalStation = r.arrivalStation
+                      AND r.departureStation = s1.name
+                      AND r.arrivalStation = s2.name
+                      AND t.type = tt.name
+                    """,
+                    TABLE_NAME,
+                    SQLiteTrain.TABLE_NAME,
+                    SQLiteTrainType.TABLE_NAME,
+                    SQLiteRoute.TABLE_NAME,
+                    SQLiteStation.TABLE_NAME,
+                    SQLiteStation.TABLE_NAME
+                    );
+
+    static private final String GET_QUERY = String.format("""
+            %s AND
+            tr.train=? AND
+            tr.departureTime=? AND
+            tr.departureStation=? AND
+            tr.arrivalStation=?;
+            """,
+            ALL_QUERY);
 
     static void initTable(Statement statement) throws SQLException {
         SQLiteTable.initTable(statement, TABLE_NAME, COLUMNS);
@@ -80,7 +122,17 @@ public class SQLiteTrip implements SQLiteTable<Trip>, Trip {
 
     @Override
     public SQLiteTrip getRecord(DatabaseConnection db) throws SQLException {
-        throw new UnsupportedOperationException("getRecord"); // TODO
+        Connection c = db.getConnection();
+        PreparedStatement st = c.prepareStatement(GET_QUERY);
+        if (getTrain() != null) st.setInt(1, getTrain().getId());
+        if (getDepartureTime() != null) st.setLong(2, getDepartureTime().getTimeInMillis());
+        st.setString(3, getRoute().getDepartureStation().getName());
+        st.setString(4, getRoute().getArrivalStation().getName());
+        ResultSet rs = st.executeQuery();
+
+        if (!rs.next()) return null;
+
+        return new SQLiteTrip(toRecord(rs));
     }
 
     @Override
@@ -88,17 +140,31 @@ public class SQLiteTrip implements SQLiteTable<Trip>, Trip {
         Calendar c = Calendar.getInstance();
         c.setTimeInMillis(rs.getLong("departureTime"));
         Route r = new RouteData(
-                StationData.newBuilder(rs.getString("departureStation")).build(),
-                StationData.newBuilder(rs.getString("arrivalStation")).build()
+                StationData.newBuilder(rs.getString("departureStation"))
+                        .setAddress(rs.getString("departure_address"))
+                        .setProvince(rs.getString("departure_province"))
+                        .setTown(rs.getString("departure_town"))
+                        .build(),
+                StationData.newBuilder(rs.getString("arrivalStation"))
+                        .setAddress(rs.getString("arrival_address"))
+                        .setProvince(rs.getString("arrival_province"))
+                        .setTown(rs.getString("arrival_town"))
+                        .build(),
+                rs.getInt("distance")
         );
 
-        return new SQLiteTrip(TripData.newBuilder(r)
-                .setTrain(TrainData.newBuilder(rs.getInt("train")).build())
+        Train t = TrainData.newBuilder(rs.getInt("train"))
+                .setType(new TrainTypeData(rs.getString("train_type"),rs.getFloat("type_price")))
+                .setEconomyCapacity(rs.getInt("economyCapacity"))
+                .setBusinessCapacity(rs.getInt("businessCapacity"))
+                .build();
+
+        return TripData.newBuilder(r)
+                .setTrain(t)
                 .setDepartureTime(c)
                 .setAvailableEconomySeats(rs.getInt("availableEconomySeats"))
                 .setAvailableBusinessSeats(rs.getInt("availableBusinessSeats"))
-                .build()
-        );
+                .build();
     }
 
     static private final String SIMILAR_QUERY = String.format("SELECT * FROM %s " +

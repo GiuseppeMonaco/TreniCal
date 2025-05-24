@@ -8,7 +8,7 @@ import java.sql.*;
 
 public class SQLitePromotion implements SQLiteTable<Promotion>, Promotion {
 
-    static private final String TABLE_NAME = "Promotions";
+    static final String TABLE_NAME = "Promotions";
     static private final int COLUMNS_NUMBER = 5;
 
     static private final String COLUMNS =
@@ -74,7 +74,13 @@ public class SQLitePromotion implements SQLiteTable<Promotion>, Promotion {
 
     @Override
     public SQLitePromotion getRecord(DatabaseConnection db) throws SQLException {
-        throw new UnsupportedOperationException("getRecord"); // TODO
+        Connection c = db.getConnection();
+        PreparedStatement st = c.prepareStatement("SELECT * FROM " + TABLE_NAME + " WHERE code=?;");
+        st.setString(1, getCode());
+        ResultSet rs = st.executeQuery();
+
+        if (!rs.next()) return null;
+        return new SQLitePromotion(toRecord(rs));
     }
 
     @Override

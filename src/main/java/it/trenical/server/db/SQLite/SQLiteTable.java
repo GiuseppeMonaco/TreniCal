@@ -39,9 +39,7 @@ interface SQLiteTable<T> {
         return String.format("INSERT INTO %s VALUES (%s);", getTableName(), questionMarks);
     }
 
-    default String getAllQuery() {
-        return String.format("SELECT * FROM %s", getTableName());
-    }
+    String getAllQuery();
 
     default Collection<T> getAllRecords(DatabaseConnection db) throws SQLException {
         Connection c = db.getConnection();

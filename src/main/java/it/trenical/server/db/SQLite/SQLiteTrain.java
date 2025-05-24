@@ -10,7 +10,7 @@ import java.sql.*;
 
 public class SQLiteTrain implements SQLiteTable<Train>, Train {
 
-    static private final String TABLE_NAME = "Trains";
+    static final String TABLE_NAME = "Trains";
     static private final int COLUMNS_NUMBER = 4;
 
     static private final String COLUMNS =
@@ -25,7 +25,12 @@ public class SQLiteTrain implements SQLiteTable<Train>, Train {
             SQLiteTable.getInsertQuery(TABLE_NAME, COLUMNS_NUMBER);
 
     static private final String ALL_QUERY =
-            SQLiteTable.getAllQuery(TABLE_NAME);
+            String.format("SELECT * FROM %s t, %s tt WHERE T.type=TT.name",
+                    TABLE_NAME,
+                    SQLiteTrainType.TABLE_NAME
+            );
+
+    static private final String GET_QUERY = ALL_QUERY + " AND id=?;";
 
     static void initTable(Statement statement) throws SQLException {
         SQLiteTable.initTable(statement, TABLE_NAME, COLUMNS);
@@ -74,18 +79,22 @@ public class SQLiteTrain implements SQLiteTable<Train>, Train {
 
     @Override
     public SQLiteTrain getRecord(DatabaseConnection db) throws SQLException {
-        throw new UnsupportedOperationException("getRecord"); // TODO
+        Connection c = db.getConnection();
+        PreparedStatement st = c.prepareStatement(GET_QUERY);
+        st.setInt(1, getId());
+        ResultSet rs = st.executeQuery();
+
+        if (!rs.next()) return null;
+        return new SQLiteTrain(toRecord(rs));
     }
 
     @Override
     public Train toRecord(ResultSet rs) throws SQLException {
-        return new SQLiteTrain(
-                TrainData.newBuilder(rs.getInt("id"))
-                        .setType(new TrainTypeData(rs.getString("name")))
-                        .setEconomyCapacity(rs.getInt("economyCapacity"))
-                        .setBusinessCapacity(rs.getInt("businessCapacity"))
-                        .build()
-        );
+        return TrainData.newBuilder(rs.getInt("id"))
+                .setType(new TrainTypeData(rs.getString("name"),rs.getFloat("price")))
+                .setEconomyCapacity(rs.getInt("economyCapacity"))
+                .setBusinessCapacity(rs.getInt("businessCapacity"))
+                .build();
     }
 
     @Override

@@ -8,7 +8,7 @@ import java.sql.*;
 
 public class SQLiteStation implements SQLiteTable<Station>, Station {
 
-    static private final String TABLE_NAME = "Stations";
+    static final String TABLE_NAME = "Stations";
     static private final int COLUMNS_NUMBER = 4;
 
     static private final String COLUMNS =
@@ -76,18 +76,22 @@ public class SQLiteStation implements SQLiteTable<Station>, Station {
 
     @Override
     public SQLiteStation getRecord(DatabaseConnection db) throws SQLException {
-        throw new UnsupportedOperationException("getRecord"); // TODO
+        Connection c = db.getConnection();
+        PreparedStatement st = c.prepareStatement("SELECT * FROM " + TABLE_NAME + " WHERE name=?;");
+        st.setString(1, getName());
+        ResultSet rs = st.executeQuery();
+
+        if (!rs.next()) return null;
+        return new SQLiteStation(toRecord(rs));
     }
 
     @Override
     public Station toRecord(ResultSet rs) throws SQLException {
-        return new SQLiteStation(
-                StationData.newBuilder(rs.getString("name"))
-                        .setAddress(rs.getString("address"))
-                        .setTown(rs.getString("town"))
-                        .setProvince(rs.getString("province"))
-                        .build()
-        );
+        return StationData.newBuilder(rs.getString("name"))
+                .setAddress(rs.getString("address"))
+                .setTown(rs.getString("town"))
+                .setProvince(rs.getString("province"))
+                .build();
     }
 
     @Override

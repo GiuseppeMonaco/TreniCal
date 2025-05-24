@@ -33,8 +33,121 @@ public class SQLiteTicket implements SQLiteTable<Ticket>, Ticket {
     static private final String INSERT_QUERY =
             SQLiteTable.getInsertQuery(TABLE_NAME, COLUMNS_NUMBER);
 
-    static private final String ALL_QUERY =
-            SQLiteTable.getAllQuery(TABLE_NAME);
+    static private final String ALL_QUERY = String.format("""
+                    SELECT
+                      -- Ticket principale
+                      tk.id,
+                      tk.userEmail,
+                      u.password                           AS user_password,
+                      tk.name                              AS passenger_name,
+                      tk.surname                           AS passenger_surname,
+                      tk.price                             AS ticket_price,
+                      tk.promotion                         AS promotion_code,
+                      -- Fidelity User
+                      CASE WHEN (
+                        SELECT uf.userEmail
+                        FROM %s uf
+                        WHERE uf.userEmail = tk.userEmail
+                      ) IS NULL THEN 0 ELSE 1 END          AS user_is_fidelity,
+                      -- Paid Ticket
+                      CASE WHEN (
+                        SELECT pt.id
+                        FROM %s pt
+                        WHERE pt.id = tk.id AND pt.userEmail = tk.userEmail
+                      ) IS NULL THEN 0 ELSE 1 END           AS ticket_is_paid,
+                      -- Dati promozione (NULL se non esiste)
+                      (
+                        SELECT p.name
+                        FROM %s p
+                        WHERE p.code = tk.promotion
+                      )                                     AS promotion_name,
+                      (
+                        SELECT p.description
+                        FROM %s p
+                        WHERE p.code = tk.promotion
+                      )                                     AS promotion_description,
+                      (
+                        SELECT p.onlyFidelity
+                        FROM %s p
+                        WHERE p.code = tk.promotion
+                      )                                     AS promotion_onlyFidelity,
+                      (
+                        SELECT p.discount
+                        FROM %s p
+                        WHERE p.code = tk.promotion
+                      )                                     AS promotion_discount,
+                      -- Riferimento al viaggio
+                      tk.tripTrain                         AS trip_train_id,
+                      tk.tripDepartureTime                 AS trip_departureTime,
+                      -- Dati del treno e del suo tipo
+                      t.type                               AS train_type,
+                      tt.price                             AS trainType_price,
+                      t.economyCapacity                    AS train_economyCapacity,
+                      t.businessCapacity                   AS train_businessCapacity,
+                      -- Disponibilità posti sul viaggio
+                      trp.availableEconomySeats            AS trip_availableEconomySeats,
+                      trp.availableBusinessSeats           AS trip_availableBusinessSeats,
+                      -- Stazioni di partenza
+                      trp.departureStation                 AS departureStation_name,
+                      s1.address                           AS departure_address,
+                      s1.town                              AS departure_town,
+                      s1.province                          AS departure_province,
+                      -- Stazioni di arrivo
+                      trp.arrivalStation                   AS arrivalStation_name,
+                      s2.address                           AS arrival_address,
+                      s2.town                              AS arrival_town,
+                      s2.province                          AS arrival_province,
+                      -- Distanza della tratta
+                      r.distance                           AS route_distance
+                    FROM
+                      %s tk,
+                      %s u,
+                      %s trp,
+                      %s t,
+                      %s tt,
+                      %s s1,
+                      %s s2,
+                      %s r
+                    WHERE
+                      -- Utente
+                      tk.userEmail                = u.email
+                      -- Viaggio
+                      AND tk.tripTrain            = trp.train
+                      AND tk.tripDepartureTime    = trp.departureTime
+                      AND tk.tripDepartureStation = trp.departureStation
+                      AND tk.tripArrivalStation   = trp.arrivalStation
+                      -- Treno e tipo
+                      AND trp.train               = t.id
+                      AND t.type                  = tt.name
+                      -- Stazioni
+                      AND trp.departureStation    = s1.name
+                      AND trp.arrivalStation      = s2.name
+                      -- Route per distanza
+                      AND trp.departureStation    = r.departureStation
+                      AND trp.arrivalStation      = r.arrivalStation
+            """,
+            SQLiteFidelityUser.TABLE_NAME,
+            SQLitePaidTicket.TABLE_NAME,
+            SQLitePromotion.TABLE_NAME,
+            SQLitePromotion.TABLE_NAME,
+            SQLitePromotion.TABLE_NAME,
+            SQLitePromotion.TABLE_NAME,
+            TABLE_NAME,
+            SQLiteUser.TABLE_NAME,
+            SQLiteTrip.TABLE_NAME,
+            SQLiteTrain.TABLE_NAME,
+            SQLiteTrainType.TABLE_NAME,
+            SQLiteStation.TABLE_NAME,
+            SQLiteStation.TABLE_NAME,
+            SQLiteRoute.TABLE_NAME
+            );
+
+    static private final String GET_QUERY = String.format("""
+            %s AND
+            tk.id=? AND
+            tk.userEmail=?;
+            """,
+            ALL_QUERY);
 
     static void initTable(Statement statement) throws SQLException {
         SQLiteTable.initTable(statement, TABLE_NAME, COLUMNS);
@@ -85,6 +198,11 @@ public class SQLiteTicket implements SQLiteTable<Ticket>, Ticket {
         st.setString(9,getTrip().getRoute().getDepartureStation().getName());
         st.setString(COLUMNS_NUMBER,getTrip().getRoute().getArrivalStation().getName());
         st.executeUpdate();
+        if(!isPaid()) return;
+        st = c.prepareStatement(SQLitePaidTicket.INSERT_QUERY);
+        st.setInt(1, getId());
+        st.setString(2, getUser().getEmail());
+        st.executeUpdate();
     }
 
     @Override
@@ -94,32 +212,72 @@ public class SQLiteTicket implements SQLiteTable<Ticket>, Ticket {
 
     @Override
     public SQLiteTicket getRecord(DatabaseConnection db) throws SQLException {
-        throw new UnsupportedOperationException("getRecord"); // TODO
+        Connection c = db.getConnection();
+        PreparedStatement st = c.prepareStatement(GET_QUERY);
+        st.setInt(1, getId());
+        st.setString(2, getUser().getEmail());
+        ResultSet rs = st.executeQuery();
+
+        if (!rs.next()) return null;
+        return new SQLiteTicket(toRecord(rs));
     }
 
     @Override
     public Ticket toRecord(ResultSet rs) throws SQLException {
         Calendar c = Calendar.getInstance();
-        c.setTimeInMillis(rs.getLong("tripDepartureTime"));
+        c.setTimeInMillis(rs.getLong("trip_departureTime"));
+
         Route r = new RouteData(
-                StationData.newBuilder(rs.getString("tripDepartureStation")).build(),
-                StationData.newBuilder(rs.getString("tripArrivalStation")).build()
+                StationData.newBuilder(rs.getString("departureStation_name"))
+                        .setAddress(rs.getString("departure_address"))
+                        .setProvince(rs.getString("departure_province"))
+                        .setTown(rs.getString("departure_town"))
+                        .build(),
+                StationData.newBuilder(rs.getString("arrivalStation_name"))
+                        .setAddress(rs.getString("arrival_address"))
+                        .setProvince(rs.getString("arrival_province"))
+                        .setTown(rs.getString("arrival_town"))
+                        .build(),
+                rs.getInt("route_distance")
         );
 
-        TicketData.Builder b = TicketData.newBuilder(rs.getInt("id"),new UserData(rs.getString("userEmail")))
-                .setName(rs.getString("name"))
-                .setSurname(rs.getString("surname"))
-                .setPrice(rs.getInt("price"))
-                .setTrip(TripData.newBuilder(r)
-                        .setTrain(TrainData.newBuilder(rs.getInt("tripTrain")).build())
-                        .setDepartureTime(c)
-                        .build()
-                );
+        Train t = TrainData.newBuilder(rs.getInt("trip_train_id"))
+                .setType(new TrainTypeData(rs.getString("train_type"),rs.getFloat("trainType_price")))
+                .setEconomyCapacity(rs.getInt("train_economyCapacity"))
+                .setBusinessCapacity(rs.getInt("train_businessCapacity"))
+                .build();
 
-        String promotion = rs.getString("promotion");
-        if(promotion != null) b.setPromotion(PromotionData.newBuilder(rs.getString("promotion")).build());
+        Trip tr = TripData.newBuilder(r)
+                .setTrain(t)
+                .setDepartureTime(c)
+                .setAvailableEconomySeats(rs.getInt("trip_availableEconomySeats"))
+                .setAvailableBusinessSeats(rs.getInt("trip_availableBusinessSeats"))
+                .build();
 
-        return new SQLiteTicket(b.build());
+        User u = new UserData(
+                rs.getString("userEmail"),
+                rs.getString("user_password"),
+                rs.getBoolean("user_is_fidelity")
+        );
+
+        TicketData.Builder b = TicketData.newBuilder(rs.getInt("id"),u)
+                .setName(rs.getString("passenger_name"))
+                .setSurname(rs.getString("passenger_surname"))
+                .setPrice(rs.getFloat("ticket_price"))
+                .setPaid(rs.getBoolean("ticket_is_paid"))
+                .setTrip(tr);
+
+        String promotion = rs.getString("promotion_code");
+        if(promotion != null) {
+            b.setPromotion(PromotionData.newBuilder(promotion)
+                    .setName(rs.getString("promotion_name"))
+                    .setDescription(rs.getString("promotion_description"))
+                    .setOnlyFidelityUser(rs.getBoolean("promotion_onlyFidelity"))
+                    .setDiscount(rs.getFloat("promotion_discount"))
+                    .build());
+        }
+
+        return b.build();
     }
 
     @Override

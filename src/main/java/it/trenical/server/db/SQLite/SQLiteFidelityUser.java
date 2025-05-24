@@ -7,15 +7,15 @@ import java.util.Collection;
 
 public record SQLiteFidelityUser(String userEmail) implements SQLiteTable<SQLiteFidelityUser> {
 
-    static private final String TABLE_NAME = "FidelityUsers";
-    static private final int COLUMNS_NUMBER = 1;
+    static final String TABLE_NAME = "FidelityUsers";
+    static final int COLUMNS_NUMBER = 1;
 
     static private final String COLUMNS =
             "userEmail TEXT NOT NULL, " +
             "PRIMARY KEY (userEmail)," +
             "FOREIGN KEY (userEmail) REFERENCES Users(email)";
 
-    static private final String INSERT_QUERY =
+    static final String INSERT_QUERY =
             SQLiteTable.getInsertQuery(TABLE_NAME, COLUMNS_NUMBER);
 
     static private final String ALL_QUERY =
