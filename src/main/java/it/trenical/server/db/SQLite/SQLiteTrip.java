@@ -177,12 +177,14 @@ public class SQLiteTrip implements SQLiteTable<Trip>, Trip {
                 .build();
     }
 
-    static private final String SIMILAR_QUERY = String.format("SELECT * FROM %s " +
-            "WHERE (? OR train=?) " +
-            "AND (? OR departureTime=?) " +
-            "AND (? OR departureStation=?) " +
-            "AND (? OR arrivalStation=?);",
-            TABLE_NAME
+    static private final String SIMILAR_QUERY = String.format("""
+            %s AND
+            (? OR train_type=?) AND
+            (? OR tr.departureTime >= ?) AND
+            (? OR tr.departureStation=?) AND
+            (? OR tr.arrivalStation=?);
+            """,
+            ALL_QUERY
     );
 
     @Override
@@ -195,7 +197,7 @@ public class SQLiteTrip implements SQLiteTable<Trip>, Trip {
         st.setBoolean(7,true);
         if(getTrain() != null) {
             st.setBoolean(1,false);
-            st.setInt(2,getTrain().getId());
+            st.setString(2,getTrain().getType().getName());
         }
         if(getDepartureTime() != null) {
             st.setBoolean(3,false);
