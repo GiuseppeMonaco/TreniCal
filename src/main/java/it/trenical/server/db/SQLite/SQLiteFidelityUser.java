@@ -13,13 +13,20 @@ public record SQLiteFidelityUser(String userEmail) implements SQLiteTable<SQLite
     static private final String COLUMNS =
             "userEmail TEXT NOT NULL, " +
             "PRIMARY KEY (userEmail)," +
-            "FOREIGN KEY (userEmail) REFERENCES Users(email)";
+            "FOREIGN KEY (userEmail) REFERENCES Users(email) ON DELETE CASCADE";
 
     static final String INSERT_QUERY =
             SQLiteTable.getInsertQuery(TABLE_NAME, COLUMNS_NUMBER);
 
     static private final String ALL_QUERY =
             SQLiteTable.getAllQuery(TABLE_NAME);
+
+    static final String DELETE_QUERY = String.format("""
+            DELETE FROM %s
+            WHERE userEmail=?;
+            """,
+            TABLE_NAME
+            );
 
     static void initTable(Statement statement) throws SQLException {
         SQLiteTable.initTable(statement, TABLE_NAME, COLUMNS);
@@ -55,7 +62,10 @@ public record SQLiteFidelityUser(String userEmail) implements SQLiteTable<SQLite
 
     @Override
     public void deleteRecord(DatabaseConnection db) throws SQLException {
-        SQLiteTable.super.deleteRecord(db);
+        Connection c = db.getConnection();
+        PreparedStatement st = c.prepareStatement(DELETE_QUERY);
+        st.setString(1,userEmail);
+        st.executeUpdate();
     }
 
     @Override

@@ -25,10 +25,10 @@ public class SQLiteTicket implements SQLiteTable<Ticket>, Ticket {
             "tripDepartureStation TEXT NOT NULL," +
             "tripArrivalStation TEXT NOT NULL," +
             "PRIMARY KEY (id,userEmail)," +
-            "FOREIGN KEY (userEmail) REFERENCES Users(email)," +
-            "FOREIGN KEY (promotion) REFERENCES Promotions(code)," +
+            "FOREIGN KEY (userEmail) REFERENCES Users(email) ON DELETE CASCADE," +
+            "FOREIGN KEY (promotion) REFERENCES Promotions(code) ON DELETE SET NULL," +
             "FOREIGN KEY (tripTrain,tripDepartureTime,tripDepartureStation,tripArrivalStation) " +
-            "REFERENCES Trips(train,departureTime,departureStation,arrivalStation)";
+            "REFERENCES Trips(train,departureTime,departureStation,arrivalStation) ON DELETE CASCADE";
 
     static private final String INSERT_QUERY =
             SQLiteTable.getInsertQuery(TABLE_NAME, COLUMNS_NUMBER);
@@ -155,6 +155,14 @@ public class SQLiteTicket implements SQLiteTable<Ticket>, Ticket {
             """,
             ALL_QUERY
             );
+
+    static private final String DELETE_QUERY = String.format("""
+            DELETE FROM %s WHERE
+            id=? AND
+            userEmail=?;
+            """,
+            TABLE_NAME
+    );
 
     static void initTable(Statement statement) throws SQLException {
         SQLiteTable.initTable(statement, TABLE_NAME, COLUMNS);
@@ -297,6 +305,15 @@ public class SQLiteTicket implements SQLiteTable<Ticket>, Ticket {
         Collection<Ticket> ret = new LinkedList<>();
         while (rs.next()) ret.add(toRecord(rs));
         return ret;
+    }
+
+    @Override
+    public void deleteRecord(DatabaseConnection db) throws SQLException {
+        Connection c = db.getConnection();
+        PreparedStatement st = c.prepareStatement(DELETE_QUERY);
+        st.setInt(1, getId());
+        st.setString(2, getUser().getEmail());
+        st.executeUpdate();
     }
 
     @Override

@@ -13,13 +13,20 @@ public record SQLitePaidTicket(String userEmail, int id) implements SQLiteTable<
             "id INTEGER NOT NULL," +
             "userEmail TEXT NOT NULL," +
             "PRIMARY KEY (id,userEmail)," +
-            "FOREIGN KEY (id,userEmail) REFERENCES Tickets(id,userEmail)";
+            "FOREIGN KEY (id,userEmail) REFERENCES Tickets(id,userEmail) ON DELETE CASCADE";
 
     static final String INSERT_QUERY =
             SQLiteTable.getInsertQuery(TABLE_NAME, COLUMNS_NUMBER);
 
     static private final String ALL_QUERY =
             SQLiteTable.getAllQuery(TABLE_NAME);
+
+    static private final String DELETE_QUERY = String.format("""
+            DELETE FROM %s
+            WHERE id=? AND userEmail=?;
+            """,
+            TABLE_NAME
+    );
 
     static void initTable(Statement statement) throws SQLException {
         SQLiteTable.initTable(statement, TABLE_NAME, COLUMNS);
@@ -68,4 +75,14 @@ public record SQLitePaidTicket(String userEmail, int id) implements SQLiteTable<
     public SQLitePaidTicket toRecord(ResultSet rs) throws SQLException {
         return new SQLitePaidTicket(rs.getString("userEmail"),rs.getInt("id"));
     }
+
+    @Override
+    public void deleteRecord(DatabaseConnection db) throws SQLException {
+        Connection c = db.getConnection();
+        PreparedStatement st = c.prepareStatement(DELETE_QUERY);
+        st.setInt(1,id);
+        st.setString(2,userEmail);
+        st.executeUpdate();
+    }
+
 }

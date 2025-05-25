@@ -69,6 +69,7 @@ class SQLiteTest {
         assertDoesNotThrow(() -> routeDb.insertRecord(db));
         assertDoesNotThrow(() -> tripDb.insertRecord(db));
         assertDoesNotThrow(() -> ticketDb.insertRecord(db));
+        logger.info("All sample records inserted successfully");
 
         // GET METHODS //
         assertDoesNotThrow(() -> assertUserEquals(userDb,userDb.getRecord(db)));
@@ -80,7 +81,28 @@ class SQLiteTest {
         assertDoesNotThrow(() -> assertRouteEquals(routeDb, routeDb.getRecord(db)));
         assertDoesNotThrow(() -> assertTripEquals(tripDb, tripDb.getRecord(db)));
         assertDoesNotThrow(() -> assertTicketEquals(ticketDb, ticketDb.getRecord(db)));
+        logger.info("All sample records getted successfully");
 
+        // DELETE METHODS //
+        assertDoesNotThrow(() -> ticketDb.deleteRecord(db));
+        assertDoesNotThrow(() -> assertNull(ticketDb.getRecord(db)));
+        assertDoesNotThrow(() -> tripDb.deleteRecord(db));
+        assertDoesNotThrow(() -> assertNull(tripDb.getRecord(db)));
+        assertDoesNotThrow(() -> routeDb.deleteRecord(db));
+        assertDoesNotThrow(() -> assertNull(routeDb.getRecord(db)));
+        assertDoesNotThrow(() -> stationDb2.deleteRecord(db));
+        assertDoesNotThrow(() -> assertNull(stationDb2.getRecord(db)));
+        assertDoesNotThrow(() -> stationDb.deleteRecord(db));
+        assertDoesNotThrow(() -> assertNull(stationDb.getRecord(db)));
+        assertDoesNotThrow(() -> trainDb.deleteRecord(db));
+        assertDoesNotThrow(() -> assertNull(trainDb.getRecord(db)));
+        assertDoesNotThrow(() -> trainTypeDb.deleteRecord(db));
+        assertDoesNotThrow(() -> assertNull(trainTypeDb.getRecord(db)));
+        assertDoesNotThrow(() -> promotionDb.deleteRecord(db));
+        assertDoesNotThrow(() -> assertNull(promotionDb.getRecord(db)));
+        assertDoesNotThrow(() -> userDb.deleteRecord(db));
+        assertDoesNotThrow(() -> assertNull(userDb.getRecord(db)));
+        logger.info("All sample records removed successfully");
     }
 
 }

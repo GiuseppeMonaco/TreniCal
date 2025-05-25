@@ -24,6 +24,13 @@ public class SQLiteStation implements SQLiteTable<Station>, Station {
     static private final String ALL_QUERY =
             SQLiteTable.getAllQuery(TABLE_NAME);
 
+    static private final String DELETE_QUERY = String.format("""
+            DELETE FROM %s
+            WHERE name=?;
+            """,
+            TABLE_NAME
+    );
+
     static void initTable(Statement statement) throws SQLException {
         SQLiteTable.initTable(statement, TABLE_NAME, COLUMNS);
     }
@@ -92,6 +99,14 @@ public class SQLiteStation implements SQLiteTable<Station>, Station {
                 .setTown(rs.getString("town"))
                 .setProvince(rs.getString("province"))
                 .build();
+    }
+
+    @Override
+    public void deleteRecord(DatabaseConnection db) throws SQLException {
+        Connection c = db.getConnection();
+        PreparedStatement st = c.prepareStatement(DELETE_QUERY);
+        st.setString(1, getName());
+        st.executeUpdate();
     }
 
     @Override

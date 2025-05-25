@@ -21,8 +21,8 @@ public class SQLiteTrip implements SQLiteTable<Trip>, Trip {
             "availableEconomySeats INTEGER NOT NULL," +
             "availableBusinessSeats INTEGER NOT NULL," +
             "PRIMARY KEY (train,departureTime,departureStation,arrivalStation)," +
-            "FOREIGN KEY (train) REFERENCES Trains(id)," +
-            "FOREIGN KEY (departureStation,arrivalStation) REFERENCES Routes(departureStation,arrivalStation)";
+            "FOREIGN KEY (train) REFERENCES Trains(id) ON DELETE CASCADE," +
+            "FOREIGN KEY (departureStation,arrivalStation) REFERENCES Routes(departureStation,arrivalStation) ON DELETE CASCADE";
 
     static private final String INSERT_QUERY =
             SQLiteTable.getInsertQuery(TABLE_NAME, COLUMNS_NUMBER);
@@ -71,6 +71,16 @@ public class SQLiteTrip implements SQLiteTable<Trip>, Trip {
             tr.arrivalStation=?;
             """,
             ALL_QUERY);
+
+    static private final String DELETE_QUERY = String.format("""
+            DELETE FROM %s WHERE
+            train=? AND
+            departureTime=? AND
+            departureStation=? AND
+            arrivalStation=?;
+            """,
+            TABLE_NAME
+    );
 
     static void initTable(Statement statement) throws SQLException {
         SQLiteTable.initTable(statement, TABLE_NAME, COLUMNS);
@@ -207,6 +217,17 @@ public class SQLiteTrip implements SQLiteTable<Trip>, Trip {
         Collection<Trip> ret = new LinkedList<>();
         while (rs.next()) ret.add(toRecord(rs));
         return ret;
+    }
+
+    @Override
+    public void deleteRecord(DatabaseConnection db) throws SQLException {
+        Connection c = db.getConnection();
+        PreparedStatement st = c.prepareStatement(DELETE_QUERY);
+        if (getTrain() != null) st.setInt(1, getTrain().getId());
+        if (getDepartureTime() != null) st.setLong(2, getDepartureTime().getTimeInMillis());
+        st.setString(3, getRoute().getDepartureStation().getName());
+        st.setString(4, getRoute().getArrivalStation().getName());
+        st.executeUpdate();
     }
 
     @Override

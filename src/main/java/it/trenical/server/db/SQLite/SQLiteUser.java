@@ -41,6 +41,13 @@ public class SQLiteUser implements SQLiteTable<User>, User {
             ALL_QUERY
             );
 
+    static private final String DELETE_QUERY = String.format("""
+            DELETE FROM %s
+            WHERE email=?;
+            """,
+            TABLE_NAME
+    );
+
     static void initTable(Statement statement) throws SQLException {
         SQLiteTable.initTable(statement, TABLE_NAME, COLUMNS);
     }
@@ -115,6 +122,14 @@ public class SQLiteUser implements SQLiteTable<User>, User {
                 rs.getString("password"),
                 rs.getBoolean("is_fidelity")
         );
+    }
+
+    @Override
+    public void deleteRecord(DatabaseConnection db) throws SQLException {
+        Connection c = db.getConnection();
+        PreparedStatement st = c.prepareStatement(DELETE_QUERY);
+        st.setString(1,getEmail());
+        st.executeUpdate();
     }
 
     @Override

@@ -19,7 +19,7 @@ public class SQLiteTrain implements SQLiteTable<Train>, Train {
             "economyCapacity INTEGER NOT NULL," +
             "businessCapacity INTEGER NOT NULL," +
             "PRIMARY KEY (id)," +
-            "FOREIGN KEY (type) REFERENCES TrainTypes(name)";
+            "FOREIGN KEY (type) REFERENCES TrainTypes(name) ON DELETE CASCADE";
 
     static private final String INSERT_QUERY =
             SQLiteTable.getInsertQuery(TABLE_NAME, COLUMNS_NUMBER);
@@ -31,6 +31,13 @@ public class SQLiteTrain implements SQLiteTable<Train>, Train {
             );
 
     static private final String GET_QUERY = ALL_QUERY + " AND id=?;";
+
+    static private final String DELETE_QUERY = String.format("""
+            DELETE FROM %s
+            WHERE id=?;
+            """,
+            TABLE_NAME
+    );
 
     static void initTable(Statement statement) throws SQLException {
         SQLiteTable.initTable(statement, TABLE_NAME, COLUMNS);
@@ -95,6 +102,14 @@ public class SQLiteTrain implements SQLiteTable<Train>, Train {
                 .setEconomyCapacity(rs.getInt("economyCapacity"))
                 .setBusinessCapacity(rs.getInt("businessCapacity"))
                 .build();
+    }
+
+    @Override
+    public void deleteRecord(DatabaseConnection db) throws SQLException {
+        Connection c = db.getConnection();
+        PreparedStatement st = c.prepareStatement(DELETE_QUERY);
+        st.setInt(1, getId());
+        st.executeUpdate();
     }
 
     @Override
