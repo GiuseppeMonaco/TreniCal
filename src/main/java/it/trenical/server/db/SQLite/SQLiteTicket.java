@@ -11,24 +11,26 @@ import java.util.LinkedList;
 public class SQLiteTicket implements SQLiteTable<Ticket>, Ticket {
 
     static private final String TABLE_NAME = "Tickets";
-    static private final int COLUMNS_NUMBER = 10;
+    static private final int COLUMNS_NUMBER = 11;
 
-    static private final String COLUMNS =
-            "id INTEGER NOT NULL," +
-            "userEmail TEXT NOT NULL," +
-            "name TEXT(100) NOT NULL," +
-            "surname TEXT(100) NOT NULL," +
-            "price REAL NOT NULL," +
-            "promotion INTEGER," +
-            "tripTrain INTEGER NOT NULL," +
-            "tripDepartureTime INTEGER NOT NULL," +
-            "tripDepartureStation TEXT NOT NULL," +
-            "tripArrivalStation TEXT NOT NULL," +
-            "PRIMARY KEY (id,userEmail)," +
-            "FOREIGN KEY (userEmail) REFERENCES Users(email) ON DELETE CASCADE," +
-            "FOREIGN KEY (promotion) REFERENCES Promotions(code) ON DELETE SET NULL," +
-            "FOREIGN KEY (tripTrain,tripDepartureTime,tripDepartureStation,tripArrivalStation) " +
-            "REFERENCES Trips(train,departureTime,departureStation,arrivalStation) ON DELETE CASCADE";
+    static private final String COLUMNS = """
+            id INTEGER NOT NULL,
+            userEmail TEXT NOT NULL,
+            name TEXT(100) NOT NULL,
+            surname TEXT(100) NOT NULL,
+            price REAL NOT NULL,
+            promotion INTEGER,
+            tripTrain INTEGER NOT NULL,
+            tripDepartureTime INTEGER NOT NULL,
+            tripDepartureStation TEXT NOT NULL,
+            tripArrivalStation TEXT NOT NULL,
+            isBusiness INTEGER(1) NOT NULL,
+            PRIMARY KEY (id,userEmail),
+            FOREIGN KEY (userEmail) REFERENCES Users(email) ON DELETE CASCADE,
+            FOREIGN KEY (promotion) REFERENCES Promotions(code) ON DELETE SET NULL,
+            FOREIGN KEY (tripTrain,tripDepartureTime,tripDepartureStation,tripArrivalStation)
+            REFERENCES Trips(train,departureTime,departureStation,arrivalStation) ON DELETE CASCADE
+            """;
 
     static private final String INSERT_QUERY =
             SQLiteTable.getInsertQuery(TABLE_NAME, COLUMNS_NUMBER);
@@ -43,6 +45,7 @@ public class SQLiteTicket implements SQLiteTable<Ticket>, Ticket {
                       tk.surname                           AS passenger_surname,
                       tk.price                             AS ticket_price,
                       tk.promotion                         AS promotion_code,
+                      tk.isBusiness                        AS is_business,
                       -- Fidelity User
                       CASE WHEN (
                         SELECT uf.userEmail
@@ -211,7 +214,8 @@ public class SQLiteTicket implements SQLiteTable<Ticket>, Ticket {
         st.setInt(7,getTrip().getTrain().getId());
         st.setLong(8,getTrip().getDepartureTime().getTimeInMillis());
         st.setString(9,getTrip().getRoute().getDepartureStation().getName());
-        st.setString(COLUMNS_NUMBER,getTrip().getRoute().getArrivalStation().getName());
+        st.setString(10,getTrip().getRoute().getArrivalStation().getName());
+        st.setBoolean(COLUMNS_NUMBER,isBusiness());
         st.executeUpdate();
         if(!isPaid()) return;
         st = c.prepareStatement(SQLitePaidTicket.INSERT_QUERY);
@@ -280,6 +284,7 @@ public class SQLiteTicket implements SQLiteTable<Ticket>, Ticket {
                 .setSurname(rs.getString("passenger_surname"))
                 .setPrice(rs.getFloat("ticket_price"))
                 .setPaid(rs.getBoolean("ticket_is_paid"))
+                .setBusiness(rs.getBoolean("is_business"))
                 .setTrip(tr);
 
         String promotion = rs.getString("promotion_code");
@@ -354,5 +359,10 @@ public class SQLiteTicket implements SQLiteTable<Ticket>, Ticket {
     @Override
     public boolean isPaid() {
         return data.isPaid();
+    }
+
+    @Override
+    public boolean isBusiness() {
+        return data.isBusiness();
     }
 }

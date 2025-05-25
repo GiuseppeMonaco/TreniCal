@@ -52,6 +52,7 @@ public class GrpcConverter {
         if (ticket.hasPromotion()) b.setPromotion(convert(ticket.getPromotion()));
         if (ticket.hasTrip()) b.setTrip(convert(ticket.getTrip()));
         b.setPaid(ticket.getIsPaid());
+        b.setBusiness(ticket.getIsBusiness());
         return b.build();
     }
 
@@ -66,6 +67,7 @@ public class GrpcConverter {
         if (ticket.getPromotion() != null) b.setPromotion(convert(ticket.getPromotion()));
         if (ticket.getTrip() != null) b.setTrip(convert(ticket.getTrip()));
         b.setIsPaid(ticket.isPaid());
+        b.setIsBusiness(ticket.isBusiness());
         return b.build();
     }
 

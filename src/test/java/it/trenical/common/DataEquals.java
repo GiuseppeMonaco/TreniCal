@@ -85,5 +85,6 @@ public class DataEquals {
         assertPromotionEquals(expected.getPromotion(), actual.getPromotion());
         assertTripEquals(expected.getTrip(), actual.getTrip());
         assertEquals(expected.isPaid(), actual.isPaid(), "Ticket paid flag differs");
+        assertEquals(expected.isBusiness(), actual.isBusiness(), "Business flag differs");
     }
 }

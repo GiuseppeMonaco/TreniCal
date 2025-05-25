@@ -10,6 +10,7 @@ public class TicketData implements Ticket {
     private final Trip trip;
     private final Promotion promotion;
     private final boolean isPaid;
+    private final boolean isBusiness;
 
     private TicketData(Builder builder) {
         this.id = builder.id;
@@ -20,6 +21,7 @@ public class TicketData implements Ticket {
         this.trip = builder.trip;
         this.promotion = builder.promotion;
         this.isPaid = builder.isPaid;
+        this.isBusiness = builder.isBusiness;
     }
 
     public static Builder newBuilder(int id, User user) {
@@ -35,6 +37,7 @@ public class TicketData implements Ticket {
         private Trip trip;
         private Promotion promotion;
         private boolean isPaid;
+        private boolean isBusiness;
 
         private Builder(int id, User user) {
             this.id = id;
@@ -68,6 +71,11 @@ public class TicketData implements Ticket {
 
         public Builder setPaid(boolean paid) {
             isPaid = paid;
+            return this;
+        }
+
+        public Builder setBusiness(boolean business) {
+            isBusiness = business;
             return this;
         }
 
@@ -116,4 +124,22 @@ public class TicketData implements Ticket {
         return isPaid;
     }
 
+    @Override
+    public boolean isBusiness() {
+        return isBusiness;
+    }
+
+    @Override
+    public final boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof TicketData that)) return false;
+        return id == that.id && user.equals(that.user);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = id;
+        result = 31 * result + user.hashCode();
+        return result;
+    }
 }

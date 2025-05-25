@@ -11,5 +11,6 @@ public interface Ticket {
     Promotion getPromotion();
     Trip getTrip();
     boolean isPaid();
+    boolean isBusiness();
 
 }

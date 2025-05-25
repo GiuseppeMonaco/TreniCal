@@ -39,6 +39,7 @@ message Ticket {
   optional Promotion promotion = 6;
   optional Trip trip = 7;
   optional bool isPaid = 8;
+  optional bool isBusiness = 9;
 }
 
 message Train {
@@ -69,4 +70,8 @@ message User {
 
   optional string password = 2;
   optional bool isFidelity = 3;
+}
+
+message SessionToken {
+  string token = 1;
 }

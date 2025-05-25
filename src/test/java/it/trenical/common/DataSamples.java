@@ -41,6 +41,7 @@ public class DataSamples {
             .setPromotion(promotion)
             .setTrip(trip)
             .setPaid(true)
+            .setBusiness(true)
             .build();
 
     static public final User nullUser = new UserData("example@mail.com");

@@ -68,4 +68,16 @@ public class StationData implements Station {
     public String getProvince() {
         return province;
     }
+
+    @Override
+    public final boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof StationData that)) return false;
+        return name.equals(that.name);
+    }
+
+    @Override
+    public int hashCode() {
+        return name.hashCode();
+    }
 }

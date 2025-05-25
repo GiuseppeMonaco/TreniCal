@@ -1,6 +1,7 @@
 package it.trenical.common;
 
 import java.util.Calendar;
+import java.util.Objects;
 
 public class TripData implements Trip {
 
@@ -82,5 +83,20 @@ public class TripData implements Trip {
     @Override
     public int getAvailableBusinessSeats() {
         return availableBusinessSeats;
+    }
+
+    @Override
+    public final boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof TripData tripData)) return false;
+        return Objects.equals(train, tripData.train) && Objects.equals(route, tripData.route) && Objects.equals(departureTime, tripData.departureTime);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = Objects.hashCode(train);
+        result = 31 * result + Objects.hashCode(route);
+        result = 31 * result + Objects.hashCode(departureTime);
+        return result;
     }
 }

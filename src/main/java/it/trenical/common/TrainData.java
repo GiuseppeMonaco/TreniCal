@@ -67,4 +67,16 @@ public class TrainData implements Train {
     public int getBusinessCapacity() {
         return businessCapacity;
     }
+
+    @Override
+    public final boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof TrainData trainData)) return false;
+        return id == trainData.id;
+    }
+
+    @Override
+    public int hashCode() {
+        return id;
+    }
 }

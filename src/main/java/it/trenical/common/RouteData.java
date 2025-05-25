@@ -32,4 +32,18 @@ public class RouteData implements Route {
     public int getDistance() {
         return distance;
     }
+
+    @Override
+    public final boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof RouteData routeData)) return false;
+        return departureStation.equals(routeData.departureStation) && arrivalStation.equals(routeData.arrivalStation);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = departureStation.hashCode();
+        result = 31 * result + arrivalStation.hashCode();
+        return result;
+    }
 }

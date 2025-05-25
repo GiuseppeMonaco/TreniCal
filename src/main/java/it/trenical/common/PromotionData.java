@@ -82,4 +82,15 @@ public class PromotionData implements Promotion {
         return discount;
     }
 
+    @Override
+    public final boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof PromotionData that)) return false;
+        return code.equals(that.code);
+    }
+
+    @Override
+    public int hashCode() {
+        return code.hashCode();
+    }
 }
