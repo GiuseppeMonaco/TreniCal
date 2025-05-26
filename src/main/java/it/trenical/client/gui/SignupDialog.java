@@ -61,7 +61,7 @@ public class SignupDialog extends JDialog {
                 emailField.getText().toLowerCase(),
                 new String(passwordField.getPassword()
         ));
-        MainFrame.getInstance().doSignup(user);
+        MainFrame.getInstance().signup(user);
     }
 
     private void onCancel() {

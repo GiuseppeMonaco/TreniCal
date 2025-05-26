@@ -15,6 +15,8 @@ public class LoginDialog extends JDialog {
     private JPasswordField passwordField;
     private JButton buttonSignup;
 
+    private final MainFrame mainFrame = MainFrame.getInstance();
+
     protected LoginDialog() {
         setContentPane(contentPane);
         setModalityType(DEFAULT_MODALITY_TYPE);
@@ -65,7 +67,7 @@ public class LoginDialog extends JDialog {
                 emailField.getText().toLowerCase(),
                 new String(passwordField.getPassword()
         ));
-        MainFrame.getInstance().doLogin(user);
+        mainFrame.login(user);
     }
 
     private void onCancel() {
@@ -74,7 +76,7 @@ public class LoginDialog extends JDialog {
 
     private void onSignup() {
         dispose();
-        MainFrame.getInstance().signupDialog();
+        mainFrame.signupDialog();
     }
 
     private boolean canEnableLogin() {
