@@ -43,7 +43,7 @@ public class GrpcQueryManager implements QueryManager {
         try {
             return blockingStub.queryTrips(request).getTripsList().stream().map(GrpcConverter::convert).toList();
         } catch (StatusRuntimeException e) {
-            logger.warn("Unreachable server");
+            logger.warn("Unreachable server trying queryTrips");
             throw new UnreachableServer("Unreachable server");
         }
     }
@@ -61,7 +61,7 @@ public class GrpcQueryManager implements QueryManager {
         try {
             return blockingStub.queryTrainTypes(request).getTypesList().stream().map(GrpcConverter::convert).toList();
         } catch (StatusRuntimeException e) {
-            logger.warn("Unreachable server");
+            logger.warn("Unreachable server trying queryTrainTypes");
             throw new UnreachableServer("Unreachable server");
         }
 
@@ -80,7 +80,7 @@ public class GrpcQueryManager implements QueryManager {
         try {
             return blockingStub.queryStations(request).getStationsList().stream().map(GrpcConverter::convert).toList();
         } catch (StatusRuntimeException e) {
-            logger.warn("Unreachable server");
+            logger.warn("Unreachable server trying queryStations");
             throw new UnreachableServer("Unreachable server");
         }
 
@@ -102,7 +102,7 @@ public class GrpcQueryManager implements QueryManager {
             if(!reply.getWasTokenValid()) throw new InvalidSessionTokenException("Given token is invalid");
             return blockingStub.queryTickets(request).getTicketsList().stream().map(GrpcConverter::convert).toList();
         } catch (StatusRuntimeException e) {
-            logger.warn("Unreachable server");
+            logger.warn("Unreachable server trying queryTickets");
             throw new UnreachableServer("Unreachable server");
         }
     }
