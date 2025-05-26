@@ -1,5 +1,7 @@
 package it.trenical.common;
 
+import it.trenical.client.auth.SessionToken;
+
 import java.util.Calendar;
 
 public class GrpcConverter {
@@ -163,4 +165,14 @@ public class GrpcConverter {
         return b.build();
     }
 
+    public static SessionToken convert(it.trenical.grpc.SessionToken sessionToken) {
+        if (sessionToken == null) return SessionToken.newInvalidToken();
+        return new SessionToken(sessionToken.getToken());
+    }
+
+    public static it.trenical.grpc.SessionToken convert(SessionToken sessionToken) {
+        it.trenical.grpc.SessionToken.Builder b = it.trenical.grpc.SessionToken.newBuilder();
+        if(sessionToken != null) b.setToken(sessionToken.token());
+        return b.build();
+    }
 }
