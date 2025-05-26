@@ -3,9 +3,8 @@ package it.trenical.server.db.SQLite;
 import it.trenical.server.db.DatabaseConnection;
 
 import java.sql.*;
-import java.util.Collection;
 
-public record SQLiteFidelityUser(String userEmail) implements SQLiteTable<SQLiteFidelityUser> {
+record SQLiteFidelityUser(String userEmail) implements SQLiteTable<SQLiteFidelityUser> {
 
     static final String TABLE_NAME = "FidelityUsers";
     static final int COLUMNS_NUMBER = 1;
@@ -27,6 +26,12 @@ public record SQLiteFidelityUser(String userEmail) implements SQLiteTable<SQLite
             """,
             TABLE_NAME
             );
+
+    static private final String GET_QUERY = String.format("""
+            %s WHERE userEmail=?;
+            """,
+            ALL_QUERY
+    );
 
     static void initTable(Statement statement) throws SQLException {
         SQLiteTable.initTable(statement, TABLE_NAME, COLUMNS);
@@ -60,6 +65,21 @@ public record SQLiteFidelityUser(String userEmail) implements SQLiteTable<SQLite
         st.executeUpdate();
     }
 
+    public void insertRecordIfNotExists(DatabaseConnection db) throws SQLException {
+        Connection c = db.getConnection();
+        PreparedStatement st = c.prepareStatement(String.format("""
+                INSERT INTO %s (userEmail)
+                SELECT (?)
+                WHERE NOT EXISTS (SELECT * FROM %s WHERE userEmail=?);
+                """,
+                TABLE_NAME,
+                TABLE_NAME
+        ));
+        st.setString(1,userEmail);
+        st.setString(2,userEmail);
+        st.executeUpdate();
+    }
+
     @Override
     public void deleteRecord(DatabaseConnection db) throws SQLException {
         Connection c = db.getConnection();
@@ -69,13 +89,14 @@ public record SQLiteFidelityUser(String userEmail) implements SQLiteTable<SQLite
     }
 
     @Override
-    public Collection<SQLiteFidelityUser> getSimilarRecords(DatabaseConnection db) throws SQLException {
-        return SQLiteTable.super.getSimilarRecords(db);
-    }
-
-    @Override
     public SQLiteFidelityUser getRecord(DatabaseConnection db) throws SQLException {
-        throw new UnsupportedOperationException("getRecord"); // TODO
+        Connection c = db.getConnection();
+        PreparedStatement st = c.prepareStatement(GET_QUERY);
+        st.setString(1, userEmail);
+        ResultSet rs = st.executeQuery();
+
+        if (!rs.next()) return null;
+        return toRecord(rs);
     }
 
     @Override

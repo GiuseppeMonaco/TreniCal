@@ -25,7 +25,7 @@ public class SQLiteTicket implements SQLiteTable<Ticket>, Ticket {
             tripDepartureStation TEXT NOT NULL,
             tripArrivalStation TEXT NOT NULL,
             isBusiness INTEGER(1) NOT NULL,
-            PRIMARY KEY (id,userEmail),
+            PRIMARY KEY (id),
             FOREIGN KEY (userEmail) REFERENCES Users(email) ON DELETE CASCADE,
             FOREIGN KEY (promotion) REFERENCES Promotions(code) ON DELETE SET NULL,
             FOREIGN KEY (tripTrain,tripDepartureTime,tripDepartureStation,tripArrivalStation)
@@ -56,7 +56,7 @@ public class SQLiteTicket implements SQLiteTable<Ticket>, Ticket {
                       CASE WHEN (
                         SELECT pt.id
                         FROM %s pt
-                        WHERE pt.id = tk.id AND pt.userEmail = tk.userEmail
+                        WHERE pt.id = tk.id
                       ) IS NULL THEN 0 ELSE 1 END           AS ticket_is_paid,
                       -- Dati promozione (NULL se non esiste)
                       (
@@ -147,8 +147,7 @@ public class SQLiteTicket implements SQLiteTable<Ticket>, Ticket {
 
     static private final String GET_QUERY = String.format("""
             %s AND
-            tk.id=? AND
-            tk.userEmail=?;
+            tk.id=?;
             """,
             ALL_QUERY);
 
@@ -161,8 +160,7 @@ public class SQLiteTicket implements SQLiteTable<Ticket>, Ticket {
 
     static private final String DELETE_QUERY = String.format("""
             DELETE FROM %s WHERE
-            id=? AND
-            userEmail=?;
+            id=?;
             """,
             TABLE_NAME
     );
@@ -204,24 +202,27 @@ public class SQLiteTicket implements SQLiteTable<Ticket>, Ticket {
     @Override
     public void insertRecord(DatabaseConnection db) throws SQLException {
         Connection c = db.getConnection();
-        PreparedStatement st = c.prepareStatement(INSERT_QUERY);
-        st.setInt(1, getId());
-        st.setString(2, getUser().getEmail());
-        st.setString(3, getName());
-        st.setString(4, getSurname());
-        st.setFloat(5, getPrice());
-        if(getPromotion() != null) st.setString(6,getPromotion().getCode());
-        st.setInt(7,getTrip().getTrain().getId());
-        st.setLong(8,getTrip().getDepartureTime().getTimeInMillis());
-        st.setString(9,getTrip().getRoute().getDepartureStation().getName());
-        st.setString(10,getTrip().getRoute().getArrivalStation().getName());
-        st.setBoolean(COLUMNS_NUMBER,isBusiness());
-        st.executeUpdate();
-        if(!isPaid()) return;
-        st = c.prepareStatement(SQLitePaidTicket.INSERT_QUERY);
-        st.setInt(1, getId());
-        st.setString(2, getUser().getEmail());
-        st.executeUpdate();
+        db.atomicTransaction(() -> {
+            PreparedStatement st = c.prepareStatement(INSERT_QUERY);
+            if(getId() > -1) st.setInt(1, getId());
+            st.setString(2, getUser().getEmail());
+            st.setString(3, getName());
+            st.setString(4, getSurname());
+            st.setFloat(5, getPrice());
+            if(getPromotion() != null) st.setString(6,getPromotion().getCode());
+            st.setInt(7,getTrip().getTrain().getId());
+            st.setLong(8,getTrip().getDepartureTime().getTimeInMillis());
+            st.setString(9,getTrip().getRoute().getDepartureStation().getName());
+            st.setString(10,getTrip().getRoute().getArrivalStation().getName());
+            st.setBoolean(COLUMNS_NUMBER,isBusiness());
+            st.executeUpdate();
+
+            if(isPaid()) {
+                ResultSet rs = st.getGeneratedKeys();
+                rs.next();
+                new SQLitePaidTicket(rs.getInt(1)).insertRecord(db);
+            }
+        });
     }
 
     @Override
@@ -234,7 +235,6 @@ public class SQLiteTicket implements SQLiteTable<Ticket>, Ticket {
         Connection c = db.getConnection();
         PreparedStatement st = c.prepareStatement(GET_QUERY);
         st.setInt(1, getId());
-        st.setString(2, getUser().getEmail());
         ResultSet rs = st.executeQuery();
 
         if (!rs.next()) return null;
@@ -317,7 +317,6 @@ public class SQLiteTicket implements SQLiteTable<Ticket>, Ticket {
         Connection c = db.getConnection();
         PreparedStatement st = c.prepareStatement(DELETE_QUERY);
         st.setInt(1, getId());
-        st.setString(2, getUser().getEmail());
         st.executeUpdate();
     }
 

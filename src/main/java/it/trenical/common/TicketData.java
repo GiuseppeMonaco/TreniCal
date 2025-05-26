@@ -133,13 +133,11 @@ public class TicketData implements Ticket {
     public final boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof TicketData that)) return false;
-        return id == that.id && user.equals(that.user);
+        return id == that.id;
     }
 
     @Override
     public int hashCode() {
-        int result = id;
-        result = 31 * result + user.hashCode();
-        return result;
+        return id;
     }
 }

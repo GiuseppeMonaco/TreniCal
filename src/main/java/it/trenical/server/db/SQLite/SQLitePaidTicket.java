@@ -4,16 +4,15 @@ import it.trenical.server.db.DatabaseConnection;
 
 import java.sql.*;
 
-public record SQLitePaidTicket(String userEmail, int id) implements SQLiteTable<SQLitePaidTicket> {
+record SQLitePaidTicket(int id) implements SQLiteTable<SQLitePaidTicket> {
 
     static final String TABLE_NAME = "PaidTickets";
-    static private final int COLUMNS_NUMBER = 2;
+    static private final int COLUMNS_NUMBER = 1;
 
     static private final String COLUMNS =
             "id INTEGER NOT NULL," +
-            "userEmail TEXT NOT NULL," +
-            "PRIMARY KEY (id,userEmail)," +
-            "FOREIGN KEY (id,userEmail) REFERENCES Tickets(id,userEmail) ON DELETE CASCADE";
+            "PRIMARY KEY (id)," +
+            "FOREIGN KEY (id) REFERENCES Tickets(id) ON DELETE CASCADE";
 
     static final String INSERT_QUERY =
             SQLiteTable.getInsertQuery(TABLE_NAME, COLUMNS_NUMBER);
@@ -23,9 +22,15 @@ public record SQLitePaidTicket(String userEmail, int id) implements SQLiteTable<
 
     static private final String DELETE_QUERY = String.format("""
             DELETE FROM %s
-            WHERE id=? AND userEmail=?;
+            WHERE id=?;
             """,
             TABLE_NAME
+    );
+
+    static private final String GET_QUERY = String.format("""
+            %s WHERE id=?;
+            """,
+            ALL_QUERY
     );
 
     static void initTable(Statement statement) throws SQLException {
@@ -56,24 +61,39 @@ public record SQLitePaidTicket(String userEmail, int id) implements SQLiteTable<
     public void insertRecord(DatabaseConnection db) throws SQLException {
         Connection c = db.getConnection();
         PreparedStatement st = c.prepareStatement(INSERT_QUERY);
-        st.setString(1, userEmail);
         st.setInt(COLUMNS_NUMBER, id);
         st.executeUpdate();
     }
 
-    @Override
-    public void updateRecord(DatabaseConnection db) throws SQLException {
-        throw new UnsupportedOperationException("updateRecord"); // TODO
+    public void insertRecordIfNotExists(DatabaseConnection db) throws SQLException {
+        Connection c = db.getConnection();
+        PreparedStatement st = c.prepareStatement(String.format("""
+                INSERT INTO %s (id)
+                SELECT (?)
+                WHERE NOT EXISTS (SELECT * FROM %s WHERE id=?);
+                """,
+                TABLE_NAME,
+                TABLE_NAME
+        ));
+        st.setInt(1,id);
+        st.setInt(2,id);
+        st.executeUpdate();
     }
 
     @Override
     public SQLitePaidTicket getRecord(DatabaseConnection db) throws SQLException {
-        throw new UnsupportedOperationException("getRecord"); // TODO
+        Connection c = db.getConnection();
+        PreparedStatement st = c.prepareStatement(GET_QUERY);
+        st.setInt(1, id);
+        ResultSet rs = st.executeQuery();
+
+        if (!rs.next()) return null;
+        return toRecord(rs);
     }
 
     @Override
     public SQLitePaidTicket toRecord(ResultSet rs) throws SQLException {
-        return new SQLitePaidTicket(rs.getString("userEmail"),rs.getInt("id"));
+        return new SQLitePaidTicket(rs.getInt("id"));
     }
 
     @Override
@@ -81,7 +101,6 @@ public record SQLitePaidTicket(String userEmail, int id) implements SQLiteTable<
         Connection c = db.getConnection();
         PreparedStatement st = c.prepareStatement(DELETE_QUERY);
         st.setInt(1,id);
-        st.setString(2,userEmail);
         st.executeUpdate();
     }
 

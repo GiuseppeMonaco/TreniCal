@@ -1,11 +1,14 @@
 package it.trenical.server.db.SQLite;
 
+import it.trenical.common.*;
+import it.trenical.server.auth.PasswordUtils;
 import it.trenical.server.db.DatabaseConnection;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.*;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 import org.slf4j.Logger;
@@ -24,12 +27,11 @@ public class SQLiteConnection implements DatabaseConnection {
     private static final String DEFAULT_PATH = "./database.db";
 
     private Connection connection;
-    private Statement statement;
 
     private SQLiteConnection(String dbPath) {
         try {
             connection = DriverManager.getConnection("jdbc:sqlite:" + dbPath);
-            statement = connection.createStatement();
+            Statement statement = connection.createStatement();
 
             // Per abilitare il controllo delle chiavi esterne nelle tabelle
             statement.execute("PRAGMA foreign_keys = ON;");
@@ -50,7 +52,7 @@ public class SQLiteConnection implements DatabaseConnection {
             if (e.getErrorCode() == 8) {
                 logger.error(e.getMessage());
             } else {
-                logger.error("Cannot initialize database connection. Please contact software developer.\n{}", e.getErrorCode());
+                logger.error("Cannot initialize database connection. Please contact software developer: {}", e.getMessage());
             }
             System.exit(-1);
         }
@@ -100,23 +102,82 @@ public class SQLiteConnection implements DatabaseConnection {
         }
     }
 
+    @Override
+    public void atomicTransaction(SQLConsumer query) throws SQLException {
+        boolean currentAutoCommit = connection.getAutoCommit();
+        connection.setAutoCommit(false);
+        try {
+            query.accept();
+            connection.commit();
+        } catch (SQLException e) {
+            logger.warn("Error executing transaction, executing rollback: {}",e.getMessage());
+            connection.rollback();
+            throw e;
+        } finally {
+            connection.setAutoCommit(currentAutoCommit);
+        }
+    }
+
     public static void main(String[] args) {
         SQLiteConnection db = SQLiteConnection.getInstance();
 
         try {
-            new SQLiteUser("mario.rossi@gmail.com", "passwordbella123").insertRecord(db);
-            new SQLiteFidelityUser("mario.rossi@gmail.com").insertRecord(db);
+            SQLiteUser user = new SQLiteUser("mario.rossi@gmail.com", PasswordUtils.hashPassword("passwordbella123"));
+            user.insertRecord(db);
+
+            new SQLiteFidelityUser(user.getEmail()).insertRecord(db);
+
+            new SQLitePromotion(PromotionData.newBuilder("exampleCode")
+                    .setName("someName")
+                    .setDescription("someDescription")
+                    .setOnlyFidelityUser(true)
+                    .setDiscount(0.8f)
+                    .build()
+            );
+
+            SQLiteTrainType tt = new SQLiteTrainType(new TrainTypeData("Regionale",10));
+            tt.insertRecord(db);
+
+            SQLiteTrain train = new SQLiteTrain(TrainData.newBuilder(6)
+                    .setType(tt)
+                    .setEconomyCapacity(16)
+                    .setBusinessCapacity(29)
+                    .build()
+            );
+            train.insertRecord(db);
+
+            SQLiteStation st1 = new SQLiteStation(StationData.newBuilder("Bisignano")
+                    .setAddress("Via mammata 12")
+                    .setProvince("Cosenza")
+                    .setTown("Bisignano")
+                    .build()
+            );
+            st1.insertRecord(db);
+
+            SQLiteStation st2 = new SQLiteStation(StationData.newBuilder("Luzzi")
+                    .setAddress("Via sorata 69")
+                    .setProvince("Cosenza")
+                    .setTown("Luzzi")
+                    .build()
+            );
+            st2.insertRecord(db);
+
+            SQLiteRoute r =  new SQLiteRoute(new RouteData(st1, st2, 150));
+            r.insertRecord(db);
+
+            Calendar c = Calendar.getInstance();
+            c.add(Calendar.HOUR, 48);
+
+            SQLiteTrip trip = new SQLiteTrip(TripData.newBuilder(r)
+                    .setTrain(train)
+                    .setDepartureTime(c)
+                    .setAvailableEconomySeats(11)
+                    .setAvailableBusinessSeats(19)
+                    .build()
+            );
+            trip.insertRecord(db);
+
         } catch (SQLException e) {
-            logger.warn(e.getMessage());
-        }
-
-        try (ResultSet rs = db.statement.executeQuery("SELECT * FROM Users, FidelityUsers F WHERE Users.email = F.userEmail")) {
-
-            while (rs.next()) {
-                System.out.print("Email: " + rs.getString("email"));
-                System.out.println(" --- Psw: " + rs.getString("password"));
-            }
-        } catch (Exception e) {
             logger.warn(e.getMessage());
         }
     }

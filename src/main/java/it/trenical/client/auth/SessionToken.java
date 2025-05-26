@@ -4,6 +4,10 @@ import java.security.SecureRandom;
 
 public record SessionToken(String token) {
 
+    public SessionToken {
+        if(token == null) throw new IllegalArgumentException("token cannot be null");
+    }
+
     private static final int TOKEN_LENGHT = 20;
 
     private static final SecureRandom random = new SecureRandom();

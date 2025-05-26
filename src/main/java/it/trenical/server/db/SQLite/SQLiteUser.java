@@ -82,22 +82,44 @@ public class SQLiteUser implements SQLiteTable<User>, User {
         this(new UserData(email, password));
     }
 
+    public SQLiteUser(String email, String password, boolean isFidelity) {
+        this(new UserData(email, password, isFidelity));
+    }
+
     @Override
     public void insertRecord(DatabaseConnection db) throws SQLException {
         Connection c = db.getConnection();
-        PreparedStatement st = c.prepareStatement(INSERT_QUERY);
-        st.setString(1, getEmail());
-        st.setString(COLUMNS_NUMBER, getPassword());
-        st.executeUpdate();
-        if(!isFidelity()) return;
-        st = c.prepareStatement(SQLiteFidelityUser.INSERT_QUERY);
-        st.setString(1, getEmail());
-        st.executeUpdate();
+        db.atomicTransaction(() -> {
+            PreparedStatement st = c.prepareStatement(INSERT_QUERY);
+            st.setString(1, getEmail());
+            st.setString(COLUMNS_NUMBER, getPassword());
+            st.executeUpdate();
+            if(!isFidelity()) return;
+            new SQLiteFidelityUser(getEmail()).insertRecord(db);
+        });
     }
 
     @Override
     public void updateRecord(DatabaseConnection db) throws SQLException {
-        throw new UnsupportedOperationException("updateRecord"); // TODO
+        Connection c = db.getConnection();
+        db.atomicTransaction(() -> {
+            if (getPassword() != null) {
+                PreparedStatement st1 = c.prepareStatement(String.format("""
+                        UPDATE %s
+                        SET password=?
+                        WHERE email=?
+                        """,
+                        TABLE_NAME
+                ));
+                st1.executeUpdate();
+            }
+            SQLiteFidelityUser fu = new SQLiteFidelityUser(getEmail());
+            if (isFidelity()) {
+                fu.insertRecordIfNotExists(db);
+            } else {
+                fu.deleteRecord(db);
+            }
+        });
     }
 
     public boolean checkIfExists(DatabaseConnection db) throws SQLException {
