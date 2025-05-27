@@ -1,0 +1,134 @@
+syntax = "proto3";
+
+package RequestService;
+
+option java_package = "it.trenical.grpc";
+option java_multiple_files = true;
+
+import "Data.proto";
+
+service RequestService {
+  rpc BuyTickets (BuyTicketsRequest) returns (BuyTicketsReply);
+  rpc BookTickets (BookTicketsRequest) returns (BookTicketsReply);
+  rpc PayBookedTickets (PayBookedTicketsRequest) returns (PayBookedTicketsReply);
+  rpc EditTicket (EditTicketRequest) returns (EditTicketReply);
+  rpc BecomeFidelity (BecomeFidelityRequest) returns (BecomeFidelityReply);
+  rpc CancelFidelity (CancelFidelityRequest) returns (CancelFidelityReply);
+}
+
+
+
+
+
+message BuyTicketsRequest {
+  Data.SessionToken token = 1;
+  repeated Data.Ticket tickets = 2;
+}
+
+message BuyTicketsReply {
+  uint32 errorCode = 1;
+}
+// Error Codes for BuyTicketsReply //
+/*
+ * 0 = no error (successfull operation)
+ * 1 = generic error
+ * 2 = invalid token
+ */
+
+
+
+
+
+message BookTicketsRequest {
+  Data.SessionToken token = 1;
+  repeated Data.Ticket tickets = 2;
+}
+
+message BookTicketsReply {
+  uint32 errorCode = 1;
+}
+// Error Codes for BookTicketsReply //
+/*
+ * 0 = no error (successfull operation)
+ * 1 = generic error
+ * 2 = invalid token
+ */
+
+
+
+
+
+message PayBookedTicketsRequest {
+  Data.SessionToken token = 1;
+  repeated Data.Ticket tickets = 2;
+}
+
+message PayBookedTicketsReply {
+  uint32 errorCode = 1;
+}
+// Error Codes for BookTicketsReply //
+/*
+ * 0 = no error (successfull operation)
+ * 1 = generic error
+ * 2 = invalid token
+ * 3 = invalid ticket
+ */
+
+
+
+
+
+message EditTicketRequest {
+  Data.SessionToken token = 1;
+  Data.Ticket ticket = 2;
+}
+
+message EditTicketReply {
+  uint32 errorCode = 1;
+}
+// Error Codes for EditTicketReply //
+/*
+ * 0 = no error (successfull operation)
+ * 1 = generic error
+ * 2 = invalid token
+ * 3 = invalid ticket
+ * 4 = no change
+ */
+
+
+
+
+
+message BecomeFidelityRequest {
+  Data.SessionToken token = 1;
+}
+
+message BecomeFidelityReply {
+  uint32 errorCode = 1;
+}
+// Error Codes for BecomeFidelityReply //
+/*
+ * 0 = no error (successfull operation)
+ * 1 = generic error
+ * 2 = invalid token
+ * 4 = no change
+ */
+
+
+
+
+
+message CancelFidelityRequest {
+  Data.SessionToken token = 1;
+}
+
+message CancelFidelityReply {
+  uint32 errorCode = 1;
+}
+// Error Codes for CancelFidelityReply //
+/*
+ * 0 = no error (successfull operation)
+ * 1 = invalid token
+ * 2 = already not a fidelity user
+ * 4 = no change
+ */

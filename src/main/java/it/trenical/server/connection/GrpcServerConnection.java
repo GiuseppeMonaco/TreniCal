@@ -10,6 +10,8 @@ import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+
+import it.trenical.server.request.GrpcRequestImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,6 +42,7 @@ public class GrpcServerConnection implements ServerConnection {
                 .executor(executor)
                 .addService(new GrpcAuthImpl())
                 .addService(new GrpcQueryImpl())
+                .addService(new GrpcRequestImpl())
                 .build()
                 .start();
         logger.info("Server started, listening on port {}", PORT);
