@@ -229,7 +229,58 @@ public class SQLiteTicket implements SQLiteTable<Ticket>, Ticket {
 
     @Override
     public void updateRecord(DatabaseConnection db) throws SQLException {
-        throw new UnsupportedOperationException("updateRecord"); // TODO
+        StringBuilder sb = new StringBuilder(String.format("UPDATE %s SET ",TABLE_NAME));
+        if(getUser() != null && getUser().getEmail() != null)
+            sb.append(String.format("userEmail='%s', ",getUser().getEmail()));
+        if(getName() != null) sb.append(String.format("name='%s', ",getName()));
+        if(getSurname() != null) sb.append(String.format("surname='%s', ",getSurname()));
+        sb.append(String.format("price=%s, ",getPrice()));
+        if(getPromotion() != null) sb.append(String.format("promotion='%s', ",getPromotion()));
+
+        Trip t = getTrip();
+        if (t != null) {
+            Route r = t.getRoute();
+            if (t.getTrain() != null &&
+                    t.getDepartureTime() != null &&
+                    r != null &&
+                    r.getDepartureStation() != null &&
+                    r.getArrivalStation() != null) {
+                sb.append(String.format("tripTrain=%d, ",t.getTrain().getId()));
+                sb.append(String.format("tripDepartureTime=%d, ",t.getDepartureTime().getTimeInMillis()));
+                sb.append(String.format("tripDepartureStation='%s', ",r.getDepartureStation().getName()));
+                sb.append(String.format("tripArrivalStation='%s', ",r.getArrivalStation().getName()));
+            }
+        }
+        sb.append(String.format("isBusiness=%s, ",isBusiness()));
+        sb.delete(sb.length()-2, sb.length());
+        sb.append(String.format(" WHERE id=%d",getId()));
+
+        System.out.println(sb);
+
+        Connection c = db.getConnection();
+        c.createStatement().executeUpdate(sb.toString());
+    }
+
+    public void updatePaidRecord(DatabaseConnection db, boolean newPaidValue) throws SQLException {
+        SQLitePaidTicket pt = new SQLitePaidTicket(getId());
+        if(newPaidValue)
+            pt.insertRecordIfNotExists(db);
+        else
+            pt.deleteRecord(db);
+    }
+
+    public void updateBusinessRecord(DatabaseConnection db, boolean newBusinessValue) throws SQLException {
+        Connection c = db.getConnection();
+        PreparedStatement st = c.prepareStatement(String.format("""
+                UPDATE %s
+                SET isBusiness=?
+                WHERE id=?;
+                """,
+                TABLE_NAME
+        ));
+        st.setBoolean(1,newBusinessValue);
+        st.setInt(2,getId());
+        st.executeUpdate();
     }
 
     @Override
