@@ -7,28 +7,27 @@ import it.trenical.client.auth.exceptions.UserAlreadyExistsException;
 import it.trenical.client.connection.exceptions.UnreachableServer;
 import it.trenical.client.observer.Login;
 import it.trenical.client.observer.Logout;
-import it.trenical.client.observer.TripsCache;
 import it.trenical.common.Trip;
 import it.trenical.common.User;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.Collection;
 
-public class MainFrame extends JFrame implements Login.Observer, Logout.Observer, TripsCache.Observer {
+public class MainFrame extends JFrame implements Login.Observer, Logout.Observer {
 
     // Singleton class
     private static MainFrame instance;
 
     private final Client c;
 
-    private JPanel rightPanel;
-    private JPanel leftPanel;
     private JButton loginButton;
     private JLabel authLabel;
     private JPanel mainPanel;
+    private JPanel centerPanel;
+    private JButton buttonCustomerArea;
 
-    private JPanel customerAreaPanel;
+    private CustomerAreaFrame customerAreaFrame;
+
     private JPanel explorePanel;
     private JPanel tripsPanel;
 
@@ -36,20 +35,30 @@ public class MainFrame extends JFrame implements Login.Observer, Logout.Observer
         c = Client.getInstance();
         c.loginSub.attach(this);
         c.logoutSub.attach(this);
-        c.filteredTripsCacheSub.attach(this);
 
         setContentPane(mainPanel);
         setTitle("TreniCal");
-
         showExplorePanel();
-        leftPanel.setVisible(false);
 
         loginButton.addActionListener(actionEvent -> onLoginButton());
+
+        buttonCustomerArea.setVisible(canShowCustomerAreaButton());
+        buttonCustomerArea.addActionListener(actionEvent -> onCustomerAreaButton());
     }
 
     private void onLoginButton() {
         if (c.isAuthenticated()) logout();
         else loginDialog();
+    }
+
+    private void onCustomerAreaButton() {
+        if (!canShowCustomerAreaButton()) return;
+        initCustomerAreaFrame();
+        customerAreaFrame.display();
+    }
+
+    private boolean canShowCustomerAreaButton() {
+        return c.getCurrentUser() != null;
     }
 
     public static synchronized MainFrame getInstance() {
@@ -58,7 +67,7 @@ public class MainFrame extends JFrame implements Login.Observer, Logout.Observer
     }
 
     private void init() {
-        initCustomerAreaPanel();
+        initCustomerAreaFrame();
         initExplorePanel();
         initTripsPanel();
         try {
@@ -77,22 +86,17 @@ public class MainFrame extends JFrame implements Login.Observer, Logout.Observer
         setVisible(true);
     }
 
-    private void updateLeftPanel(Component next) {
-        if (leftPanel.getComponentCount() > 0) leftPanel.removeAll();
-        leftPanel.add(next);
-    }
-
-    private void updateRightPanel(Component next) {
-        if (rightPanel.getComponentCount() > 0) rightPanel.removeAll();
-        rightPanel.add(next);
+    private void updateCenterPanel(Component next) {
+        if (centerPanel.getComponentCount() > 0) centerPanel.removeAll();
+        centerPanel.add(next);
     }
 
     void initExplorePanel() {
         if (explorePanel == null) explorePanel = new ExplorePanel().getPanel();
     }
 
-    void initCustomerAreaPanel() {
-        if (customerAreaPanel == null) customerAreaPanel = new CustomerAreaPanel().getPanel();
+    void initCustomerAreaFrame() {
+        if (customerAreaFrame == null) customerAreaFrame = new CustomerAreaFrame();
     }
 
     void initTripsPanel() {
@@ -101,28 +105,14 @@ public class MainFrame extends JFrame implements Login.Observer, Logout.Observer
 
     void showExplorePanel() {
         initExplorePanel();
-        updateRightPanel(explorePanel);
-        rightPanel.setVisible(true);
-        pack();
-    }
-
-    void showCustomerAreaPanel() {
-        initCustomerAreaPanel();
-        updateLeftPanel(customerAreaPanel);
-        leftPanel.setVisible(true);
-        queryTickets();
+        updateCenterPanel(explorePanel);
         pack();
     }
 
     void showTripsPanel() {
         initTripsPanel();
-        updateRightPanel(tripsPanel);
-        rightPanel.setVisible(true);
+        updateCenterPanel(tripsPanel);
         pack();
-    }
-
-    void hideLeftPanel() {
-        leftPanel.setVisible(false);
     }
 
     private void showDialog(JDialog dialog) {
@@ -155,24 +145,15 @@ public class MainFrame extends JFrame implements Login.Observer, Logout.Observer
     public void updateOnLogin() {
         authLabel.setText("Ciao " + c.getCurrentUser().getEmail());
         loginButton.setText("Logout");
-        showCustomerAreaPanel();
-        //pack();
+        buttonCustomerArea.setVisible(canShowCustomerAreaButton());
     }
 
     @Override
     public void updateOnLogout() {
         authLabel.setText("Utente non autenticato");
         loginButton.setText("Login");
-        if(leftPanel.getComponentCount() > 0) leftPanel.removeAll();
-        leftPanel.setVisible(false);
-        hideLeftPanel();
-        pack();
-    }
-
-    @Override
-    public void updateTripsCache(Collection<Trip> cache) {
-        showTripsPanel();
-        pack();
+        buttonCustomerArea.setVisible(canShowCustomerAreaButton());
+        customerAreaFrame.close();
     }
 
     void login(User user) {

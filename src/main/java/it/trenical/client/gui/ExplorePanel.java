@@ -89,6 +89,7 @@ class ExplorePanel implements
 
         MainFrame m = MainFrame.getInstance();
         m.queryTrips(tr.build());
+        m.showTripsPanel();
     }
 
     private void onButtonRefresh() {

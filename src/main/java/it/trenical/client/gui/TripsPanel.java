@@ -14,6 +14,7 @@ public class TripsPanel implements TripsCache.Observer {
     private JPanel main;
     private JList<Trip> tripsList;
     private JButton buttonBack;
+    private JButton buttonSelect;
 
     private final DefaultListModel<Trip> tripsListModel;
 
@@ -24,6 +25,10 @@ public class TripsPanel implements TripsCache.Observer {
         tripsListModel = new DefaultListModel<>();
         tripsList.setModel(tripsListModel);
         tripsList.setCellRenderer(new MultilineCellRenderer());
+        tripsList.addListSelectionListener(listSelectionEvent -> {
+            buttonSelect.setEnabled(canButtoSelectBeEnabled());
+            tripsList.getSelectedValue();
+        });
 
         buttonBack.addActionListener(actionEvent -> onButtonBack());
     }
@@ -31,6 +36,10 @@ public class TripsPanel implements TripsCache.Observer {
     private void onButtonBack() {
         MainFrame m = MainFrame.getInstance();
         m.showExplorePanel();
+    }
+
+    private boolean canButtoSelectBeEnabled() {
+        return !tripsList.isSelectionEmpty();
     }
 
     JPanel getPanel() {

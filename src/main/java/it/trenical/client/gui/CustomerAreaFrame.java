@@ -9,30 +9,46 @@ import java.awt.*;
 import java.util.Calendar;
 import java.util.Collection;
 
-public class CustomerAreaPanel implements TicketsCache.Observer {
-
-    private JPanel main;
+public class CustomerAreaFrame extends JFrame implements TicketsCache.Observer {
     private JList<Ticket> ticketList;
+    private JPanel mainPanel;
+    private JButton buttonClose;
 
     private final DefaultListModel<Ticket> ticketListModel;
 
-    CustomerAreaPanel() {
+    CustomerAreaFrame() {
         Client client = Client.getInstance();
         client.ticketsCacheSub.attach(this);
+
+        setContentPane(mainPanel);
+        setTitle("TreniCal - Area Personale");
+        setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 
         ticketListModel = new DefaultListModel<>();
         ticketList.setCellRenderer(new MultilineCellRenderer());
         ticketList.setModel(ticketListModel);
+
+        buttonClose.addActionListener(actionEvent -> onButtonClose());
     }
 
-    JPanel getPanel() {
-        return main;
+    private void onButtonClose() {
+        close();
     }
 
     @Override
     public void updateTicketsCache(Collection<Ticket> cache) {
         ticketListModel.clear();
         ticketListModel.addAll(cache);
+    }
+
+    void display() {
+        pack();
+        setLocationRelativeTo(null);
+        setVisible(true);
+    }
+
+    void close() {
+        dispose();
     }
 
     private static class MultilineCellRenderer extends JTextArea implements ListCellRenderer<Object> {
