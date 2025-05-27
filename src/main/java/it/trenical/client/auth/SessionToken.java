@@ -8,7 +8,7 @@ public record SessionToken(String token) {
         if(token == null) throw new IllegalArgumentException("token cannot be null");
     }
 
-    private static final int TOKEN_LENGHT = 20;
+    private static final int TOKEN_LENGHT = 40;
 
     private static final SecureRandom random = new SecureRandom();
     private static final String CHAR_POOL =
