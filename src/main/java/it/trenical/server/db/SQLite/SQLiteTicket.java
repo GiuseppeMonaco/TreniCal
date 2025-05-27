@@ -196,7 +196,9 @@ public class SQLiteTicket implements SQLiteTable<Ticket>, Ticket {
     }
 
     public SQLiteTicket(int id, String userEmail) {
-        this.data = TicketData.newBuilder(id, new UserData(userEmail)).build();
+        this.data = TicketData.newBuilder(id)
+                .setUser(new UserData(userEmail))
+                .build();
     }
 
     @Override
@@ -279,7 +281,8 @@ public class SQLiteTicket implements SQLiteTable<Ticket>, Ticket {
                 rs.getBoolean("user_is_fidelity")
         );
 
-        TicketData.Builder b = TicketData.newBuilder(rs.getInt("id"),u)
+        TicketData.Builder b = TicketData.newBuilder(rs.getInt("id"))
+                .setUser(u)
                 .setName(rs.getString("passenger_name"))
                 .setSurname(rs.getString("passenger_surname"))
                 .setPrice(rs.getFloat("ticket_price"))
