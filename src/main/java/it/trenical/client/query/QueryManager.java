@@ -3,10 +3,7 @@ package it.trenical.client.query;
 import it.trenical.client.auth.SessionToken;
 import it.trenical.client.auth.exceptions.InvalidSessionTokenException;
 import it.trenical.client.connection.exceptions.UnreachableServer;
-import it.trenical.common.Station;
-import it.trenical.common.Ticket;
-import it.trenical.common.TrainType;
-import it.trenical.common.Trip;
+import it.trenical.common.*;
 
 import java.util.Collection;
 
@@ -52,4 +49,12 @@ public interface QueryManager {
      */
     Collection<Ticket> queryTickets(SessionToken token) throws UnreachableServer, InvalidSessionTokenException;
 
+    /**
+     * Query the user associated with a given token
+     * @param token the token of the user
+     * @return the user
+     * @throws UnreachableServer if server is unreachable
+     * @throws InvalidSessionTokenException if token not exists
+     */
+    User queryUser(SessionToken token) throws UnreachableServer, InvalidSessionTokenException;
 }

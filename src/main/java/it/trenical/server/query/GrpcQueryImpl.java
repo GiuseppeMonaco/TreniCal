@@ -2,7 +2,7 @@ package it.trenical.server.query;
 
 import io.grpc.stub.StreamObserver;
 import it.trenical.client.auth.SessionToken;
-import it.trenical.common.GrpcConverter;
+import it.trenical.common.*;
 import it.trenical.common.Station;
 import it.trenical.common.Ticket;
 import it.trenical.common.TrainType;
@@ -121,6 +121,26 @@ public class GrpcQueryImpl extends QueryServiceGrpc.QueryServiceImplBase {
                 .build();
 
         responseObserver.onNext(reply);
+        responseObserver.onCompleted();
+    }
+
+    @Override
+    public void queryUser(QueryUserRequest request, StreamObserver<QueryUserResponse> responseObserver) {
+
+        QueryUserResponse.Builder b = QueryUserResponse.newBuilder();
+
+        User user = tokenManager.getUser(GrpcConverter.convert(request.getToken()));
+        if(user == null) {
+            b.setWasTokenValid(false);
+            responseObserver.onNext(b.build());
+            responseObserver.onCompleted();
+            return;
+        }
+
+        user = new UserData(user.getEmail(), null, user.isFidelity());
+        b.setWasTokenValid(true).setUser(GrpcConverter.convert(user));
+
+        responseObserver.onNext(b.build());
         responseObserver.onCompleted();
     }
 }

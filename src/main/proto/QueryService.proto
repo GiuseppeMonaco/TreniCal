@@ -12,6 +12,7 @@ service QueryService {
   rpc QueryTrainTypes (QueryTrainTypesRequest) returns (QueryTrainTypesResponse);
   rpc QueryStations (QueryStationsRequest) returns (QueryStationsResponse);
   rpc QueryTickets (QueryTicketsRequest) returns (QueryTicketsResponse);
+  rpc QueryUser (QueryUserRequest) returns (QueryUserResponse);
 }
 
 message QueryTripsRequest {
@@ -36,10 +37,19 @@ message QueryStationsResponse {
 }
 
 message QueryTicketsRequest {
-  string token = 1;
+  string token = 1; // TODO sostituire con Data.SessionToken
 }
 
 message QueryTicketsResponse {
   repeated Data.Ticket tickets = 1;
+  bool wasTokenValid = 2;
+}
+
+message QueryUserRequest {
+  Data.SessionToken token = 1;
+}
+
+message QueryUserResponse {
+  Data.User user = 1;
   bool wasTokenValid = 2;
 }

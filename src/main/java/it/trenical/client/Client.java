@@ -25,6 +25,9 @@ public class Client {
 
     private static final Logger logger = LoggerFactory.getLogger(Client.class);
 
+    private User currentUser;
+    private SessionToken token;
+
     private final AuthManager auth;
     private final QueryManager query;
 
@@ -47,8 +50,7 @@ public class Client {
     private final Collection<Ticket> ticketsCache = new LinkedList<>();
     public final TicketsCache.Subject ticketsCacheSub = new TicketsCacheSubject(ticketsCache);
 
-    private User currentUser;
-    private SessionToken token;
+    public final FidelityUser.Subject fidelityUserSub = new FidelityUserSubject(currentUser);
 
     private Client() {
         auth = new GrpcAuthManager();
@@ -62,7 +64,12 @@ public class Client {
 
     public void login(User user) throws InvalidCredentialsException, UnreachableServer {
         token = auth.login(user);
-        currentUser = new UserData(user.getEmail());
+        try {
+            updateCurrentUser();
+        } catch (InvalidSessionTokenException e) {
+            logger.error("Critical error during login, aborting. Please contact software developer");
+            System.exit(-1);
+        }
         loginSub.notifyObs();
         logger.info("Login effettuato come {}", user.getEmail());
     }
@@ -81,7 +88,12 @@ public class Client {
 
     public void signup(User user) throws InvalidCredentialsException, UserAlreadyExistsException, UnreachableServer {
         token = auth.signup(user);
-        currentUser = new UserData(user.getEmail());
+        try {
+            updateCurrentUser();
+        } catch (InvalidSessionTokenException e) {
+            logger.error("Critical error during signup, aborting. Please contact software developer");
+            System.exit(-1);
+        }
         logger.info("Signup effettuato come {}", user.getEmail());
         loginSub.notifyObs();
     }
@@ -122,6 +134,11 @@ public class Client {
         ticketsCache.clear();
         ticketsCache.addAll(query.queryTickets(token));
         ticketsCacheSub.notifyObs();
+    }
+
+    public void updateCurrentUser() throws UnreachableServer, InvalidSessionTokenException {
+        currentUser = query.queryUser(token);
+        fidelityUserSub.notifyObs();
     }
 
     public static void main(String[] args) throws Exception {

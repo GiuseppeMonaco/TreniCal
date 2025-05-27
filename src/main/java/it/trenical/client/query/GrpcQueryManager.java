@@ -10,6 +10,7 @@ import it.trenical.common.Station;
 import it.trenical.common.Ticket;
 import it.trenical.common.TrainType;
 import it.trenical.common.Trip;
+import it.trenical.common.User;
 import it.trenical.grpc.*;
 
 import java.util.Collection;
@@ -103,6 +104,31 @@ public class GrpcQueryManager implements QueryManager {
             return reply.getTicketsList().stream().map(GrpcConverter::convert).toList();
         } catch (StatusRuntimeException e) {
             logger.warn("Unreachable server trying queryTickets");
+            throw new UnreachableServer("Unreachable server");
+        }
+    }
+
+    /**
+     * Query the user associated with a given token
+     *
+     * @param token the token of the user
+     * @return the user
+     * @throws UnreachableServer            if server is unreachable
+     * @throws InvalidSessionTokenException if token not exists
+     */
+    @Override
+    public User queryUser(SessionToken token) throws UnreachableServer, InvalidSessionTokenException {
+
+        QueryUserRequest request = QueryUserRequest.newBuilder()
+                .setToken(GrpcConverter.convert(token))
+                .build();
+
+        try {
+            QueryUserResponse reply = blockingStub.queryUser(request);
+            if(!reply.getWasTokenValid()) throw new InvalidSessionTokenException("Given token is invalid");
+            return GrpcConverter.convert(reply.getUser());
+        } catch (StatusRuntimeException e) {
+            logger.warn("Unreachable server trying queryUser");
             throw new UnreachableServer("Unreachable server");
         }
     }
