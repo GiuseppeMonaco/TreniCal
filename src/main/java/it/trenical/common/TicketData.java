@@ -55,12 +55,12 @@ public class TicketData implements Ticket {
 
 
         public Builder setName(String name) {
-            this.name = name;
+            this.name = name.trim();
             return this;
         }
 
         public Builder setSurname(String surname) {
-            this.surname = surname;
+            this.surname = surname.trim();
             return this;
         }
 

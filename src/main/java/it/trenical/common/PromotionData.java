@@ -29,16 +29,16 @@ public class PromotionData implements Promotion {
 
         private Builder(String code) {
             if(code == null) throw new IllegalArgumentException("code cannot be null");
-            this.code = code;
+            this.code = code.trim();
         }
 
         public Builder setName(String name) {
-            this.name = name;
+            this.name = name.trim();
             return this;
         }
 
         public Builder setDescription(String description) {
-            this.description = description;
+            this.description = description.trim();
             return this;
         }
 

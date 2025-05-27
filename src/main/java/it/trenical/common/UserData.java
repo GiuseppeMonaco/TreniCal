@@ -8,7 +8,7 @@ public class UserData implements User {
 
     public UserData(String email, String password, boolean isFidelity) {
         if (email == null) throw new IllegalArgumentException("email cannot be null");
-        this.email = email;
+        this.email = email.trim();
         this.password = password;
         this.isFidelity = isFidelity;
     }

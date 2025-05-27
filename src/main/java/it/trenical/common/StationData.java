@@ -26,21 +26,21 @@ public class StationData implements Station {
 
         private Builder(String name){
             if(name == null) throw new IllegalArgumentException("name cannot be null");
-            this.name = name;
+            this.name = name.trim();
         }
 
         public Builder setAddress(String address) {
-            this.address = address;
+            this.address = address.trim();
             return this;
         }
 
         public Builder setTown(String town) {
-            this.town = town;
+            this.town = town.trim();
             return this;
         }
 
         public Builder setProvince(String province) {
-            this.province = province;
+            this.province = province.trim();
             return this;
         }
 

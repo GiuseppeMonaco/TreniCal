@@ -7,7 +7,7 @@ public class TrainTypeData implements TrainType {
 
     public TrainTypeData(String name, float price) {
         if(name == null) throw new IllegalArgumentException("name cannot be null");
-        this.name = name;
+        this.name = name.trim();
         this.price = price;
     }
 
