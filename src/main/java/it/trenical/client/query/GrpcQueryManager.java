@@ -100,7 +100,7 @@ public class GrpcQueryManager implements QueryManager {
         try {
             QueryTicketsResponse reply = blockingStub.queryTickets(request);
             if(!reply.getWasTokenValid()) throw new InvalidSessionTokenException("Given token is invalid");
-            return blockingStub.queryTickets(request).getTicketsList().stream().map(GrpcConverter::convert).toList();
+            return reply.getTicketsList().stream().map(GrpcConverter::convert).toList();
         } catch (StatusRuntimeException e) {
             logger.warn("Unreachable server trying queryTickets");
             throw new UnreachableServer("Unreachable server");
