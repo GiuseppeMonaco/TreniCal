@@ -6,8 +6,8 @@ public interface Ticket {
     float PRICE_MULTIPLIER_BUSINESS = 1.3f;
 
     int getId();
-    User getUser();
 
+    User getUser();
     String getName();
     String getSurname();
     float getPrice();

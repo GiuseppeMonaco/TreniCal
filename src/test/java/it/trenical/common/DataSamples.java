@@ -34,7 +34,8 @@ public class DataSamples {
             .setAvailableEconomySeats(11)
             .setAvailableBusinessSeats(19)
             .build();
-    static public final Ticket ticket = TicketData.newBuilder(45, user)
+    static public final Ticket ticket = TicketData.newBuilder(45)
+            .setUser(user)
             .setName("Mario")
             .setSurname("Rossi")
             .setPrice(102.53f)
@@ -52,6 +53,6 @@ public class DataSamples {
     static public final Station nullStation2 = StationData.newBuilder("exampleStation2").build();
     static public final Route nullRoute = new RouteData(nullStation, nullStation2);
     static public final Trip nullTrip = TripData.newBuilder(nullRoute).build();
-    static public final Ticket nullTicket = TicketData.newBuilder(45, nullUser).build();
+    static public final Ticket nullTicket = TicketData.newBuilder(45).build();
 
 }

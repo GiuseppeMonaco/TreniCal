@@ -24,13 +24,18 @@ public class TicketData implements Ticket {
         this.isBusiness = builder.isBusiness;
     }
 
+    @Deprecated
     public static Builder newBuilder(int id, User user) {
-        return new Builder(id, user);
+        return new Builder(id).setUser(user);
+    }
+
+    public static Builder newBuilder(int id) {
+        return new Builder(id);
     }
 
     public static class Builder {
         private final int id;
-        private final User user;
+        private User user;
         private String name;
         private String surname;
         private float price;
@@ -39,10 +44,15 @@ public class TicketData implements Ticket {
         private boolean isPaid;
         private boolean isBusiness;
 
-        private Builder(int id, User user) {
+        private Builder(int id) {
             this.id = id;
-            this.user = user;
         }
+
+        public Builder setUser(User user) {
+            this.user = user;
+            return this;
+        }
+
 
         public Builder setName(String name) {
             this.name = name;

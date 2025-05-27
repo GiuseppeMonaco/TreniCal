@@ -31,8 +31,8 @@ message Station {
 
 message Ticket {
   uint32 id = 1;
-  User user = 2;
 
+  optional User user = 2;
   optional string name = 3;
   optional string surname = 4;
   optional float price = 5;

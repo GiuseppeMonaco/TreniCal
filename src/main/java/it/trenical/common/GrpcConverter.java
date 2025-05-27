@@ -47,7 +47,8 @@ public class GrpcConverter {
 
     public static Ticket convert(it.trenical.grpc.Ticket ticket) {
         if (ticket == null) throw new IllegalArgumentException("ticket cannot be null");
-        TicketData.Builder b = TicketData.newBuilder(ticket.getId(), convert(ticket.getUser()));
+        TicketData.Builder b = TicketData.newBuilder(ticket.getId());
+        if (ticket.hasUser()) b.setUser(convert(ticket.getUser()));
         if (ticket.hasName()) b.setName(ticket.getName());
         if (ticket.hasSurname()) b.setSurname(ticket.getSurname());
         b.setPrice(ticket.getPrice());
@@ -62,7 +63,7 @@ public class GrpcConverter {
         it.trenical.grpc.Ticket.Builder b = it.trenical.grpc.Ticket.newBuilder();
         if (ticket == null) return b.build();
         b.setId(ticket.getId());
-        b.setUser(convert(ticket.getUser()));
+        if (ticket.getUser() != null) b.setUser(convert(ticket.getUser()));
         if (ticket.getName() != null) b.setName(ticket.getName());
         if (ticket.getSurname() != null) b.setSurname(ticket.getSurname());
         b.setPrice(ticket.getPrice());
