@@ -248,11 +248,11 @@ public class GrpcRequestImpl extends RequestServiceGrpc.RequestServiceImplBase {
                 .setUser(user)
                 .setName(t.getName())
                 .setSurname(t.getSurname())
-                .setPrice(t.calculatePrice())
                 .setPromotion(t.getPromotion())
                 .setTrip(t.getTrip())
                 .setBusiness(t.isBusiness())
                 .setPaid(isPaid)
+                .setPrice(t.calculatePrice())
                 .build();
     }
 

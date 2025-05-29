@@ -6,6 +6,7 @@ import it.trenical.client.auth.exceptions.InvalidSessionTokenException;
 import it.trenical.client.connection.GrpcConnection;
 import it.trenical.client.connection.exceptions.UnreachableServer;
 import it.trenical.common.*;
+import it.trenical.common.Promotion;
 import it.trenical.common.Station;
 import it.trenical.common.Ticket;
 import it.trenical.common.TrainType;
@@ -132,4 +133,24 @@ public class GrpcQueryManager implements QueryManager {
             throw new UnreachableServer("Unreachable server");
         }
     }
+
+    @Override
+    public Promotion queryPromotion(SessionToken token, Promotion promotion) throws UnreachableServer, InvalidSessionTokenException {
+
+        QueryPromotionRequest request = QueryPromotionRequest.newBuilder()
+                .setToken(GrpcConverter.convert(token))
+                .setPromotion(GrpcConverter.convert(promotion))
+                .build();
+
+        try {
+            QueryPromotionResponse reply = blockingStub.queryPromotion(request);
+            if(!reply.getWasTokenValid()) throw new InvalidSessionTokenException("Given token is invalid");
+            return GrpcConverter.convert(reply.getPromotion());
+        } catch (StatusRuntimeException e) {
+            logger.warn("Unreachable server trying queryPromotion");
+            throw new UnreachableServer("Unreachable server");
+        }
+    }
+
+
 }

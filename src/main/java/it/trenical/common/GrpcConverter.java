@@ -26,6 +26,7 @@ public class GrpcConverter {
 
     public static Promotion convert(it.trenical.grpc.Promotion promotion) {
         if (promotion == null) throw new IllegalArgumentException("promotion cannot be null");
+        if(promotion.getCode().equals(promotion.getDefaultInstanceForType().getCode())) return null;
         PromotionData.Builder b = PromotionData.newBuilder(promotion.getCode());
         if (promotion.hasName()) b.setName(promotion.getName());
         if (promotion.hasDescription()) b.setDescription(promotion.getDescription());

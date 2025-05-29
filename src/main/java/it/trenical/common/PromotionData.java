@@ -29,7 +29,7 @@ public class PromotionData implements Promotion {
 
         private Builder(String code) {
             if(code == null) throw new IllegalArgumentException("code cannot be null");
-            this.code = code.trim();
+            this.code = code.trim().toUpperCase();
         }
 
         public Builder setName(String name) {

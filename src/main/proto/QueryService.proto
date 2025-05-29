@@ -13,6 +13,7 @@ service QueryService {
   rpc QueryStations (QueryStationsRequest) returns (QueryStationsResponse);
   rpc QueryTickets (QueryTicketsRequest) returns (QueryTicketsResponse);
   rpc QueryUser (QueryUserRequest) returns (QueryUserResponse);
+  rpc QueryPromotion (QueryPromotionRequest) returns (QueryPromotionResponse);
 }
 
 message QueryTripsRequest {
@@ -53,3 +54,21 @@ message QueryUserResponse {
   Data.User user = 1;
   bool wasTokenValid = 2;
 }
+
+message QueryPromotionRequest {
+  Data.Promotion promotion = 1;
+  Data.SessionToken token = 2;
+}
+
+message QueryPromotionResponse {
+  optional Data.Promotion promotion = 1;
+  bool wasTokenValid = 2;
+}
+
+// message QueryTicketsPriceRequest {
+//   repeated Data.Ticket tickets = 1;
+// }
+//
+// message QueryTicketsPriceResponse {
+//   repeated Data.Ticket tickets = 1;
+// }

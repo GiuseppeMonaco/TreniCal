@@ -3,6 +3,7 @@ package it.trenical.server.query;
 import io.grpc.stub.StreamObserver;
 import it.trenical.client.auth.SessionToken;
 import it.trenical.common.*;
+import it.trenical.common.Promotion;
 import it.trenical.common.Station;
 import it.trenical.common.Ticket;
 import it.trenical.common.TrainType;
@@ -136,9 +137,44 @@ public class GrpcQueryImpl extends QueryServiceGrpc.QueryServiceImplBase {
             responseObserver.onCompleted();
             return;
         }
+        b.setWasTokenValid(true);
 
-        user = new UserData(user.getEmail(), null, user.isFidelity());
-        b.setWasTokenValid(true).setUser(GrpcConverter.convert(user));
+        User userDb = null;
+        try {
+            userDb = new SQLiteUser(user).getRecord(db);
+        } catch (SQLException e) {
+            logger.warn(e.getMessage());
+        }
+
+        if (userDb != null) b.setUser(GrpcConverter.convert(userDb));
+
+        responseObserver.onNext(b.build());
+        responseObserver.onCompleted();
+    }
+
+    @Override // TODO aggiungere controllo se la promo è già stata usata dall'utente
+    public void queryPromotion(QueryPromotionRequest request, StreamObserver<QueryPromotionResponse> responseObserver) {
+
+        QueryPromotionResponse.Builder b = QueryPromotionResponse.newBuilder();
+
+        User user = tokenManager.getUser(GrpcConverter.convert(request.getToken()));
+        if(user == null) {
+            b.setWasTokenValid(false);
+            responseObserver.onNext(b.build());
+            responseObserver.onCompleted();
+            return;
+        }
+        b.setWasTokenValid(true);
+
+        SQLitePromotion promo = new SQLitePromotion(GrpcConverter.convert(request.getPromotion()));
+        Promotion dbPromotion = null;
+        try {
+            dbPromotion = promo.getRecord(db);
+        } catch (SQLException e) {
+            logger.warn(e.getMessage());
+        }
+
+        if (dbPromotion != null) b.setPromotion(GrpcConverter.convert(dbPromotion));
 
         responseObserver.onNext(b.build());
         responseObserver.onCompleted();

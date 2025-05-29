@@ -57,4 +57,14 @@ public interface QueryManager {
      * @throws InvalidSessionTokenException if token not exists
      */
     User queryUser(SessionToken token) throws UnreachableServer, InvalidSessionTokenException;
+
+    /**
+     * Query the promotion passed as parameter
+     * @param token the token of the user
+     * @param promotion the promotion to query
+     * @return the promotion if exists, else null
+     * @throws UnreachableServer if server is unreachable
+     * @throws InvalidSessionTokenException if token not exists
+     */
+    Promotion queryPromotion(SessionToken token, Promotion promotion) throws UnreachableServer, InvalidSessionTokenException;
 }
