@@ -5,10 +5,10 @@ import it.trenical.common.*;
 import it.trenical.common.Ticket;
 import it.trenical.common.User;
 import it.trenical.grpc.*;
+import it.trenical.server.Server;
 import it.trenical.server.auth.BiMapTokenManager;
 import it.trenical.server.auth.TokenManager;
 import it.trenical.server.db.DatabaseConnection;
-import it.trenical.server.db.SQLite.SQLiteConnection;
 import it.trenical.server.db.SQLite.SQLiteTicket;
 import it.trenical.server.db.SQLite.SQLiteUser;
 import org.slf4j.Logger;
@@ -22,7 +22,7 @@ public class GrpcRequestImpl extends RequestServiceGrpc.RequestServiceImplBase {
 
     private static final Logger logger = LoggerFactory.getLogger(GrpcRequestImpl.class);
 
-    private final DatabaseConnection db = SQLiteConnection.getInstance();
+    private final DatabaseConnection db = Server.INSTANCE.getDatabase();
 
     private final TokenManager tokenManager = BiMapTokenManager.INSTANCE;
 

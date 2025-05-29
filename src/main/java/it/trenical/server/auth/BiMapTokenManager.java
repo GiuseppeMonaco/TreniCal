@@ -6,6 +6,7 @@ import it.trenical.client.auth.SessionToken;
 import it.trenical.common.User;
 import it.trenical.common.UserData;
 
+// Singleton class
 public enum BiMapTokenManager implements TokenManager {
     INSTANCE;
 

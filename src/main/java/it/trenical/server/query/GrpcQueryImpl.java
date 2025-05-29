@@ -10,6 +10,7 @@ import it.trenical.common.TrainType;
 import it.trenical.common.Trip;
 import it.trenical.common.User;
 import it.trenical.grpc.*;
+import it.trenical.server.Server;
 import it.trenical.server.auth.BiMapTokenManager;
 import it.trenical.server.auth.TokenManager;
 import it.trenical.server.db.DatabaseConnection;
@@ -26,7 +27,7 @@ public class GrpcQueryImpl extends QueryServiceGrpc.QueryServiceImplBase {
 
     private static final Logger logger = LoggerFactory.getLogger(GrpcQueryImpl.class);
 
-    private final DatabaseConnection db = SQLiteConnection.getInstance();
+    private final DatabaseConnection db = Server.INSTANCE.getDatabase();
 
     private final TokenManager tokenManager = BiMapTokenManager.INSTANCE;
 

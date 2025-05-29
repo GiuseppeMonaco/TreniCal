@@ -3,8 +3,8 @@ package it.trenical.server.auth;
 import io.grpc.stub.StreamObserver;
 import it.trenical.client.auth.SessionToken;
 import it.trenical.grpc.*;
+import it.trenical.server.Server;
 import it.trenical.server.db.DatabaseConnection;
-import it.trenical.server.db.SQLite.SQLiteConnection;
 import it.trenical.server.db.SQLite.SQLiteUser;
 
 import java.sql.SQLException;
@@ -18,7 +18,7 @@ public class GrpcAuthImpl extends AuthServiceGrpc.AuthServiceImplBase {
 
     private static final Logger logger = LoggerFactory.getLogger(GrpcAuthImpl.class);
 
-    private final DatabaseConnection db = SQLiteConnection.getInstance();
+    private final DatabaseConnection db = Server.INSTANCE.getDatabase();
 
     private final TokenManager tokenManager = BiMapTokenManager.INSTANCE;
 
