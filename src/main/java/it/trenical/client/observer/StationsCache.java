@@ -1,9 +1,5 @@
 package it.trenical.client.observer;
 
-import it.trenical.common.Station;
-
-import java.util.Collection;
-
 public interface StationsCache {
 
     interface Subject {
@@ -13,6 +9,6 @@ public interface StationsCache {
     }
 
     interface Observer {
-        void updateStationsCache(Collection<Station> cache);
+        void updateStationsCache();
     }
 }

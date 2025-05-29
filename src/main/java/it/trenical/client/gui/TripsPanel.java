@@ -7,38 +7,48 @@ import it.trenical.common.Trip;
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import java.awt.*;
-import java.util.Calendar;
+import java.text.SimpleDateFormat;
 import java.util.Collection;
 
 public class TripsPanel implements TripsCache.Observer {
     private JPanel main;
     private JList<Trip> tripsList;
     private JButton buttonBack;
-    private JButton buttonSelect;
+    private JButton buttonConfirm;
+
+    static private final SimpleDateFormat dateFormatter = new SimpleDateFormat("dd/MM/yyyy HH:mm");
 
     private final DefaultListModel<Trip> tripsListModel;
 
+    private final Client client;
+    private final MainFrame mainFrame;
+
     public TripsPanel() {
-        Client c = Client.getInstance();
-        c.filteredTripsCacheSub.attach(this);
+        mainFrame = MainFrame.getInstance();
+        client = mainFrame.getClient();
+        client.filteredTripsCacheSub.attach(this);
 
         tripsListModel = new DefaultListModel<>();
         tripsList.setModel(tripsListModel);
         tripsList.setCellRenderer(new MultilineCellRenderer());
-        tripsList.addListSelectionListener(listSelectionEvent -> {
-            buttonSelect.setEnabled(canButtoSelectBeEnabled());
-            tripsList.getSelectedValue();
-        });
+        tripsList.addListSelectionListener(listSelectionEvent -> buttonConfirm.setEnabled(canButtonConfirmBeEnabled()));
 
         buttonBack.addActionListener(actionEvent -> onButtonBack());
+
+        buttonConfirm.addActionListener(actionEvent -> onButtonConfirm());
+    }
+
+    private void onButtonConfirm() {
+        if(!canButtonConfirmBeEnabled()) return;
+        client.setCurrentTrip(tripsList.getSelectedValue());
+        mainFrame.showCheckoutPanel();
     }
 
     private void onButtonBack() {
-        MainFrame m = MainFrame.getInstance();
-        m.showExplorePanel();
+        mainFrame.showExplorePanel();
     }
 
-    private boolean canButtoSelectBeEnabled() {
+    private boolean canButtonConfirmBeEnabled() {
         return !tripsList.isSelectionEmpty();
     }
 
@@ -47,7 +57,8 @@ public class TripsPanel implements TripsCache.Observer {
     }
 
     @Override
-    public void updateTripsCache(Collection<Trip> cache) {
+    public void updateTripsCache() {
+        Collection<Trip> cache = client.getFilteredTripsCache();
         tripsListModel.clear();
         if (cache.isEmpty()) {
             if (main.getBorder() instanceof TitledBorder tb) {
@@ -67,15 +78,9 @@ public class TripsPanel implements TripsCache.Observer {
         public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
 
             if (value instanceof Trip t) {
-                Calendar cal = t.getDepartureTime();
-                String date = String.format("Giorno %d/%d/%d ore %d:%d",
-                        cal.get(Calendar.DAY_OF_MONTH),
-                        cal.get(Calendar.MONTH),
-                        cal.get(Calendar.YEAR),
-                        cal.get(Calendar.HOUR),
-                        cal.get(Calendar.MINUTE)
-                );
-                value = String.format("## Da %s a %s ##\n%s\nTreno: %s",
+                String date = dateFormatter.format(t.getDepartureTime().getTime());
+
+                value = String.format("## Da %s a %s ##\nGiorno %s\nTreno: %s\n",
                         t.getRoute().getDepartureStation().getTown(),
                         t.getRoute().getArrivalStation().getTown(),
                         date,

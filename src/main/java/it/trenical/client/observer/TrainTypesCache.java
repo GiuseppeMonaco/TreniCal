@@ -1,9 +1,5 @@
 package it.trenical.client.observer;
 
-import it.trenical.common.TrainType;
-
-import java.util.Collection;
-
 public interface TrainTypesCache {
 
     interface Subject {
@@ -13,6 +9,6 @@ public interface TrainTypesCache {
     }
 
     interface Observer {
-        void updateTrainTypesCache(Collection<TrainType> cache);
+        void updateTrainTypesCache();
     }
 }

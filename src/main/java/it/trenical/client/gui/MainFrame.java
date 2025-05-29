@@ -7,18 +7,25 @@ import it.trenical.client.auth.exceptions.UserAlreadyExistsException;
 import it.trenical.client.connection.exceptions.UnreachableServer;
 import it.trenical.client.observer.Login;
 import it.trenical.client.observer.Logout;
+import it.trenical.client.request.exceptions.InvalidTicketException;
+import it.trenical.client.request.exceptions.NoChangeException;
+import it.trenical.common.Promotion;
+import it.trenical.common.Ticket;
 import it.trenical.common.Trip;
 import it.trenical.common.User;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.util.Collection;
 
 public class MainFrame extends JFrame implements Login.Observer, Logout.Observer {
 
     // Singleton class
     private static MainFrame instance;
 
-    private final Client c;
+    private final Client client;
 
     private JButton loginButton;
     private JLabel authLabel;
@@ -30,24 +37,50 @@ public class MainFrame extends JFrame implements Login.Observer, Logout.Observer
 
     private JPanel explorePanel;
     private JPanel tripsPanel;
+    private CheckoutPanel checkoutPanel;
 
     private MainFrame() {
-        c = Client.getInstance();
-        c.loginSub.attach(this);
-        c.logoutSub.attach(this);
+        client = Client.getInstance();
+        client.loginSub.attach(this);
+        client.logoutSub.attach(this);
 
         setContentPane(mainPanel);
         setTitle("TreniCal");
-        showExplorePanel();
+        setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 
         loginButton.addActionListener(actionEvent -> onLoginButton());
 
         buttonCustomerArea.setVisible(canShowCustomerAreaButton());
         buttonCustomerArea.addActionListener(actionEvent -> onCustomerAreaButton());
+
+        addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                int conferma = JOptionPane.showConfirmDialog(
+                        MainFrame.this,
+                        "Sei sicuro di voler chiudere?",
+                        "Conferma uscita",
+                        JOptionPane.YES_NO_OPTION
+                );
+
+                if (conferma == JOptionPane.YES_OPTION) {
+                    if (client.isAuthenticated()) {
+                        try {
+                            client.logout();
+                        } catch (UnreachableServer ignored) {}
+                    }
+                    dispose();
+                }
+            }
+        });
+    }
+
+    Client getClient() {
+        return client;
     }
 
     private void onLoginButton() {
-        if (c.isAuthenticated()) logout();
+        if (client.isAuthenticated()) logout();
         else loginDialog();
     }
 
@@ -58,7 +91,7 @@ public class MainFrame extends JFrame implements Login.Observer, Logout.Observer
     }
 
     private boolean canShowCustomerAreaButton() {
-        return c.getCurrentUser() != null;
+        return client.getCurrentUser() != null;
     }
 
     public static synchronized MainFrame getInstance() {
@@ -68,19 +101,19 @@ public class MainFrame extends JFrame implements Login.Observer, Logout.Observer
 
     private void init() {
         initCustomerAreaFrame();
-        initExplorePanel();
         initTripsPanel();
+        initCheckoutPanel();
+        showExplorePanel();
         try {
-            c.queryStations();
-            c.queryTrainTypes();
-            c.queryTrips();
+            client.queryStations();
+            client.queryTrainTypes();
+            client.queryTrips();
         } catch (UnreachableServer e) {
             unreachableServerDialog();
         }
     }
 
     private void display() {
-        setDefaultCloseOperation(EXIT_ON_CLOSE);
         pack();
         setLocationRelativeTo(null);
         setVisible(true);
@@ -89,6 +122,8 @@ public class MainFrame extends JFrame implements Login.Observer, Logout.Observer
     private void updateCenterPanel(Component next) {
         if (centerPanel.getComponentCount() > 0) centerPanel.removeAll();
         centerPanel.add(next);
+        centerPanel.revalidate();
+        centerPanel.repaint();
     }
 
     void initExplorePanel() {
@@ -103,6 +138,10 @@ public class MainFrame extends JFrame implements Login.Observer, Logout.Observer
         if (tripsPanel == null) tripsPanel = new TripsPanel().getPanel();
     }
 
+    void initCheckoutPanel() {
+        if (checkoutPanel == null) checkoutPanel = new CheckoutPanel();
+    }
+
     void showExplorePanel() {
         initExplorePanel();
         updateCenterPanel(explorePanel);
@@ -112,6 +151,12 @@ public class MainFrame extends JFrame implements Login.Observer, Logout.Observer
     void showTripsPanel() {
         initTripsPanel();
         updateCenterPanel(tripsPanel);
+        pack();
+    }
+
+    void showCheckoutPanel() {
+        initCheckoutPanel();
+        updateCenterPanel(checkoutPanel.getPanel());
         pack();
     }
 
@@ -143,9 +188,10 @@ public class MainFrame extends JFrame implements Login.Observer, Logout.Observer
 
     @Override
     public void updateOnLogin() {
-        authLabel.setText("Ciao " + c.getCurrentUser().getEmail());
+        authLabel.setText("Ciao " + client.getCurrentUser().getEmail());
         loginButton.setText("Logout");
         buttonCustomerArea.setVisible(canShowCustomerAreaButton());
+        queryTickets();
     }
 
     @Override
@@ -158,7 +204,7 @@ public class MainFrame extends JFrame implements Login.Observer, Logout.Observer
 
     void login(User user) {
         try {
-            c.login(user);
+            client.login(user);
         } catch (InvalidCredentialsException e) {
             invalidLoginDialog();
         } catch (UnreachableServer e) {
@@ -168,7 +214,7 @@ public class MainFrame extends JFrame implements Login.Observer, Logout.Observer
 
     void logout() {
         try {
-            c.logout();
+            client.logout();
         } catch (UnreachableServer e) {
             unreachableServerDialog();
         }
@@ -176,7 +222,7 @@ public class MainFrame extends JFrame implements Login.Observer, Logout.Observer
 
     void signup(User user) {
         try {
-            c.signup(user);
+            client.signup(user);
         } catch (InvalidCredentialsException | UserAlreadyExistsException e) {
             invalidSignupDialog();
         } catch (UnreachableServer e) {
@@ -186,7 +232,7 @@ public class MainFrame extends JFrame implements Login.Observer, Logout.Observer
 
     void queryStations() {
         try {
-            c.queryStations();
+            client.queryStations();
         } catch (UnreachableServer e) {
             unreachableServerDialog();
         }
@@ -194,7 +240,7 @@ public class MainFrame extends JFrame implements Login.Observer, Logout.Observer
 
     void queryTrips() {
         try {
-            c.queryTrips();
+            client.queryTrips();
         } catch (UnreachableServer e) {
             unreachableServerDialog();
         }
@@ -202,7 +248,7 @@ public class MainFrame extends JFrame implements Login.Observer, Logout.Observer
 
     void queryTrips(Trip trip) {
         try {
-            c.queryTrips(trip);
+            client.queryTrips(trip);
         } catch (UnreachableServer e) {
             unreachableServerDialog();
         }
@@ -210,7 +256,7 @@ public class MainFrame extends JFrame implements Login.Observer, Logout.Observer
 
     void queryTrainTypes() {
         try {
-            c.queryTrainTypes();
+            client.queryTrainTypes();
         } catch (UnreachableServer e) {
             unreachableServerDialog();
         }
@@ -218,10 +264,88 @@ public class MainFrame extends JFrame implements Login.Observer, Logout.Observer
 
     void queryTickets() {
         try {
-            c.queryTickets();
+            client.queryTickets();
         } catch (UnreachableServer e) {
             unreachableServerDialog();
         } catch (InvalidSessionTokenException e) {
+            throw new RuntimeException(e); // TODO sistemare questo sistema
+        }
+    }
+
+    Promotion queryPromotion(Promotion promotion) {
+        Promotion ret = null;
+        try {
+            ret = client.queryPromotion(promotion);
+        } catch (UnreachableServer e) {
+            unreachableServerDialog();
+        } catch (InvalidSessionTokenException e) {
+            throw new RuntimeException(e); // TODO sistemare questo sistema
+        }
+        return ret;
+    }
+
+    void setCurrentPromotion(Promotion promotion) {
+        try {
+            client.setCurrentPromotion(promotion);
+        } catch (UnreachableServer e) {
+            unreachableServerDialog();
+        }
+    }
+
+    void buyTickets(Collection<Ticket> tickets) {
+        try {
+            client.buyTickets(tickets);
+        } catch (UnreachableServer e) {
+            unreachableServerDialog();
+        } catch (InvalidSessionTokenException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    void bookTickets(Collection<Ticket> tickets) {
+        try {
+            client.bookTickets(tickets);
+        } catch (UnreachableServer e) {
+            unreachableServerDialog();
+        } catch (InvalidSessionTokenException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    void payBookedTickets(Collection<Ticket> tickets) {
+        try {
+            client.payBookedTickets(tickets);
+        } catch (UnreachableServer e) {
+            unreachableServerDialog();
+        } catch (InvalidSessionTokenException | InvalidTicketException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    void editTicket(Ticket ticket) {
+        try {
+            client.editTicket(ticket);
+        } catch (UnreachableServer e) {
+            unreachableServerDialog();
+        } catch (InvalidSessionTokenException | InvalidTicketException | NoChangeException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    void becomeFidelity() {
+        try {
+            client.becomeFidelity();
+        } catch (UnreachableServer e) {
+            unreachableServerDialog();
+        } catch (InvalidSessionTokenException | NoChangeException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    void cancelFidelity() {
+        try {
+            client.cancelFidelity();
+        } catch (UnreachableServer e) {
+            unreachableServerDialog();
+        } catch (InvalidSessionTokenException | NoChangeException e) {
             throw new RuntimeException(e);
         }
     }

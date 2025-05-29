@@ -1,6 +1,6 @@
 package it.trenical.client.observer;
 
-public interface TicketsCache {
+public interface CurrentPromotion {
 
     interface Subject {
         void attach(Observer obs);
@@ -9,6 +9,7 @@ public interface TicketsCache {
     }
 
     interface Observer {
-        void updateTicketsCache();
+        void updateOnCurrentPromotion();
     }
 }
+

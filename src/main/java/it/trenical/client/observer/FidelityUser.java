@@ -1,7 +1,5 @@
 package it.trenical.client.observer;
 
-import it.trenical.common.User;
-
 public interface FidelityUser {
 
     interface Subject {
@@ -11,6 +9,6 @@ public interface FidelityUser {
     }
 
     interface Observer {
-        void updateOnFidelityChange(User newUserState);
+        void updateOnFidelityChange();
     }
 }

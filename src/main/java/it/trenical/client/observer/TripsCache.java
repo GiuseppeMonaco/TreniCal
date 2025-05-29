@@ -1,9 +1,5 @@
 package it.trenical.client.observer;
 
-import it.trenical.common.Trip;
-
-import java.util.Collection;
-
 public interface TripsCache {
 
     interface Subject {
@@ -13,6 +9,6 @@ public interface TripsCache {
     }
 
     interface Observer {
-        void updateTripsCache(Collection<Trip> cache);
+        void updateTripsCache();
     }
 }

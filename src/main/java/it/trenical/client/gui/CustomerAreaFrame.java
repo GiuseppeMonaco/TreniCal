@@ -3,10 +3,11 @@ package it.trenical.client.gui;
 import it.trenical.client.Client;
 import it.trenical.client.observer.TicketsCache;
 import it.trenical.common.Ticket;
+import it.trenical.common.Trip;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.Calendar;
+import java.text.SimpleDateFormat;
 import java.util.Collection;
 
 public class CustomerAreaFrame extends JFrame implements TicketsCache.Observer {
@@ -14,10 +15,15 @@ public class CustomerAreaFrame extends JFrame implements TicketsCache.Observer {
     private JPanel mainPanel;
     private JButton buttonClose;
 
+    static private final SimpleDateFormat dateFormatter = new SimpleDateFormat("dd/MM/yyyy HH:mm");
     private final DefaultListModel<Ticket> ticketListModel;
 
+    private final MainFrame mainFrame;
+    private final Client client;
+
     CustomerAreaFrame() {
-        Client client = Client.getInstance();
+        mainFrame = MainFrame.getInstance();
+        client = mainFrame.getClient();
         client.ticketsCacheSub.attach(this);
 
         setContentPane(mainPanel);
@@ -36,7 +42,8 @@ public class CustomerAreaFrame extends JFrame implements TicketsCache.Observer {
     }
 
     @Override
-    public void updateTicketsCache(Collection<Ticket> cache) {
+    public void updateTicketsCache() {
+        Collection<Ticket> cache = client.getTicketsCache();
         ticketListModel.clear();
         ticketListModel.addAll(cache);
     }
@@ -57,20 +64,17 @@ public class CustomerAreaFrame extends JFrame implements TicketsCache.Observer {
         public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
 
             if (value instanceof Ticket t) {
-                Calendar cal = t.getTrip().getDepartureTime();
-                String date = String.format("Giorno %d/%d/%d ore %d:%d",
-                        cal.get(Calendar.DAY_OF_MONTH),
-                        cal.get(Calendar.MONTH),
-                        cal.get(Calendar.YEAR),
-                        cal.get(Calendar.HOUR),
-                        cal.get(Calendar.MINUTE)
-                );
-                value = String.format("## %s da %s a %s ##\n%s\n%s %s",
-                        (t.isPaid() ? "Biglietto" : "Prenotazione"),
-                        t.getTrip().getRoute().getDepartureStation().getTown(),
-                        t.getTrip().getRoute().getArrivalStation().getTown(),
+                Trip tr = t.getTrip();
+
+                String date = dateFormatter.format(tr.getDepartureTime().getTime());
+
+                value = String.format("## %s da %s a %s ##\nGiorno %s\n%s %s - %s class\n",
+                        t.isPaid() ? "Biglietto" : "Prenotazione",
+                        tr.getRoute().getDepartureStation().getTown(),
+                        tr.getRoute().getArrivalStation().getTown(),
                         date,
-                        t.getName(),t.getSurname()
+                        t.getName(),t.getSurname(),
+                        t.isBusiness() ? "Business" : "Economy"
                 );
             }
 

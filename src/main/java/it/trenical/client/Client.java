@@ -10,6 +10,10 @@ import it.trenical.client.connection.exceptions.UnreachableServer;
 import it.trenical.client.observer.*;
 import it.trenical.client.query.GrpcQueryManager;
 import it.trenical.client.query.QueryManager;
+import it.trenical.client.request.GrpcRequestManager;
+import it.trenical.client.request.RequestManager;
+import it.trenical.client.request.exceptions.InvalidTicketException;
+import it.trenical.client.request.exceptions.NoChangeException;
 import it.trenical.common.*;
 
 import java.util.Collection;
@@ -26,35 +30,43 @@ public class Client {
     private static final Logger logger = LoggerFactory.getLogger(Client.class);
 
     private User currentUser;
-    private SessionToken token;
+    private SessionToken currentToken;
+    private final Collection<Station> stationsCache = new LinkedList<>();
+    private final Collection<Trip> tripsCache = new LinkedList<>();
+    private final Collection<Trip> filteredTripsCache = new LinkedList<>();
+    private final Collection<TrainType> trainTypesCache = new LinkedList<>();
+    private final Collection<Ticket> ticketsCache = new LinkedList<>();
+    private int currentPassengersNumber = 0;
+    private int currentEconomyPassengers = 0;
+    private int currentBusinessPassengers = 0;
+    private Trip currentTrip;
+    private Promotion currentPromotion;
+    private float currentTotalPrice;
+    private float currentEconomyTicketPrice = 0;
+    private float currentBusinessTicketPrice = 0;
 
     private final AuthManager auth;
     private final QueryManager query;
+    private final RequestManager request;
 
     // Subjects classes //
     public final Login.Subject loginSub = new LoginSubject();
     public final Logout.Subject logoutSub = new LogoutSubject();
-
-    private final Collection<Station> stationsCache = new LinkedList<>();
-    public final StationsCache.Subject stationsCacheSub = new StationsCacheSubject(stationsCache);
-
-    private final Collection<Trip> tripsCache = new LinkedList<>();
-    public final TripsCache.Subject tripsCacheSub = new TripsCacheSubject(tripsCache);
-
-    private final Collection<Trip> filteredTripsCache = new LinkedList<>();
-    public final TripsCache.Subject filteredTripsCacheSub = new TripsCacheSubject(filteredTripsCache);
-
-    private final Collection<TrainType> trainTypesCache = new LinkedList<>();
-    public final TrainTypesCache.Subject trainTypesCacheSub = new TrainTypesCacheSubject(trainTypesCache);
-
-    private final Collection<Ticket> ticketsCache = new LinkedList<>();
-    public final TicketsCache.Subject ticketsCacheSub = new TicketsCacheSubject(ticketsCache);
-
-    public final FidelityUser.Subject fidelityUserSub = new FidelityUserSubject(currentUser);
+    public final StationsCache.Subject stationsCacheSub = new StationsCacheSubject();
+    public final TripsCache.Subject tripsCacheSub = new TripsCacheSubject();
+    public final TripsCache.Subject filteredTripsCacheSub = new TripsCacheSubject();
+    public final TrainTypesCache.Subject trainTypesCacheSub = new TrainTypesCacheSubject();
+    public final TicketsCache.Subject ticketsCacheSub = new TicketsCacheSubject();
+    public final FidelityUser.Subject fidelityUserSub = new FidelityUserSubject();
+    public final PassengersNumber.Subject passengersNumberSub = new PassengersNumberSubject();
+    public final CurrentTrip.Subject currentTripSub = new CurrentTripSubject();
+    public final CurrentPromotion.Subject currentPromoSub = new CurrentPromotionSubject();
+    public final CurrentPrice.Subject currentPriceSub = new CurrentPriceSubject();
 
     private Client() {
         auth = new GrpcAuthManager();
         query = new GrpcQueryManager();
+        request = new GrpcRequestManager();
     }
 
     public static synchronized Client getInstance() {
@@ -62,8 +74,116 @@ public class Client {
         return instance;
     }
 
+    public User getCurrentUser() {
+        return currentUser;
+    }
+    public Collection<Station> getStationsCache() {
+        return stationsCache;
+    }
+    public Collection<Trip> getTripsCache() {
+        return tripsCache;
+    }
+    public Collection<Trip> getFilteredTripsCache() {
+        return filteredTripsCache;
+    }
+    public Collection<TrainType> getTrainTypesCache() {
+        return trainTypesCache;
+    }
+    public Collection<Ticket> getTicketsCache() {
+        return ticketsCache;
+    }
+    public int getCurrentPassengersNumber() {
+        return currentPassengersNumber;
+    }
+    public Trip getCurrentTrip() {
+        return currentTrip;
+    }
+    public Promotion getCurrentPromotion() {
+        return currentPromotion;
+    }
+    public float getCurrentTotalPrice() {
+        return currentTotalPrice;
+    }
+    public float getCurrentEconomyTicketPrice() {
+        return currentEconomyTicketPrice;
+    }
+    public float getCurrentBusinessTicketPrice() {
+        return currentBusinessTicketPrice;
+    }
+
+    public void setCurrentPassengersNumber(int number) {
+        if (number < 0) throw new IllegalArgumentException("Passengers number cannot be negative");
+        currentPassengersNumber = number;
+        currentEconomyPassengers = number;
+        currentBusinessPassengers = 0;
+        passengersNumberSub.notifyObs();
+    }
+    public void setCurrentTrip(Trip currentTrip) {
+        this.currentTrip = currentTrip;
+        if (currentTrip != null) {
+            currentEconomyTicketPrice = TicketData.newBuilder(-1).setTrip(currentTrip).setBusiness(false).build().calculatePrice();
+            currentBusinessTicketPrice = TicketData.newBuilder(-1).setTrip(currentTrip).setBusiness(true).build().calculatePrice();
+        } else {
+            currentEconomyTicketPrice = 0;
+            currentBusinessTicketPrice = 0;
+        }
+        updateCurrentTotalPrice();
+        currentTripSub.notifyObs();
+    }
+    public void setCurrentPromotion(Promotion promotion) throws UnreachableServer {
+        Promotion previousPromo = currentPromotion;
+        Promotion promo = null;
+        if (promotion != null) try {
+            promo = queryPromotion(promotion);
+        } catch (InvalidSessionTokenException e) {
+            logger.warn(e.getMessage());
+        }
+        currentPromotion = promo;
+        if (promo != null && promo.isOnlyFidelityUser() &&  !getCurrentUser().isFidelity()) {
+            currentPromotion = null;
+        }
+        if(previousPromo != null) setCurrentTotalPrice(getCurrentTotalPrice() / previousPromo.getDiscount());
+        updateCurrentTotalPrice();
+        currentPromoSub.notifyObs();
+    }
+    public void setCurrentTotalPrice(float price) {
+        if(currentPromotion != null) {
+            price *= currentPromotion.getDiscount();
+        }
+        this.currentTotalPrice = price;
+        currentPriceSub.notifyObs();
+    }
+    public void incrementCurrentEconomyPassengers() {
+        setCurrentEconomyPassengers(currentEconomyPassengers + 1);
+    }
+    public void decrementCurrentEconomyPassengers() {
+        setCurrentEconomyPassengers(currentEconomyPassengers - 1);
+    }
+    public void incrementCurrentBusinessPassengers() {
+        setCurrentBusinessPassengers(currentBusinessPassengers + 1);
+    }
+    public void decrementCurrentBusinessPassengers() {
+        setCurrentBusinessPassengers(currentBusinessPassengers - 1);
+    }
+
+    private void setCurrentEconomyPassengers(int number) {
+        if (number < 0) throw new IllegalArgumentException("Passengers number cannot be negative");
+        currentEconomyPassengers = number;
+        updateCurrentTotalPrice();
+        //passengersNumberSub.notifyObs();
+    }
+    private void setCurrentBusinessPassengers(int number) {
+        if (number < 0) throw new IllegalArgumentException("Passengers number cannot be negative");
+        currentBusinessPassengers = number;
+        updateCurrentTotalPrice();
+        //passengersNumberSub.notifyObs();
+    }
+    private void updateCurrentTotalPrice() {
+        setCurrentTotalPrice(currentEconomyTicketPrice * currentEconomyPassengers + currentBusinessTicketPrice * currentBusinessPassengers);
+    }
+
     public void login(User user) throws InvalidCredentialsException, UnreachableServer {
-        token = auth.login(user);
+        currentToken = auth.login(user);
         try {
             updateCurrentUser();
         } catch (InvalidSessionTokenException e) {
@@ -76,18 +196,19 @@ public class Client {
 
     public void logout() throws UnreachableServer {
         try {
-            auth.logout(token);
+            auth.logout(currentToken);
+            setCurrentPromotion(null);
             logger.info("Logout effettuato");
         } catch (InvalidSessionTokenException e) {
-            logger.warn("Token was invalid: {}", token.token());
+            logger.warn("Token was invalid: {}", currentToken.token());
         }
-        token = null;
+        currentToken = null;
         currentUser = null;
         logoutSub.notifyObs();
     }
 
     public void signup(User user) throws InvalidCredentialsException, UserAlreadyExistsException, UnreachableServer {
-        token = auth.signup(user);
+        currentToken = auth.signup(user);
         try {
             updateCurrentUser();
         } catch (InvalidSessionTokenException e) {
@@ -99,11 +220,7 @@ public class Client {
     }
 
     public boolean isAuthenticated() {
-        return token != null && currentUser != null;
-    }
-
-    public User getCurrentUser() {
-        return currentUser;
+        return currentToken != null && currentUser != null;
     }
 
     public void queryStations() throws UnreachableServer {
@@ -132,25 +249,41 @@ public class Client {
 
     public void queryTickets() throws UnreachableServer, InvalidSessionTokenException {
         ticketsCache.clear();
-        ticketsCache.addAll(query.queryTickets(token));
+        ticketsCache.addAll(query.queryTickets(currentToken));
         ticketsCacheSub.notifyObs();
     }
 
+    public Promotion queryPromotion(Promotion promotion) throws UnreachableServer, InvalidSessionTokenException {
+        return query.queryPromotion(currentToken,promotion);
+    }
+
     public void updateCurrentUser() throws UnreachableServer, InvalidSessionTokenException {
-        currentUser = query.queryUser(token);
+        currentUser = query.queryUser(currentToken);
         fidelityUserSub.notifyObs();
     }
 
-    public static void main(String[] args) throws Exception {
-        Client c = Client.getInstance();
-        c.login(new UserData("mario.rossi@gmail.com", "passwordbella123"));
-        c.queryTickets();
-        c.queryStations();
-        c.queryTrips();
-        c.queryTrainTypes();
-        logger.info(c.stationsCache.toString());
-        logger.info(c.tripsCache.toString());
-        logger.info(c.trainTypesCache.toString());
-        logger.info(c.ticketsCache.toString());
+    public void buyTickets(Collection<Ticket> tickets) throws UnreachableServer, InvalidSessionTokenException {
+        request.buyTickets(currentToken, tickets);
+        queryTickets();
+    }
+    public void bookTickets(Collection<Ticket> tickets) throws UnreachableServer, InvalidSessionTokenException {
+        request.bookTickets(currentToken, tickets);
+        queryTickets();
+    }
+    public void payBookedTickets(Collection<Ticket> tickets) throws InvalidTicketException, UnreachableServer, InvalidSessionTokenException {
+        request.payBookedTickets(currentToken, tickets);
+        queryTickets();
+    }
+    public void editTicket(Ticket ticket) throws UnreachableServer, InvalidSessionTokenException, InvalidTicketException, NoChangeException {
+        request.editTicket(currentToken, ticket);
+        queryTickets();
+    }
+    public void becomeFidelity() throws UnreachableServer, InvalidSessionTokenException, NoChangeException {
+        request.becomeFidelity(currentToken);
+        updateCurrentUser();
+    }
+    public void cancelFidelity() throws UnreachableServer, InvalidSessionTokenException, NoChangeException {
+        request.cancelFidelity(currentToken);
+        updateCurrentUser();
     }
 }

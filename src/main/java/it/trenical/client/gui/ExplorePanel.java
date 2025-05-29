@@ -26,13 +26,17 @@ class ExplorePanel implements
     private JButton buttonRefresh;
 
     private final Client client;
+    private final MainFrame mainFrame;
 
     private static final String ANY_TRAIN_TYPE_LABEL = "Qualsiasi";
 
     ExplorePanel() {
-        client = Client.getInstance();
+        mainFrame = MainFrame.getInstance();
+
+        client = mainFrame.getClient();
         client.stationsCacheSub.attach(this);
         client.trainTypesCacheSub.attach(this);
+
 
         buttonSearch.addActionListener(actionEvent -> onButtonSearch());
         buttonSearch.setEnabled(false);
@@ -74,6 +78,8 @@ class ExplorePanel implements
 
     private void onButtonSearch() {
         if(!canEnableSearchButton()) return;
+        client.setCurrentPassengersNumber((int)numTicket.getValue());
+
         Route r = new RouteData(
                 (Station) departureStation.getSelectedItem(),
                 (Station) arrivalStation.getSelectedItem()
@@ -87,19 +93,17 @@ class ExplorePanel implements
         if (trainType.getSelectedIndex() != 0)
             tr.setTrain(TrainData.newBuilder(-1).setType((TrainType) trainType.getSelectedItem()).build());
 
-        MainFrame m = MainFrame.getInstance();
-        m.queryTrips(tr.build());
-        m.showTripsPanel();
+        mainFrame.queryTrips(tr.build());
+        mainFrame.showTripsPanel();
     }
 
     private void onButtonRefresh() {
         buttonSearch.setEnabled(canEnableSearchButton());
-        MainFrame m = MainFrame.getInstance();
         try {
             client.queryStations();
             client.queryTrainTypes();
         } catch (UnreachableServer e) {
-            m.unreachableServerDialog();
+            mainFrame.unreachableServerDialog();
         }
     }
 
@@ -108,7 +112,8 @@ class ExplorePanel implements
     }
 
     @Override
-    public void updateStationsCache(Collection<Station> cache) {
+    public void updateStationsCache() {
+        Collection<Station> cache = client.getStationsCache();
         Station currentDepartureValue = (Station) departureStation.getSelectedItem();
         Station currentArrivalValue = (Station) arrivalStation.getSelectedItem();
         departureStation.removeAllItems();
@@ -120,7 +125,8 @@ class ExplorePanel implements
     }
 
     @Override
-    public void updateTrainTypesCache(Collection<TrainType> cache) {
+    public void updateTrainTypesCache() {
+        Collection<TrainType> cache = client.getTrainTypesCache();
         TrainType currentValue = (TrainType) trainType.getSelectedItem();
         trainType.removeAllItems();
         trainType.addItem(new TrainTypeData(ANY_TRAIN_TYPE_LABEL));
