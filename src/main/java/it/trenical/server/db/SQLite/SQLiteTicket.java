@@ -271,16 +271,23 @@ public class SQLiteTicket implements SQLiteTable<Ticket>, Ticket {
 
     public void updateBusinessRecord(DatabaseConnection db, boolean newBusinessValue) throws SQLException {
         Connection c = db.getConnection();
-        PreparedStatement st = c.prepareStatement(String.format("""
+        db.atomicTransaction(() -> {
+            Ticket temp = TicketData.newBuilderFromPrototype(getRecord(db))
+                    .setBusiness(newBusinessValue)
+                    .build();
+
+            PreparedStatement st = c.prepareStatement(String.format("""
                 UPDATE %s
-                SET isBusiness=?
+                SET isBusiness=?, price=?
                 WHERE id=?;
                 """,
-                TABLE_NAME
-        ));
-        st.setBoolean(1,newBusinessValue);
-        st.setInt(2,getId());
-        st.executeUpdate();
+                    TABLE_NAME
+            ));
+            st.setBoolean(1,newBusinessValue);
+            st.setFloat(2,temp.calculatePrice());
+            st.setInt(3,getId());
+            st.executeUpdate();
+        });
     }
 
     @Override
