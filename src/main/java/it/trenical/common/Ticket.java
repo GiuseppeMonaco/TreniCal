@@ -21,7 +21,7 @@ public interface Ticket {
 
         Trip t = getTrip();
         if (t != null) {
-            if (t.getRoute() != null) ret += getTrip().getRoute().getDistance() * PRICE_MULTIPLIER_DISTANCE;
+            if (t.getRoute() != null) ret += t.getRoute().getDistance() * PRICE_MULTIPLIER_DISTANCE;
 
             Train tr = t.getTrain();
             if (tr != null && tr.getType() != null)  ret *= tr.getType().getPrice();
