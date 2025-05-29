@@ -33,6 +33,18 @@ public class TicketData implements Ticket {
         return new Builder(id);
     }
 
+    public static Builder newBuilderFromPrototype(Ticket prototype) {
+        return newBuilder(prototype.getId())
+                .setUser(prototype.getUser())
+                .setName(prototype.getName())
+                .setSurname(prototype.getSurname())
+                .setPrice(prototype.getPrice())
+                .setTrip(prototype.getTrip())
+                .setPromotion(prototype.getPromotion())
+                .setPaid(prototype.isPaid())
+                .setBusiness(prototype.isBusiness());
+    }
+
     public static class Builder {
         private final int id;
         private User user;
@@ -52,7 +64,6 @@ public class TicketData implements Ticket {
             this.user = user;
             return this;
         }
-
 
         public Builder setName(String name) {
             this.name = name.trim();
