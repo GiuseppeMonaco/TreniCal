@@ -1,5 +1,7 @@
 package it.trenical.client.observer;
 
+import it.trenical.common.observer.AbstractSubject;
+
 public class TrainTypesCacheSubject extends AbstractSubject<TrainTypesCache.Observer> implements TrainTypesCache.Subject {
     @Override
     public void notifyObs() {
