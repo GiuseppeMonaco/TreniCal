@@ -16,6 +16,7 @@ import java.util.Collection;
 import java.util.LinkedList;
 
 public class CheckoutPanel implements
+        Logout.Observer,
         PassengersNumber.Observer,
         CurrentTrip.Observer,
         CurrentPromotion.Observer,
@@ -34,7 +35,7 @@ public class CheckoutPanel implements
     private JLabel promoValidLabel;
     private JLabel promoLabel;
     private JLabel passengersNumberLabel;
-    private JLabel dataLabel;
+    private JLabel dateLabel;
     private JLabel routeLabel;
 
     static private final String BUY_LABEL = "Acquista";
@@ -63,7 +64,7 @@ public class CheckoutPanel implements
 
         promoLabelDefault = promoLabel.getText();
         passengersNumberLabelDefault = passengersNumberLabel.getText();
-        dataLabelDefault = dataLabel.getText();
+        dataLabelDefault = dateLabel.getText();
         routeLabelDefault = routeLabel.getText();
         totalLabelDefault = totalLabel.getText();
 
@@ -142,21 +143,26 @@ public class CheckoutPanel implements
                 .build()
         ).toList();
 
+        String dialogMessage;
         try {
             if (isBook) {
                 client.bookTickets(tickets);
-                System.out.println("Biglietti prenotati");
+                dialogMessage = "Biglietti prenotati con successo!";
             } else {
                 client.buyTickets(tickets);
-                System.out.println("Biglietti acquistati");
+                dialogMessage = "Biglietti acquistati con successo!";
             }
             client.setCurrentPromotion(null);
         } catch (UnreachableServer e) {
             mainFrame.unreachableServerDialog();
+            return;
         } catch (InvalidSessionTokenException e) {
             throw new RuntimeException(e);
         }
         promoValidLabel.setVisible(false);
+
+        mainFrame.genericOKDialog(dialogMessage);
+        mainFrame.showExplorePanel();
     }
 
 
@@ -179,6 +185,7 @@ public class CheckoutPanel implements
             passengers.add(p);
             passengersData.add(p);
         }
+        buttonConfirm.setEnabled(false);
     }
 
     @Override
@@ -195,7 +202,7 @@ public class CheckoutPanel implements
             date = dateFormatter.format(trip.getDepartureTime().getTime());
         }
         routeLabel.setText(String.format(routeLabelDefault, departureStation, arrivalStation));
-        dataLabel.setText(String.format(dataLabelDefault, date));
+        dateLabel.setText(String.format(dataLabelDefault, date));
     }
 
     @Override
@@ -223,6 +230,12 @@ public class CheckoutPanel implements
         promoValidLabel.setText(promoValidString);
         promoValidLabel.setForeground(promoValidColor);
         promoValidLabel.setVisible(true);
+    }
+
+    @Override
+    public void updateOnLogout() {
+        promoValidLabel.setText(null);
+        promoValidLabel.setVisible(false);
     }
 
     private class PassengerData extends JPanel {
