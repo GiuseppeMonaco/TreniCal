@@ -186,6 +186,18 @@ public class MainFrame extends JFrame implements Login.Observer, Logout.Observer
         showDialog(new UnreachableServerDialog());
     }
 
+    void payBookedTicketDialog(Ticket ticket) {
+        showDialog(new BuyBookedTicketDialog(ticket));
+    }
+
+    void editTicketDialog(Ticket ticket) {
+        showDialog(new EditTicketDialog(ticket));
+    }
+
+    void genericOKDialog(String message) {
+        showDialog(new GenericOKDialog(message));
+    }
+
     @Override
     public void updateOnLogin() {
         authLabel.setText("Ciao " + client.getCurrentUser().getEmail());
@@ -315,6 +327,7 @@ public class MainFrame extends JFrame implements Login.Observer, Logout.Observer
     void payBookedTickets(Collection<Ticket> tickets) {
         try {
             client.payBookedTickets(tickets);
+            genericOKDialog("Biglietto acquistato con successo!");
         } catch (UnreachableServer e) {
             unreachableServerDialog();
         } catch (InvalidSessionTokenException | InvalidTicketException e) {
@@ -325,6 +338,7 @@ public class MainFrame extends JFrame implements Login.Observer, Logout.Observer
     void editTicket(Ticket ticket) {
         try {
             client.editTicket(ticket);
+            genericOKDialog("Biglietto modificato con successo!");
         } catch (UnreachableServer e) {
             unreachableServerDialog();
         } catch (InvalidSessionTokenException | InvalidTicketException | NoChangeException e) {

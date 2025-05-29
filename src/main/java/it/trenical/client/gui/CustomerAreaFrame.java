@@ -14,6 +14,8 @@ public class CustomerAreaFrame extends JFrame implements TicketsCache.Observer {
     private JList<Ticket> ticketList;
     private JPanel mainPanel;
     private JButton buttonClose;
+    private JButton buttonEdit;
+    private JButton buttonBuy;
 
     static private final SimpleDateFormat dateFormatter = new SimpleDateFormat("dd/MM/yyyy HH:mm");
     private final DefaultListModel<Ticket> ticketListModel;
@@ -33,8 +35,34 @@ public class CustomerAreaFrame extends JFrame implements TicketsCache.Observer {
         ticketListModel = new DefaultListModel<>();
         ticketList.setCellRenderer(new MultilineCellRenderer());
         ticketList.setModel(ticketListModel);
+        ticketList.addListSelectionListener(listSelectionEvent -> {
+            buttonBuy.setEnabled(canButtonBuyBeEnabled());
+            buttonEdit.setEnabled(canButtonEditBeEnabled());
+        });
 
         buttonClose.addActionListener(actionEvent -> onButtonClose());
+
+        buttonEdit.addActionListener(actionEvent -> onButtonEdit());
+
+        buttonBuy.addActionListener(actionEvent -> onButtonBuy());
+    }
+
+    private void onButtonBuy() {
+        if(!canButtonBuyBeEnabled()) return;
+        mainFrame.payBookedTicketDialog(ticketList.getSelectedValue());
+    }
+
+    private boolean canButtonBuyBeEnabled() {
+        return !ticketList.isSelectionEmpty() && !ticketList.getSelectedValue().isPaid();
+    }
+
+    private void onButtonEdit() {
+        if(!canButtonEditBeEnabled()) return;
+        mainFrame.editTicketDialog(ticketList.getSelectedValue());
+    }
+
+    private boolean canButtonEditBeEnabled() {
+        return !ticketList.isSelectionEmpty();
     }
 
     private void onButtonClose() {
