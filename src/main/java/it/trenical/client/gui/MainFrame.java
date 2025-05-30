@@ -59,7 +59,7 @@ public class MainFrame extends JFrame implements Login.Observer, Logout.Observer
                 int conferma = JOptionPane.showConfirmDialog(
                         MainFrame.this,
                         "Sei sicuro di voler chiudere?",
-                        "Conferma uscita",
+                        "TreniCal",
                         JOptionPane.YES_NO_OPTION
                 );
 
