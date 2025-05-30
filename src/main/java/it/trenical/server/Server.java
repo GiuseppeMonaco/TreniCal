@@ -34,6 +34,7 @@ public enum Server {
             this.serverConnection.start();
         } catch (IOException e) {
             logger.error(e.getMessage());
+            if(database != null) closeDatabase();
             System.exit(-1);
         }
     }
