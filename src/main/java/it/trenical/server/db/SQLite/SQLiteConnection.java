@@ -1,14 +1,11 @@
 package it.trenical.server.db.SQLite;
 
-import it.trenical.common.*;
-import it.trenical.server.auth.PasswordUtils;
 import it.trenical.server.db.DatabaseConnection;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.*;
-import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 import org.slf4j.Logger;
@@ -28,7 +25,10 @@ public class SQLiteConnection implements DatabaseConnection {
 
     private Connection connection;
 
+    private final String dbPath;
+
     private SQLiteConnection(String dbPath) {
+        this.dbPath = dbPath;
         try {
             connection = DriverManager.getConnection("jdbc:sqlite:" + dbPath);
             Statement statement = connection.createStatement();
@@ -97,6 +97,7 @@ public class SQLiteConnection implements DatabaseConnection {
     public void close() {
         try {
             connection.close();
+            logger.info("Database at {} closed successfully", dbPath);
         } catch (SQLException e) {
             logger.warn("Error closing SQLite database connection.\n{}", e.getMessage());
         }
