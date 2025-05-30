@@ -180,6 +180,7 @@ public enum Server {
         } catch (SQLException e) {
             handleSQLExceptionWithoutForeignKey(e,"trainType");
         }
+        updateTrainTypesCache();
     }
     public void createTrain(Train train) throws PrimaryKeyException, ForeignKeyException {
         try {
@@ -187,6 +188,7 @@ public enum Server {
         } catch (SQLException e) {
             handleSQLException(e,"train");
         }
+        updateTrainsCache();
     }
     public void createStation(Station station) throws PrimaryKeyException {
         try {
@@ -194,6 +196,7 @@ public enum Server {
         } catch (SQLException e) {
             handleSQLExceptionWithoutForeignKey(e,"station");
         }
+        updateStationsCache();
     }
     public void createRoute(Route route) throws PrimaryKeyException, ForeignKeyException {
         try {
@@ -201,6 +204,7 @@ public enum Server {
         } catch (SQLException e) {
             handleSQLException(e,"route");
         }
+        updateRoutesCache();
     }
     public void createTrip(Trip trip) throws PrimaryKeyException, ForeignKeyException {
         try {
@@ -208,6 +212,7 @@ public enum Server {
         } catch (SQLException e) {
             handleSQLException(e,"trip");
         }
+        updateTripsCache();
     }
     public void createPromotion(Promotion promotion) throws PrimaryKeyException {
         try {
@@ -215,6 +220,7 @@ public enum Server {
         } catch (SQLException e) {
             handleSQLExceptionWithoutForeignKey(e,"promotion");
         }
+        updatePromotionsCache();
     }
     public void createUser(User user) throws PrimaryKeyException {
         try {
@@ -222,6 +228,7 @@ public enum Server {
         } catch (SQLException e) {
             handleSQLExceptionWithoutForeignKey(e,"user");
         }
+        updateUsersCache();
     }
     public void createTicket(Ticket ticket) throws PrimaryKeyException, ForeignKeyException {
         try {
@@ -229,6 +236,7 @@ public enum Server {
         } catch (SQLException e) {
             handleSQLException(e,"ticket");
         }
+        updateTicketsCache();
     }
     private void handleSQLException(SQLException e, String obj) throws PrimaryKeyException, ForeignKeyException {
         if (e.getMessage().contains("CONSTRAINT_PRIMARYKEY"))
@@ -252,6 +260,7 @@ public enum Server {
         } catch (SQLException e) {
             logger.error(e.getMessage());
         }
+        updateTrainTypesCache();
     }
     public void updateTrain(Train train) {
         try {
@@ -259,6 +268,7 @@ public enum Server {
         } catch (SQLException e) {
             logger.error(e.getMessage());
         }
+        updateTrainsCache();
     }
     public void updateStation(Station station) {
         try {
@@ -266,6 +276,7 @@ public enum Server {
         } catch (SQLException e) {
             logger.error(e.getMessage());
         }
+        updateStationsCache();
     }
     public void updateRoute(Route route) {
         try {
@@ -273,6 +284,7 @@ public enum Server {
         } catch (SQLException e) {
             logger.error(e.getMessage());
         }
+        updateRoutesCache();
     }
     public void updateTrip(Trip trip) {
         try {
@@ -280,6 +292,7 @@ public enum Server {
         } catch (SQLException e) {
             logger.error(e.getMessage());
         }
+        updateTripsCache();
     }
     public void updatePromotion(Promotion promotion) {
         try {
@@ -287,6 +300,7 @@ public enum Server {
         } catch (SQLException e) {
             logger.error(e.getMessage());
         }
+        updatePromotionsCache();
     }
     public void updateUser(User user) {
         try {
@@ -294,6 +308,7 @@ public enum Server {
         } catch (SQLException e) {
             logger.error(e.getMessage());
         }
+        updateUsersCache();
     }
     public void updateTicket(Ticket ticket) {
         try {
@@ -301,6 +316,7 @@ public enum Server {
         } catch (SQLException e) {
             logger.error(e.getMessage());
         }
+        updateTicketsCache();
     }
 
     // DELETE METHODS //
@@ -310,6 +326,7 @@ public enum Server {
         } catch (SQLException e) {
             logger.error(e.getMessage());
         }
+        updateTrainTypesCache();
     }
     public void deleteTrain(Train train) {
         try {
@@ -317,6 +334,7 @@ public enum Server {
         } catch (SQLException e) {
             logger.error(e.getMessage());
         }
+        updateTrainsCache();
     }
     public void deleteStation(Station station) {
         try {
@@ -324,6 +342,7 @@ public enum Server {
         } catch (SQLException e) {
             logger.error(e.getMessage());
         }
+        updateStationsCache();
     }
     public void deleteRoute(Route route) {
         try {
@@ -331,6 +350,7 @@ public enum Server {
         } catch (SQLException e) {
             logger.error(e.getMessage());
         }
+        updateRoutesCache();
     }
     public void deleteTrip(Trip trip) {
         try {
@@ -338,6 +358,7 @@ public enum Server {
         } catch (SQLException e) {
             logger.error(e.getMessage());
         }
+        updateTripsCache();
     }
     public void deletePromotion(Promotion promotion) {
         try {
@@ -345,6 +366,7 @@ public enum Server {
         } catch (SQLException e) {
             logger.error(e.getMessage());
         }
+        updatePromotionsCache();
     }
     public void deleteUser(User user) {
         try {
@@ -352,6 +374,7 @@ public enum Server {
         } catch (SQLException e) {
             logger.error(e.getMessage());
         }
+        updateUsersCache();
     }
     public void deleteTicket(Ticket ticket) {
         try {
@@ -359,6 +382,7 @@ public enum Server {
         } catch (SQLException e) {
             logger.error(e.getMessage());
         }
+        updateTicketsCache();
     }
 
     public static void main(String[] args) throws Exception {
