@@ -13,7 +13,7 @@ public class ManagementStationsPanel extends ManagementPanel<Station> implements
 
     @Override
     void createDialog() {
-        new CreateStationDialog().showDialog();
+        new CreateStationDialog().showDialog(mainFrame);
     }
 
     @Override
@@ -23,7 +23,7 @@ public class ManagementStationsPanel extends ManagementPanel<Station> implements
 
     @Override
     void deleteDialog() {
-        new DeleteStationDialog(itemsList.getSelectedValue()).showDialog();
+        new DeleteStationDialog(itemsList.getSelectedValue()).showDialog(mainFrame);
     }
 
     @Override

@@ -92,7 +92,7 @@ public class MainFrame extends JFrame implements Login.Observer, Logout.Observer
     private void onCustomerAreaButton() {
         if (!canShowCustomerAreaButton()) return;
         initCustomerAreaFrame();
-        customerAreaFrame.display();
+        customerAreaFrame.display(this);
     }
 
     private boolean canShowCustomerAreaButton() {
@@ -167,7 +167,7 @@ public class MainFrame extends JFrame implements Login.Observer, Logout.Observer
 
     private void showDialog(JDialog dialog) {
         dialog.pack();
-        dialog.setLocationRelativeTo(null);
+        dialog.setLocationRelativeTo(this);
         dialog.setVisible(true);
     }
 

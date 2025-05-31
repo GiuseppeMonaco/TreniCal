@@ -12,7 +12,7 @@ public class ManagementTripsPanel extends ManagementPanel<Trip> implements Trips
 
     @Override
     void createDialog() {
-        new CreateTripDialog().showDialog();
+        new CreateTripDialog().showDialog(mainFrame);
     }
 
     @Override
@@ -22,7 +22,7 @@ public class ManagementTripsPanel extends ManagementPanel<Trip> implements Trips
 
     @Override
     void deleteDialog() {
-        new DeleteTripDialog(itemsList.getSelectedValue()).showDialog();
+        new DeleteTripDialog(itemsList.getSelectedValue()).showDialog(mainFrame);
     }
 
     @Override

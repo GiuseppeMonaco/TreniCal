@@ -3,6 +3,7 @@ package it.trenical.server.gui;
 import it.trenical.server.Server;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.*;
 
 abstract class DeleteDialog<T> extends JDialog {
@@ -56,9 +57,9 @@ abstract class DeleteDialog<T> extends JDialog {
         dispose();
     }
 
-    void showDialog() {
+    void showDialog(Component parent) {
         pack();
-        setLocationRelativeTo(null);
+        setLocationRelativeTo(parent);
         setVisible(true);
     }
 

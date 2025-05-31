@@ -12,7 +12,7 @@ public class ManagementPromotionsPanel extends ManagementPanel<Promotion> implem
 
     @Override
     void createDialog() {
-        new CreatePromotionDialog().showDialog();
+        new CreatePromotionDialog().showDialog(mainFrame);
     }
 
     @Override
@@ -22,7 +22,7 @@ public class ManagementPromotionsPanel extends ManagementPanel<Promotion> implem
 
     @Override
     void deleteDialog() {
-        new DeletePromotionDialog(itemsList.getSelectedValue()).showDialog();
+        new DeletePromotionDialog(itemsList.getSelectedValue()).showDialog(mainFrame);
     }
 
     @Override

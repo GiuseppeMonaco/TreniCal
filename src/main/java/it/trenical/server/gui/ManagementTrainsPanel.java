@@ -12,7 +12,7 @@ public class ManagementTrainsPanel extends ManagementPanel<Train> implements Tra
 
     @Override
     void createDialog() {
-        new CreateTrainDialog().showDialog();
+        new CreateTrainDialog().showDialog(mainFrame);
     }
 
     @Override
@@ -22,7 +22,7 @@ public class ManagementTrainsPanel extends ManagementPanel<Train> implements Tra
 
     @Override
     void deleteDialog() {
-        new DeleteTrainDialog(itemsList.getSelectedValue()).showDialog();
+        new DeleteTrainDialog(itemsList.getSelectedValue()).showDialog(mainFrame);
     }
 
     @Override

@@ -56,9 +56,9 @@ abstract class CreateDialog extends JDialog {
         dispose();
     }
 
-    void showDialog() {
+    void showDialog(Component parent) {
         pack();
-        setLocationRelativeTo(null);
+        setLocationRelativeTo(parent);
         setVisible(true);
     }
 

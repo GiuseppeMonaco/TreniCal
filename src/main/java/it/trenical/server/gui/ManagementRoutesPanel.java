@@ -12,7 +12,7 @@ public class ManagementRoutesPanel extends ManagementPanel<Route> implements Rou
 
     @Override
     void createDialog() {
-        new CreateRouteDialog().showDialog();
+        new CreateRouteDialog().showDialog(mainFrame);
     }
 
     @Override
@@ -22,7 +22,7 @@ public class ManagementRoutesPanel extends ManagementPanel<Route> implements Rou
 
     @Override
     void deleteDialog() {
-        new DeleteRouteDialog(itemsList.getSelectedValue()).showDialog();
+        new DeleteRouteDialog(itemsList.getSelectedValue()).showDialog(mainFrame);
     }
 
     @Override

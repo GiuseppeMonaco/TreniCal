@@ -17,7 +17,7 @@ public class ManagementTrainTypesPanel extends ManagementPanel<TrainType> implem
 
     @Override
     void createDialog() {
-        new CreateTrainTypeDialog().showDialog();
+        new CreateTrainTypeDialog().showDialog(mainFrame);
     }
 
     @Override
@@ -27,6 +27,6 @@ public class ManagementTrainTypesPanel extends ManagementPanel<TrainType> implem
 
     @Override
     void deleteDialog() {
-        new DeleteTrainTypeDialog(itemsList.getSelectedValue()).showDialog();
+        new DeleteTrainTypeDialog(itemsList.getSelectedValue()).showDialog(mainFrame);
     }
 }

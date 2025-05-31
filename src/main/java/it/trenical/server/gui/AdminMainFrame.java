@@ -94,7 +94,7 @@ public class AdminMainFrame extends JFrame {
 
     private void showDialog(JDialog dialog) {
         dialog.pack();
-        dialog.setLocationRelativeTo(null);
+        dialog.setLocationRelativeTo(this);
         dialog.setVisible(true);
     }
 
