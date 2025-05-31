@@ -1,6 +1,7 @@
 package it.trenical.client.gui;
 
 import it.trenical.client.Client;
+import it.trenical.client.observer.FidelityUser;
 import it.trenical.client.observer.TicketsCache;
 import it.trenical.common.Ticket;
 import it.trenical.common.Trip;
@@ -10,12 +11,14 @@ import java.awt.*;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
 
-public class CustomerAreaFrame extends JFrame implements TicketsCache.Observer {
+public class CustomerAreaFrame extends JFrame implements TicketsCache.Observer, FidelityUser.Observer {
     private JList<Ticket> ticketList;
     private JPanel mainPanel;
     private JButton buttonClose;
     private JButton buttonEdit;
     private JButton buttonBuy;
+    private JButton buttonFidelity;
+    private JLabel fidelityLabel;
 
     static private final SimpleDateFormat dateFormatter = new SimpleDateFormat("dd/MM/yyyy HH:mm");
     private final DefaultListModel<Ticket> ticketListModel;
@@ -27,6 +30,7 @@ public class CustomerAreaFrame extends JFrame implements TicketsCache.Observer {
         mainFrame = MainFrame.getInstance();
         client = mainFrame.getClient();
         client.ticketsCacheSub.attach(this);
+        client.fidelityUserSub.attach(this);
 
         setContentPane(mainPanel);
         setTitle("TreniCal - Area Personale");
@@ -45,6 +49,16 @@ public class CustomerAreaFrame extends JFrame implements TicketsCache.Observer {
         buttonEdit.addActionListener(actionEvent -> onButtonEdit());
 
         buttonBuy.addActionListener(actionEvent -> onButtonBuy());
+
+        buttonFidelity.addActionListener(actionEvent -> onButtonFidelity());
+    }
+
+    private void onButtonFidelity() {
+        if(client.getCurrentUser().isFidelity()) {
+            mainFrame.cancelFidelity();
+        } else {
+            mainFrame.becomeFidelity();
+        }
     }
 
     private void onButtonBuy() {
@@ -76,14 +90,25 @@ public class CustomerAreaFrame extends JFrame implements TicketsCache.Observer {
         ticketListModel.addAll(cache);
     }
 
-    void display() {
+    void display(Component parent) {
         pack();
-        setLocationRelativeTo(null);
+        setLocationRelativeTo(parent);
         setVisible(true);
     }
 
     void close() {
         dispose();
+    }
+
+    @Override
+    public void updateOnFidelityChange() {
+        if(client.getCurrentUser().isFidelity()) {
+            fidelityLabel.setVisible(true);
+            buttonFidelity.setText("Cancella Fedeltà");
+        } else {
+            fidelityLabel.setVisible(false);
+            buttonFidelity.setText("Diventa Fedele");
+        }
     }
 
     private static class MultilineCellRenderer extends JTextArea implements ListCellRenderer<Object> {

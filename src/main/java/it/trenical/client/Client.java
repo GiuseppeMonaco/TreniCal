@@ -284,6 +284,7 @@ public class Client {
     }
     public void cancelFidelity() throws UnreachableServer, InvalidSessionTokenException, NoChangeException {
         request.cancelFidelity(currentToken);
+        if(currentPromotion != null && currentPromotion.isOnlyFidelityUser()) setCurrentPromotion(null);
         updateCurrentUser();
     }
 }

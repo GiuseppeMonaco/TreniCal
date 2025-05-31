@@ -13,6 +13,7 @@ import it.trenical.common.Promotion;
 import it.trenical.common.Ticket;
 import it.trenical.common.Trip;
 import it.trenical.common.User;
+import it.trenical.common.gui.GenericConfirmDialog;
 import it.trenical.common.gui.GenericOKDialog;
 
 import javax.swing.*;
@@ -352,6 +353,13 @@ public class MainFrame extends JFrame implements Login.Observer, Logout.Observer
     }
     void becomeFidelity() {
         try {
+            if(!GenericConfirmDialog.showDialog(this,"""
+                    <html><div style='text-align: center;'>
+                    Ottieni tantissimi vantaggi diventando un utente fedele!<br>
+                    Il programma FedeltàTreno ha un costo di 9,99€ al mese.<br>
+                    Cliccando su conferma accetti di attivare l'abbonamento.
+                    </div></html>
+                    """)) return;
             client.becomeFidelity();
         } catch (UnreachableServer e) {
             unreachableServerDialog();
@@ -361,6 +369,14 @@ public class MainFrame extends JFrame implements Login.Observer, Logout.Observer
     }
     void cancelFidelity() {
         try {
+            if(!GenericConfirmDialog.showDialog(this,"""
+                    <html><div style='text-align: center;'>
+                    Attenzione, ti stai disiscrivendo dal programma FedeltàTreno.<br>
+                    Così facendo perderai tutti gli incredibili ed esclusivi vantaggi.<br>
+                    Cliccando su conferma la sottoscrizione cesserà con effetto immediato.<br>
+                    Potrai iscriverti nuovamente appena vorrai!
+                    </div></html>
+                    """)) return;
             client.cancelFidelity();
         } catch (UnreachableServer e) {
             unreachableServerDialog();
