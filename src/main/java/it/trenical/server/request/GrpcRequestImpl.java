@@ -2,6 +2,7 @@ package it.trenical.server.request;
 
 import io.grpc.stub.StreamObserver;
 import it.trenical.common.*;
+import it.trenical.common.Promotion;
 import it.trenical.common.Ticket;
 import it.trenical.common.User;
 import it.trenical.grpc.*;
@@ -16,6 +17,7 @@ import org.slf4j.LoggerFactory;
 
 import java.sql.SQLException;
 import java.util.Collection;
+import java.util.LinkedList;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class GrpcRequestImpl extends RequestServiceGrpc.RequestServiceImplBase {
@@ -55,7 +57,12 @@ public class GrpcRequestImpl extends RequestServiceGrpc.RequestServiceImplBase {
         int errorCode = SUCCESS_CODE;
         try {
             db.atomicTransaction(() -> {
+                Collection<Promotion> currentUsedPromo = new LinkedList<>();
                 for(SQLiteTicket t : tickets) {
+                    Promotion p = t.getPromotion();
+                    if(!currentUsedPromo.contains(p) && SQLiteTicket.hasUserUtilizedPromotion(db,user,t.getPromotion()))
+                        throw new SQLException("Promo already used for this user, cannot buy tickets");
+                    currentUsedPromo.add(p);
                     t.insertRecord(db);
                 }
             });
@@ -91,8 +98,13 @@ public class GrpcRequestImpl extends RequestServiceGrpc.RequestServiceImplBase {
 
         int errorCode = SUCCESS_CODE;
         try {
+            Collection<Promotion> currentUsedPromo = new LinkedList<>();
             db.atomicTransaction(() -> {
                 for(SQLiteTicket t : tickets) {
+                    Promotion p = t.getPromotion();
+                    if(!currentUsedPromo.contains(p) && SQLiteTicket.hasUserUtilizedPromotion(db,user,t.getPromotion()))
+                        throw new SQLException("Promo already used for this user, cannot book tickets");
+                    currentUsedPromo.add(p);
                     t.insertRecord(db);
                 }
             });

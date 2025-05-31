@@ -381,6 +381,21 @@ public class SQLiteTicket implements SQLiteTable<Ticket>, Ticket {
         st.executeUpdate();
     }
 
+    public static boolean hasUserUtilizedPromotion(DatabaseConnection db, User user, Promotion promotion) throws SQLException {
+        if (promotion == null) return false;
+        Connection c = db.getConnection();
+        PreparedStatement st = c.prepareStatement(String.format("""
+                SELECT * FROM %s WHERE
+                userEmail=? AND promotion=?
+                """,
+                TABLE_NAME
+        ));
+        st.setString(1, user.getEmail());
+        st.setString(2, promotion.getCode());
+        ResultSet rs = st.executeQuery();
+        return rs.next();
+    }
+
     @Override
     public int getId() {
         return data.getId();

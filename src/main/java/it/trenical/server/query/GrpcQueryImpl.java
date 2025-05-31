@@ -19,6 +19,7 @@ import it.trenical.server.db.SQLite.*;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -153,7 +154,7 @@ public class GrpcQueryImpl extends QueryServiceGrpc.QueryServiceImplBase {
         responseObserver.onCompleted();
     }
 
-    @Override // TODO aggiungere controllo se la promo è già stata usata dall'utente
+    @Override // TODO aggiungere nella risposta se la promozione è stata già utilizzata
     public void queryPromotion(QueryPromotionRequest request, StreamObserver<QueryPromotionResponse> responseObserver) {
 
         QueryPromotionResponse.Builder b = QueryPromotionResponse.newBuilder();
@@ -168,14 +169,18 @@ public class GrpcQueryImpl extends QueryServiceGrpc.QueryServiceImplBase {
         b.setWasTokenValid(true);
 
         SQLitePromotion promo = new SQLitePromotion(GrpcConverter.convert(request.getPromotion()));
-        Promotion dbPromotion = null;
+        AtomicReference<Promotion> dbPromotion = new AtomicReference<>();
         try {
-            dbPromotion = promo.getRecord(db);
+            db.atomicTransaction(() -> {
+                Promotion tempPromo= promo.getRecord(db);
+                if(SQLiteTicket.hasUserUtilizedPromotion(db,user,tempPromo)) return;
+                dbPromotion.set(tempPromo);
+            });
         } catch (SQLException e) {
             logger.warn(e.getMessage());
         }
 
-        if (dbPromotion != null) b.setPromotion(GrpcConverter.convert(dbPromotion));
+        if (dbPromotion.get() != null) b.setPromotion(GrpcConverter.convert(dbPromotion.get()));
 
         responseObserver.onNext(b.build());
         responseObserver.onCompleted();
