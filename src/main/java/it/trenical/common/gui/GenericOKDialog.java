@@ -1,4 +1,4 @@
-package it.trenical.client.gui;
+package it.trenical.common.gui;
 
 import javax.swing.*;
 import java.awt.event.*;
@@ -14,7 +14,7 @@ public class GenericOKDialog extends JDialog {
         setModal(true);
         getRootPane().setDefaultButton(buttonOK);
 
-        messageLabel.setText(message);
+        messageLabel.setText(message.trim());
 
         buttonOK.addActionListener(e -> onButtonOK());
 

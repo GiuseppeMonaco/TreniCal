@@ -1,4 +1,4 @@
-package it.trenical.client.observer;
+package it.trenical.server.observer;
 
 import it.trenical.common.observer.AbstractSubject;
 

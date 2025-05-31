@@ -1,0 +1,194 @@
+package it.trenical.server.gui;
+
+import it.trenical.common.*;
+import it.trenical.server.Server;
+
+import javax.swing.*;
+import javax.swing.border.TitledBorder;
+import java.awt.*;
+import java.text.SimpleDateFormat;
+import java.util.Collection;
+
+abstract class ManagementPanel<T> {
+    private JPanel main;
+    private JButton buttonCreate;
+    private JButton buttonDelete;
+    private JButton buttonEdit;
+    JList<T> itemsList;
+
+    final DefaultListModel<T> itemsListModel;
+
+    AdminMainFrame mainFrame;
+    Server server;
+
+    static private final SimpleDateFormat dateFormatter = new SimpleDateFormat("dd/MM/yyyy HH:mm");
+
+    ManagementPanel(String itemsName, String itemName) {
+
+        mainFrame = AdminMainFrame.getInstance();
+        server = mainFrame.getServer();
+
+        if (main.getBorder() instanceof TitledBorder tb) {
+            tb.setTitle(String.format(tb.getTitle(),itemsName));
+            buttonCreate.setText(String.format(buttonCreate.getText(),itemName));
+            buttonDelete.setText(String.format(buttonDelete.getText(),itemName));
+            buttonEdit.setText(String.format(buttonEdit.getText(),itemName));
+        }
+
+        itemsListModel = new DefaultListModel<>();
+        itemsList.setModel(itemsListModel);
+        itemsList.setCellRenderer(new MultilineCellRenderer());
+        itemsList.addListSelectionListener(listSelectionEvent -> onItemListChange());
+
+        buttonCreate.addActionListener(actionEvent -> onButtonCreate());
+
+        buttonDelete.setEnabled(false);
+        buttonDelete.addActionListener(actionEvent -> onButtonDelete());
+
+        buttonEdit.setVisible(false); // TODO implement edit functions
+        buttonEdit.setEnabled(false);
+        buttonEdit.addActionListener(actionEvent -> onButtonEdit());
+    }
+
+    private void onButtonEdit() {
+        if(!canButtonEditBeEnabled()) return;
+        editDialog();
+    }
+
+    private void onButtonDelete() {
+        if(!canButtonDeleteBeEnabled()) return;
+        deleteDialog();
+    }
+
+    private void onButtonCreate() {
+        createDialog();
+    }
+
+    abstract void createDialog();
+    abstract void editDialog();
+    abstract void deleteDialog();
+
+
+    private void onItemListChange() {
+        buttonDelete.setEnabled(canButtonDeleteBeEnabled());
+        buttonEdit.setEnabled(canButtonEditBeEnabled());
+    }
+
+    private boolean canButtonEditBeEnabled() {
+        return !itemsList.isSelectionEmpty();
+    }
+
+    private boolean canButtonDeleteBeEnabled() {
+        return !itemsList.isSelectionEmpty();
+    }
+
+    void updateItemsList(Collection<T> list) {
+        itemsListModel.clear();
+        itemsListModel.addAll(list);
+        onItemListChange();
+    }
+
+    void disableCreateButton() {
+        buttonCreate.setVisible(false);
+    }
+    void disableEditButton() {
+        buttonEdit.setVisible(false);
+    }
+    void disableDeleteButton() {
+        buttonDelete.setVisible(false);
+    }
+
+    JPanel getPanel() {
+        return main;
+    }
+
+    static class MultilineCellRenderer extends JTextArea implements ListCellRenderer<Object> {
+
+        @Override
+        public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+
+            if (value instanceof Trip t) {
+                String date = dateFormatter.format(t.getDepartureTime().getTime());
+
+                Route r = t.getRoute();
+                Train tr = t.getTrain();
+                value = String.format(
+                        "### Da %s a %s ###\nData: %s\nTreno: %d - %s\nPosti Economy: %d - Business: %d",
+                        r.getDepartureStation().getTown(),
+                        r.getArrivalStation().getTown(),
+                        date,
+                        tr.getId(),
+                        tr.getType().getName(),
+                        t.getAvailableEconomySeats(),
+                        t.getAvailableBusinessSeats()
+                );
+            } else if (value instanceof TrainType tt) {
+                value = String.format(
+                        "### Nome: %s ###\nPrezzo: %.2f",
+                        tt.getName(),
+                        tt.getPrice()
+                );
+            } else if (value instanceof Train t) {
+                value = String.format(
+                        "### ID: %d ###\nTipo: %s\nPosti Economy: %d\nPosti Business: %d",
+                        t.getId(),
+                        t.getType().getName(),
+                        t.getEconomyCapacity(),
+                        t.getBusinessCapacity()
+                );
+            } else if (value instanceof Station st) {
+                value = String.format(
+                        "### Nome: %s ###\nCittà: %s\nIndirizzo: %s\nProvincia: %s",
+                        st.getName(),
+                        st.getTown(),
+                        st.getAddress(),
+                        st.getProvince()
+                );
+            } else if (value instanceof Route r) {
+                value = String.format(
+                        "### Da %s a %s ###\nDistanza: %d",
+                        r.getDepartureStation().getName(),
+                        r.getArrivalStation().getName(),
+                        r.getDistance()
+                );
+            } else if (value instanceof Promotion p) {
+                value = String.format(
+                        "### Codice: %s ###\nNome: %s\nSolo Fedeltà: %s\nSconto: %d perc.",
+                        p.getCode(),
+                        p.getName(),
+                        p.isOnlyFidelityUser() ? "Si" : "No",
+                        (int)((1-p.getDiscount())*100)
+                );
+            } else if (value instanceof User u) {
+                value = String.format(
+                        "### Email: %s ###\nFedele: %s",
+                        u.getEmail(),
+                        u.isFidelity() ? "Si" : "No"
+                );
+            } else if (value instanceof Ticket tk) {
+                Trip tp = tk.getTrip();
+                Route r = tp.getRoute();
+                Train tr = tp.getTrain();
+                String date = dateFormatter.format(tp.getDepartureTime().getTime());
+                value = String.format(
+                        "### ID: %d ###\nUtente: %s\nPasseggero: %s %s\nTratta: da %s a %s\nData: %s\nTreno: %d - %s",
+                        tk.getId(),
+                        tk.getUser().getEmail(),
+                        tk.getName(),
+                        tk.getSurname(),
+                        r.getDepartureStation().getTown(),
+                        r.getArrivalStation().getTown(),
+                        date,
+                        tr.getId(),
+                        tr.getType().getName()
+                );
+            }
+
+            setText(value.toString());
+            setFont(list.getFont());
+            setBackground(isSelected ? list.getSelectionBackground() : list.getBackground());
+            setForeground(isSelected ? list.getSelectionForeground() : list.getForeground());
+            return this;
+        }
+    }
+}
