@@ -36,7 +36,7 @@ public class GrpcAuthManager implements AuthManager {
                 throw new InvalidCredentialsException(String.format("Credentials are not valid for %s",user.getEmail()));
             return reply;
         } catch (StatusRuntimeException e) {
-            logger.warn("Unreachable server");
+            logger.warn("Unreachable server trying to login");
             throw new UnreachableServer("Unreachable server");
         }
     }
@@ -52,7 +52,7 @@ public class GrpcAuthManager implements AuthManager {
             if (!blockingStub.logout(request).getIsDone())
                 throw new InvalidSessionTokenException(String.format("%s is not a valid token", token.token()));
         } catch (StatusRuntimeException e) {
-            logger.warn("Unreachable server");
+            logger.warn("Unreachable server trying to logout");
             throw new UnreachableServer("Unreachable server");
         }
     }
@@ -71,7 +71,7 @@ public class GrpcAuthManager implements AuthManager {
                 throw new UserAlreadyExistsException(String.format("User %s already exists",user.getEmail()));
             return reply;
         } catch (StatusRuntimeException e) {
-            logger.warn("Unreachable server");
+            logger.warn("Unreachable server trying to signup");
             throw new UnreachableServer("Unreachable server");
         }
     }
