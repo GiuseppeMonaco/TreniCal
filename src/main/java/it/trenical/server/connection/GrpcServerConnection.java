@@ -45,22 +45,19 @@ public class GrpcServerConnection implements ServerConnection {
                 .addService(new GrpcRequestImpl())
                 .build()
                 .start();
-        logger.info("Server started, listening on port {}", PORT);
+        logger.info("gRPC server started, listening on port {}", PORT);
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            // Use stderr here since the logger may have been reset by its JVM shutdown hook.
-            System.err.println("Shutting down gRPC server since JVM is shutting down");
+            server.shutdown();
             try {
                 this.stop();
             } catch (InterruptedException e) {
-                if (server != null) {
-                    server.shutdownNow();
-                }
+                Thread.currentThread().interrupt();
                 e.printStackTrace(System.err);
             } finally {
                 executor.shutdown();
             }
-            System.err.println("Server shut down");
+            server.shutdownNow();
         }));
     }
 
@@ -78,6 +75,7 @@ public class GrpcServerConnection implements ServerConnection {
         if (server != null) {
             server.awaitTermination();
         }
+        logger.info("gRPC server stopped");
     }
 
 }
