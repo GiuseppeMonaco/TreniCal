@@ -83,6 +83,18 @@ class SQLiteTest {
         assertDoesNotThrow(() -> assertTicketEquals(ticketDb, ticketDb.getRecord(db)));
         logger.info("All sample records getted successfully");
 
+        // GET ALL METHODS //
+        assertDoesNotThrow(() -> assertFalse(userDb.getAllRecords(db).isEmpty()));
+        assertDoesNotThrow(() -> assertFalse(promotionDb.getAllRecords(db).isEmpty()));
+        assertDoesNotThrow(() -> assertFalse(trainTypeDb.getAllRecords(db).isEmpty()));
+        assertDoesNotThrow(() -> assertFalse(trainDb.getAllRecords(db).isEmpty()));
+        assertDoesNotThrow(() -> assertFalse(stationDb.getAllRecords(db).isEmpty()));
+        assertDoesNotThrow(() -> assertFalse(stationDb2.getAllRecords(db).isEmpty()));
+        assertDoesNotThrow(() -> assertFalse(routeDb.getAllRecords(db).isEmpty()));
+        assertDoesNotThrow(() -> assertFalse(tripDb.getAllRecords(db).isEmpty()));
+        assertDoesNotThrow(() -> assertFalse(ticketDb.getAllRecords(db).isEmpty()));
+        logger.info("All sample records getted successfully querying all");
+
         // DELETE METHODS //
         assertDoesNotThrow(() -> ticketDb.deleteRecord(db));
         assertDoesNotThrow(() -> assertNull(ticketDb.getRecord(db)));

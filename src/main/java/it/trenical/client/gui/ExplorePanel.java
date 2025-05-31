@@ -73,7 +73,17 @@ class ExplorePanel implements
 
     private void createUIComponents() {
         numTicket = new JSpinner(new SpinnerNumberModel(1, 1, 99, 1));
-        departureTime = new JSpinner(new SpinnerDateModel());
+
+        Calendar cal = Calendar.getInstance();
+        cal.set(Calendar.MINUTE, 0);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+        cal.add(Calendar.HOUR, 1);
+        Date minDate = cal.getTime();
+        cal.add(Calendar.YEAR, 500);
+        Date maxDate = cal.getTime();
+
+        departureTime = new JSpinner(new SpinnerDateModel(minDate, minDate, maxDate, Calendar.DAY_OF_MONTH));
     }
 
     private void onButtonSearch() {

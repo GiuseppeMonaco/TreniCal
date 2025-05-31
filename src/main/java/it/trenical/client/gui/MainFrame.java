@@ -57,14 +57,18 @@ public class MainFrame extends JFrame implements Login.Observer, Logout.Observer
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
-                int conferma = JOptionPane.showConfirmDialog(
+                Object[] options = {"No", "Sì"};
+                int conferma = JOptionPane.showOptionDialog(
                         MainFrame.this,
                         "Sei sicuro di voler chiudere?",
                         "TreniCal",
-                        JOptionPane.YES_NO_OPTION
+                        JOptionPane.YES_NO_OPTION,
+                        JOptionPane.QUESTION_MESSAGE,
+                        null,
+                        options,
+                        options[0]
                 );
-
-                if (conferma == JOptionPane.YES_OPTION) {
+                if (conferma == 1) {
                     if (client.isAuthenticated()) {
                         try {
                             client.logout();
