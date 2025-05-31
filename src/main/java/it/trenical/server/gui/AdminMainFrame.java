@@ -53,8 +53,8 @@ public class AdminMainFrame extends JFrame {
                         options[0]
                 );
                 if (conferma == 1) {
-                    server.closeDatabase();
                     dispose();
+                    System.exit(0);
                 }
             }
         });
@@ -136,7 +136,10 @@ public class AdminMainFrame extends JFrame {
 
     public static void main(String[] args) {
         AdminMainFrame m = AdminMainFrame.getInstance();
+        Server server = m.getServer();
         m.init();
         m.display();
+        server.waitUntilServerConnectionShutdown();
+        server.closeDatabase();
     }
 }
