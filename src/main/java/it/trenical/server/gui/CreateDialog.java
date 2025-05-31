@@ -4,6 +4,7 @@ import it.trenical.common.Route;
 import it.trenical.common.Station;
 import it.trenical.common.Train;
 import it.trenical.common.TrainType;
+import it.trenical.common.gui.GenericOKDialog;
 import it.trenical.server.Server;
 
 import javax.swing.*;
@@ -54,6 +55,10 @@ abstract class CreateDialog extends JDialog {
 
     private void onCancel() {
         dispose();
+    }
+
+    void itemSuccessfullyAddedDialog() {
+        GenericOKDialog.showDialog(this,"Elemento aggiunto con successo!");
     }
 
     void showDialog(Component parent) {

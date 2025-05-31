@@ -139,7 +139,7 @@ public class EditTicketDialog extends JDialog {
     }
 
     private void onConfirm() {
-        mainFrame.editTicket(newTicket);
+        mainFrame.editTicket(newTicket,this);
         dispose();
     }
 

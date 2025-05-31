@@ -89,7 +89,7 @@ class BuyBookedTicketDialog extends JDialog {
     private void onBuy() {
         Collection<Ticket> req = new LinkedList<>();
         req.add(ticket);
-        mainFrame.payBookedTickets(req);
+        mainFrame.payBookedTickets(req,this);
         dispose();
     }
 

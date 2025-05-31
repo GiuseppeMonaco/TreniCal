@@ -73,7 +73,7 @@ public class CreateTripDialog extends CreateDialog implements TrainsCache.Observ
             mainFrame.violatedForeignKeyDialog();
             return;
         }
-        mainFrame.itemSuccessfullyAddedDialog();
+        itemSuccessfullyAddedDialog();
         dispose();
     }
 

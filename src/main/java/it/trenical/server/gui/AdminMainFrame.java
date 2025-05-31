@@ -66,26 +66,22 @@ public class AdminMainFrame extends JFrame {
     }
 
     void violatedPrimaryKeyDialog() {
-        showDialog(new GenericOKDialog("""
+        GenericOKDialog.showDialog(this,"""
                 <html><div style='text-align: center; width: 300px;'>
                 Un elemento con questi identificativi esiste già.<br>
                 Perfavore utilizza degli identificativi differenti.
                 </div></html>
-        """));
+        """);
     }
 
     void violatedForeignKeyDialog() {
-        showDialog(new GenericOKDialog("""
+        GenericOKDialog.showDialog(this,"""
                 <html><div style='text-align: center; width: 300px;'>
                 Dei campi esterni non esistono.<br>
                 Potrebbero essere stati eliminati.<br>
                 Perfavore riprova.
                 </div></html>
-        """));
-    }
-
-    void itemSuccessfullyAddedDialog() {
-        showDialog(new GenericOKDialog("Elemento aggiunto con successo!"));
+        """);
     }
 
     Server getServer() {

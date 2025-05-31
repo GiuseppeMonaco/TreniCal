@@ -56,7 +56,7 @@ public class CreateTrainTypeDialog extends CreateDialog {
             mainFrame.violatedPrimaryKeyDialog();
             return;
         }
-        mainFrame.itemSuccessfullyAddedDialog();
+        itemSuccessfullyAddedDialog();
         dispose();
     }
 }

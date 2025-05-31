@@ -5,6 +5,7 @@ import it.trenical.client.auth.exceptions.InvalidSessionTokenException;
 import it.trenical.client.connection.exceptions.UnreachableServer;
 import it.trenical.client.observer.*;
 import it.trenical.common.*;
+import it.trenical.common.gui.GenericOKDialog;
 
 import javax.swing.*;
 import javax.swing.border.Border;
@@ -162,7 +163,7 @@ public class CheckoutPanel implements
         }
         promoValidLabel.setVisible(false);
 
-        mainFrame.genericOKDialog(dialogMessage);
+        GenericOKDialog.showDialog(mainFrame,dialogMessage);
         mainFrame.showExplorePanel();
     }
 

@@ -79,7 +79,7 @@ public class CreateRouteDialog extends CreateDialog implements StationsCache.Obs
             mainFrame.violatedForeignKeyDialog();
             return;
         }
-        mainFrame.itemSuccessfullyAddedDialog();
+        itemSuccessfullyAddedDialog();
         dispose();
     }
 

@@ -1,6 +1,7 @@
 package it.trenical.common.gui;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.*;
 
 public class GenericOKDialog extends JDialog {
@@ -8,7 +9,7 @@ public class GenericOKDialog extends JDialog {
     private JButton buttonOK;
     private JLabel messageLabel;
 
-    public GenericOKDialog(String message) {
+    private GenericOKDialog(String message) {
 
         setContentPane(contentPane);
         setModal(true);
@@ -32,5 +33,12 @@ public class GenericOKDialog extends JDialog {
 
     private void onButtonOK() {
         dispose();
+    }
+
+    public static void showDialog(Component parent, String message) {
+        GenericOKDialog d = new GenericOKDialog(message);
+        d.pack();
+        d.setLocationRelativeTo(parent);
+        d.setVisible(true);
     }
 }

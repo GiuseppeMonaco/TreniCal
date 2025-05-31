@@ -172,6 +172,12 @@ public class MainFrame extends JFrame implements Login.Observer, Logout.Observer
         dialog.setVisible(true);
     }
 
+    private void showDialog(JDialog dialog, Component parent) {
+        dialog.pack();
+        dialog.setLocationRelativeTo(parent);
+        dialog.setVisible(true);
+    }
+
     void loginDialog() {
         showDialog(new LoginDialog());
     }
@@ -193,15 +199,11 @@ public class MainFrame extends JFrame implements Login.Observer, Logout.Observer
     }
 
     void payBookedTicketDialog(Ticket ticket) {
-        showDialog(new BuyBookedTicketDialog(ticket));
+        showDialog(new BuyBookedTicketDialog(ticket),customerAreaFrame);
     }
 
     void editTicketDialog(Ticket ticket) {
-        showDialog(new EditTicketDialog(ticket));
-    }
-
-    void genericOKDialog(String message) {
-        showDialog(new GenericOKDialog(message));
+        showDialog(new EditTicketDialog(ticket),customerAreaFrame);
     }
 
     @Override
@@ -330,10 +332,10 @@ public class MainFrame extends JFrame implements Login.Observer, Logout.Observer
         }
     }
 
-    void payBookedTickets(Collection<Ticket> tickets) {
+    void payBookedTickets(Collection<Ticket> tickets, Component dialogsParent) {
         try {
             client.payBookedTickets(tickets);
-            genericOKDialog("Biglietto acquistato con successo!");
+            GenericOKDialog.showDialog(dialogsParent,"Biglietto acquistato con successo!");
         } catch (UnreachableServer e) {
             unreachableServerDialog();
         } catch (InvalidSessionTokenException | InvalidTicketException e) {
@@ -341,16 +343,17 @@ public class MainFrame extends JFrame implements Login.Observer, Logout.Observer
         }
     }
 
-    void editTicket(Ticket ticket) {
+    void editTicket(Ticket ticket, Component dialogsParent) {
         try {
             client.editTicket(ticket);
-            genericOKDialog("Biglietto modificato con successo!");
+            GenericOKDialog.showDialog(dialogsParent,"Biglietto modificato con successo!");
         } catch (UnreachableServer e) {
             unreachableServerDialog();
         } catch (InvalidSessionTokenException | InvalidTicketException | NoChangeException e) {
             throw new RuntimeException(e);
         }
     }
+
     void becomeFidelity() {
         try {
             if(!GenericConfirmDialog.showDialog(this,"""

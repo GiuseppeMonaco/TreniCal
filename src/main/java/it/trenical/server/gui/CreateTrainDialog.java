@@ -93,7 +93,7 @@ public class CreateTrainDialog extends CreateDialog implements TrainTypesCache.O
             mainFrame.violatedForeignKeyDialog();
             return;
         }
-        mainFrame.itemSuccessfullyAddedDialog();
+        itemSuccessfullyAddedDialog();
         dispose();
     }
 

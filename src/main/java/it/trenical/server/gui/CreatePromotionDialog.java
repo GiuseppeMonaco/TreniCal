@@ -79,7 +79,7 @@ public class CreatePromotionDialog extends CreateDialog {
             mainFrame.violatedPrimaryKeyDialog();
             return;
         }
-        mainFrame.itemSuccessfullyAddedDialog();
+        itemSuccessfullyAddedDialog();
         dispose();
     }
 }

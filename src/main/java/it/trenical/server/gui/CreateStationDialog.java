@@ -81,7 +81,7 @@ public class CreateStationDialog extends CreateDialog {
             mainFrame.violatedPrimaryKeyDialog();
             return;
         }
-        mainFrame.itemSuccessfullyAddedDialog();
+        itemSuccessfullyAddedDialog();
         dispose();
     }
 }
