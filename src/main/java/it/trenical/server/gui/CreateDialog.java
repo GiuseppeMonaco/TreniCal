@@ -1,0 +1,124 @@
+package it.trenical.server.gui;
+
+import it.trenical.common.Route;
+import it.trenical.common.Station;
+import it.trenical.common.Train;
+import it.trenical.common.TrainType;
+import it.trenical.server.Server;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
+
+abstract class CreateDialog extends JDialog {
+    private JPanel contentPane;
+    private JPanel formPanel;
+    JButton buttonCreate;
+    JButton buttonCancel;
+
+    AdminMainFrame mainFrame;
+    Server server;
+
+    public CreateDialog() {
+        mainFrame = AdminMainFrame.getInstance();
+        server = mainFrame.getServer();
+
+        setContentPane(contentPane);
+        setModal(true);
+        getRootPane().setDefaultButton(buttonCreate);
+
+        buttonCreate.setEnabled(false);
+        buttonCreate.addActionListener(e -> onCreate());
+        buttonCancel.addActionListener(e -> onCancel());
+
+        // call onCancel() when cross is clicked
+        setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
+        addWindowListener(new WindowAdapter() {
+            public void windowClosing(WindowEvent e) {
+                onCancel();
+            }
+        });
+
+        // call onCancel() on ESCAPE
+        contentPane.registerKeyboardAction(e -> onCancel(), KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+    }
+
+    void addToFormPane(JPanel panel) {
+        formPanel.add(panel);
+    }
+
+    private void onCreate() {
+        if(!canCreateButtonBeEnabled()) return;
+        createItem();
+    }
+
+    private void onCancel() {
+        dispose();
+    }
+
+    void showDialog() {
+        pack();
+        setLocationRelativeTo(null);
+        setVisible(true);
+    }
+
+    float parseFloat(String text) {
+        try {
+            return Float.parseFloat(text);
+        } catch (NumberFormatException e) {
+            return -1;
+        }
+    }
+
+    int parseInteger(String text) {
+        try {
+            return Integer.parseInt(text);
+        } catch (NumberFormatException e) {
+            return -1;
+        }
+    }
+
+    boolean isFloatValid(String text) {
+        if(text.isBlank()) return false;
+        try {
+            Float.parseFloat(text);
+        } catch (NumberFormatException e) {
+            return false;
+        }
+        return true;
+    }
+
+    boolean isIntegerValid(String text) {
+        if(text.isBlank()) return false;
+        try {
+            Integer.parseInt(text);
+        } catch (NumberFormatException e) {
+            return false;
+        }
+        return true;
+    }
+
+    abstract boolean canCreateButtonBeEnabled();
+    abstract void createItem();
+
+    /**
+     * This class is nedeed to change render behaviour of JComboBox component.
+     */
+    static class CustomListCellRenderer extends DefaultListCellRenderer {
+
+        @Override
+        public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            if (value instanceof TrainType tt) {
+                value = tt.getName();
+            } else if (value instanceof Train t) {
+                value = String.format("%d - %s", t.getId(), t.getType().getName());
+            } else if (value instanceof Station st) {
+                value = String.format("%s - %s",st.getName(),st.getTown());
+            } else if (value instanceof Route r) {
+                value = String.format("Da %s a %s",r.getDepartureStation().getTown(),r.getArrivalStation().getTown());
+            }
+            return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+        }
+
+    }
+}

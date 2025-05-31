@@ -1,8 +1,9 @@
 package it.trenical.server.gui;
 
+import it.trenical.common.gui.GenericOKDialog;
 import it.trenical.server.Server;
 import it.trenical.server.connection.GrpcServerConnection;
-import it.trenical.server.db.SQLite.SQLiteConnection;
+import it.trenical.server.db.SQLite.*;
 
 import javax.swing.*;
 import java.awt.event.WindowAdapter;
@@ -13,19 +14,19 @@ public class AdminMainFrame extends JFrame {
 
     private static AdminMainFrame INSTANCE;
 
-    private Server server;
+    private final Server server;
 
     private JPanel mainPanel;
     private JPanel managementPanel;
 
-    private final JPanel trainTypesManagementPanel;
-    //private final JPanel trainsManagementPanel; // TODO
-    //private final JPanel stationsManagementPanel;
-    //private final JPanel routesManagementPanel;
-    //private final JPanel tripsManagementPanel;
-    //private final JPanel promotionsManagementPanel;
-
-    //private final JPanel ticketsManagementPanel;
+    private JPanel trainTypesManagementPanel;
+    private JPanel trainsManagementPanel;
+    private JPanel stationsManagementPanel;
+    private JPanel routesManagementPanel;
+    private JPanel tripsManagementPanel;
+    private JPanel promotionsManagementPanel;
+    private JPanel usersManagementPanel;
+    private JPanel ticketsManagementPanel;
 
     private AdminMainFrame() {
 
@@ -37,34 +38,22 @@ public class AdminMainFrame extends JFrame {
         setTitle("TreniCal Admin");
         setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 
-        trainTypesManagementPanel = new TrainTypesManagementPanel().getPanel();
-        //trainsManagementPanel = new TrainsManagementPanel().getPanel(); // TODO
-        //stationsManagementPanel = new StationsManagementPanel().getPanel();
-        //routesManagementPanel = new RoutesManagementPanel().getPanel();
-        //tripsManagementPanel = new TripsManagementPanel().getPanel();
-        //promotionsManagementPanel = new PromotionsManagementPanel().getPanel();
-
-        managementPanel.setLayout(new BoxLayout(managementPanel, BoxLayout.X_AXIS));
-        managementPanel.add(trainTypesManagementPanel);
-        //managementPanel.add(trainsManagementPanel); // TODO
-        //managementPanel.add(stationsManagementPanel);
-        //managementPanel.add(routesManagementPanel);
-        //managementPanel.add(tripsManagementPanel);
-        //managementPanel.add(promotionsManagementPanel);
-
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
-                int conferma = JOptionPane.showConfirmDialog(
+                Object[] options = {"No", "Sì"};
+                int conferma = JOptionPane.showOptionDialog(
                         AdminMainFrame.this,
                         "Sei sicuro di voler chiudere il server?",
                         "TreniCal Admin",
-                        JOptionPane.YES_NO_OPTION
+                        JOptionPane.YES_NO_OPTION,
+                        JOptionPane.QUESTION_MESSAGE,
+                        null,
+                        options,
+                        options[0]
                 );
-                if (conferma == JOptionPane.YES_OPTION) {
-                    if (server != null) {
-                        server.closeDatabase();
-                    }
+                if (conferma == 1) {
+                    server.closeDatabase();
                     dispose();
                 }
             }
@@ -76,8 +65,67 @@ public class AdminMainFrame extends JFrame {
         return INSTANCE;
     }
 
-    private void init() {
+    void violatedPrimaryKeyDialog() {
+        showDialog(new GenericOKDialog("""
+                <html><div style='text-align: center; width: 300px;'>
+                Un elemento con questi identificativi esiste già.<br>
+                Perfavore utilizza degli identificativi differenti.
+                </div></html>
+        """));
+    }
 
+    void violatedForeignKeyDialog() {
+        showDialog(new GenericOKDialog("""
+                <html><div style='text-align: center; width: 300px;'>
+                Dei campi esterni non esistono.<br>
+                Potrebbero essere stati eliminati.<br>
+                Perfavore riprova.
+                </div></html>
+        """));
+    }
+
+    void itemSuccessfullyAddedDialog() {
+        showDialog(new GenericOKDialog("Elemento aggiunto con successo!"));
+    }
+
+    Server getServer() {
+        return server;
+    }
+
+    private void showDialog(JDialog dialog) {
+        dialog.pack();
+        dialog.setLocationRelativeTo(null);
+        dialog.setVisible(true);
+    }
+
+    private void init() {
+        trainTypesManagementPanel = new ManagementTrainTypesPanel().getPanel();
+        trainsManagementPanel = new ManagementTrainsPanel().getPanel();
+        stationsManagementPanel = new ManagementStationsPanel().getPanel();
+        routesManagementPanel = new ManagementRoutesPanel().getPanel();
+        tripsManagementPanel = new ManagementTripsPanel().getPanel();
+        promotionsManagementPanel = new ManagementPromotionsPanel().getPanel();
+        usersManagementPanel = new ManagementUsersPanel().getPanel();
+        ticketsManagementPanel = new ManagementTicketsPanel().getPanel();
+
+        managementPanel.setLayout(new BoxLayout(managementPanel, BoxLayout.X_AXIS));
+        managementPanel.add(trainTypesManagementPanel);
+        managementPanel.add(trainsManagementPanel);
+        managementPanel.add(stationsManagementPanel);
+        managementPanel.add(routesManagementPanel);
+        managementPanel.add(tripsManagementPanel);
+        managementPanel.add(promotionsManagementPanel);
+        managementPanel.add(usersManagementPanel);
+        managementPanel.add(ticketsManagementPanel);
+
+        server.updateTrainTypesCache();
+        server.updateTrainsCache();
+        server.updateStationsCache();
+        server.updateRoutesCache();
+        server.updateTripsCache();
+        server.updatePromotionsCache();
+        server.updateUsersCache();
+        server.updateTicketsCache();
     }
 
     private void display() {
