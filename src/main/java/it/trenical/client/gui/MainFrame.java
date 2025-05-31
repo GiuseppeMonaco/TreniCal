@@ -13,6 +13,7 @@ import it.trenical.common.Promotion;
 import it.trenical.common.Ticket;
 import it.trenical.common.Trip;
 import it.trenical.common.User;
+import it.trenical.common.gui.GenericOKDialog;
 
 import javax.swing.*;
 import java.awt.*;
