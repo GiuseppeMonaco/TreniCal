@@ -61,6 +61,7 @@ public class CheckoutPanel implements
         client.currentTripSub.attach(this);
         client.currentPromoSub.attach(this);
         client.currentPriceSub.attach(this);
+        client.logoutSub.attach(this);
 
         promoLabelDefault = promoLabel.getText();
         passengersNumberLabelDefault = passengersNumberLabel.getText();
