@@ -38,6 +38,7 @@
     </dependencies>
 
     <build>
+        <finalName>TreniCal-Client_${project.version}</finalName>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -58,11 +59,6 @@
                                 <!-- Unisce i file di servizio per evitare conflitti -->
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
                             </transformers>
-                            <artifactSet>
-                                <excludes>
-                                    <exclude>com.intellij:forms_rt</exclude>
-                                </excludes>
-                            </artifactSet>
                         </configuration>
                     </execution>
                 </executions>

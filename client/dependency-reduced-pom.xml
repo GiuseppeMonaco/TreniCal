@@ -8,6 +8,7 @@
   <modelVersion>4.0.0</modelVersion>
   <artifactId>client</artifactId>
   <build>
+    <finalName>TreniCal-Client_${project.version}</finalName>
     <plugins>
       <plugin>
         <artifactId>maven-shade-plugin</artifactId>
@@ -25,11 +26,6 @@
                 </transformer>
                 <transformer />
               </transformers>
-              <artifactSet>
-                <excludes>
-                  <exclude>com.intellij:forms_rt</exclude>
-                </excludes>
-              </artifactSet>
             </configuration>
           </execution>
         </executions>
@@ -37,12 +33,6 @@
     </plugins>
   </build>
   <dependencies>
-    <dependency>
-      <groupId>com.intellij</groupId>
-      <artifactId>forms_rt</artifactId>
-      <version>7.0.3</version>
-      <scope>compile</scope>
-    </dependency>
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter</artifactId>
