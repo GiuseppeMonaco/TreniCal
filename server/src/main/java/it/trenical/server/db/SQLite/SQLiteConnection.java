@@ -19,6 +19,8 @@ public class SQLiteConnection implements DatabaseConnection {
      */
     private static final Map<Path,SQLiteConnection> instances = new HashMap<>();
 
+    private static SQLiteConnection memoryInstance;
+
     private static final Logger logger = LoggerFactory.getLogger(SQLiteConnection.class);
 
     private static final String DEFAULT_PATH = "./database.db";
@@ -68,6 +70,10 @@ public class SQLiteConnection implements DatabaseConnection {
     }
 
     public static synchronized SQLiteConnection getInstance(String path) {
+        if (path.equals(":memory:")) {
+            if (memoryInstance == null) memoryInstance = new SQLiteConnection(path);
+            return memoryInstance;
+        }
         Path p = Path.of(path);
         if(!Files.exists(p)) {
             instances.put(p,new SQLiteConnection(path));
@@ -97,8 +103,12 @@ public class SQLiteConnection implements DatabaseConnection {
     public synchronized void close() {
         try {
             connection.close();
-            Path p = Path.of(dbPath);
-            instances.remove(p);
+            if(dbPath.equals(":memory:")) {
+                memoryInstance = null;
+            } else {
+                Path p = Path.of(dbPath);
+                instances.remove(p);
+            }
             logger.info("Database at {} closed successfully", dbPath);
         } catch (SQLException e) {
             logger.warn("Error closing SQLite database connection.\n{}", e.getMessage());
