@@ -29,6 +29,8 @@ public class SQLiteConnection implements DatabaseConnection {
 
     private final String dbPath;
 
+    private boolean inATransaction = false;
+
     private SQLiteConnection(String dbPath) {
         this.dbPath = dbPath;
         try {
@@ -117,6 +119,11 @@ public class SQLiteConnection implements DatabaseConnection {
 
     @Override
     public void atomicTransaction(SQLConsumer query) throws SQLException {
+        if (inATransaction) {
+            query.accept();
+            return;
+        }
+        inATransaction = true;
         boolean currentAutoCommit = connection.getAutoCommit();
         connection.setAutoCommit(false);
         try {
@@ -128,6 +135,7 @@ public class SQLiteConnection implements DatabaseConnection {
             throw e;
         } finally {
             connection.setAutoCommit(currentAutoCommit);
+            inATransaction = false;
         }
     }
 }
