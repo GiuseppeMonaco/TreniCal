@@ -33,6 +33,7 @@ message BuyTicketsReply {
  * 0 = no error (successfull operation)
  * 1 = generic error
  * 2 = invalid token
+ * 5 = no available seats
  */
 
 
@@ -52,6 +53,7 @@ message BookTicketsReply {
  * 0 = no error (successfull operation)
  * 1 = generic error
  * 2 = invalid token
+ * 5 = no available seats
  */
 
 
@@ -93,6 +95,7 @@ message EditTicketReply {
  * 2 = invalid token
  * 3 = invalid ticket
  * 4 = no change
+ * 5 = no available seats
  */
 
 

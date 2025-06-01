@@ -12,6 +12,7 @@ import it.trenical.server.auth.BiMapTokenManager;
 import it.trenical.server.auth.TokenManager;
 import it.trenical.server.db.DatabaseConnection;
 import it.trenical.server.db.SQLite.SQLiteTicket;
+import it.trenical.server.db.SQLite.SQLiteTrip;
 import it.trenical.server.db.SQLite.SQLiteUser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,6 +35,7 @@ public class GrpcRequestImpl extends RequestServiceGrpc.RequestServiceImplBase {
     private static final int GENERIC_ERROR_CODE = 2;
     private static final int INVALID_TICKET_ERROR_CODE = 3;
     private static final int NO_CHANGE_ERROR_CODE = 4;
+    private static final int NOT_AVAILABLE_SEATS_ERROR_CODE = 5;
 
     @Override
     public void buyTickets(BuyTicketsRequest request, StreamObserver<BuyTicketsReply> responseObserver) {
@@ -55,11 +57,23 @@ public class GrpcRequestImpl extends RequestServiceGrpc.RequestServiceImplBase {
                 .map(SQLiteTicket::new)
                 .toList();
 
-        int errorCode = SUCCESS_CODE;
+        AtomicInteger errorCode = new AtomicInteger(GENERIC_ERROR_CODE);
         try {
             db.atomicTransaction(() -> {
                 Collection<Promotion> currentUsedPromo = new LinkedList<>();
                 for(SQLiteTicket t : tickets) {
+                    SQLiteTrip tr = new SQLiteTrip(t.getTrip());
+                    if (t.isBusiness()) {
+                        if (!tr.decreaseBusinessSeats(db)) {
+                            errorCode.set(NOT_AVAILABLE_SEATS_ERROR_CODE);
+                            throw new SQLException("Business seats not available anymore");
+                        }
+                    } else {
+                        if (!tr.decreaseEconomySeats(db)) {
+                            errorCode.set(NOT_AVAILABLE_SEATS_ERROR_CODE);
+                            throw new SQLException("Economy seats not available anymore");
+                        }
+                    }
                     Promotion p = t.getPromotion();
                     if(!currentUsedPromo.contains(p) && SQLiteTicket.hasUserUtilizedPromotion(db,user,t.getPromotion()))
                         throw new SQLException("Promo already used for this user, cannot buy tickets");
@@ -67,12 +81,12 @@ public class GrpcRequestImpl extends RequestServiceGrpc.RequestServiceImplBase {
                     t.insertRecord(db);
                 }
             });
+            errorCode.set(SUCCESS_CODE);
         } catch (SQLException e) {
             logger.warn("Error adding buyed tickets to database: {}",e.getMessage());
-            errorCode = GENERIC_ERROR_CODE;
         }
 
-        b.setErrorCode(errorCode);
+        b.setErrorCode(errorCode.get());
         responseObserver.onNext(b.build());
         responseObserver.onCompleted();
     }
@@ -97,11 +111,23 @@ public class GrpcRequestImpl extends RequestServiceGrpc.RequestServiceImplBase {
                 .map(SQLiteTicket::new)
                 .toList();
 
-        int errorCode = SUCCESS_CODE;
+        AtomicInteger errorCode = new AtomicInteger(GENERIC_ERROR_CODE);
         try {
             Collection<Promotion> currentUsedPromo = new LinkedList<>();
             db.atomicTransaction(() -> {
                 for(SQLiteTicket t : tickets) {
+                    SQLiteTrip tr = new SQLiteTrip(t.getTrip());
+                    if (t.isBusiness()) {
+                        if (!tr.decreaseBusinessSeats(db)) {
+                            errorCode.set(NOT_AVAILABLE_SEATS_ERROR_CODE);
+                            throw new SQLException("Business seats not available anymore");
+                        }
+                    } else {
+                        if (!tr.decreaseEconomySeats(db)) {
+                            errorCode.set(NOT_AVAILABLE_SEATS_ERROR_CODE);
+                            throw new SQLException("Economy seats not available anymore");
+                        }
+                    }
                     Promotion p = t.getPromotion();
                     if(!currentUsedPromo.contains(p) && SQLiteTicket.hasUserUtilizedPromotion(db,user,t.getPromotion()))
                         throw new SQLException("Promo already used for this user, cannot book tickets");
@@ -109,12 +135,12 @@ public class GrpcRequestImpl extends RequestServiceGrpc.RequestServiceImplBase {
                     t.insertRecord(db);
                 }
             });
+            errorCode.set(SUCCESS_CODE);
         } catch (SQLException e) {
             logger.warn("Error adding booked tickets to database: {}",e.getMessage());
-            errorCode = GENERIC_ERROR_CODE;
         }
 
-        b.setErrorCode(errorCode);
+        b.setErrorCode(errorCode.get());
         responseObserver.onNext(b.build());
         responseObserver.onCompleted();
     }
@@ -139,21 +165,21 @@ public class GrpcRequestImpl extends RequestServiceGrpc.RequestServiceImplBase {
                 .map(SQLiteTicket::new)
                 .toList();
 
-        AtomicInteger errorCode = new AtomicInteger(SUCCESS_CODE);
+        AtomicInteger errorCode = new AtomicInteger(GENERIC_ERROR_CODE);
         try {
             db.atomicTransaction(() -> {
                 for (SQLiteTicket t : tickets) {
                     SQLiteTicket tt = t.getRecord(db);
                     if (tt == null || !tt.getUser().getEmail().equals(user.getEmail()) || tt.isPaid()) {
                         errorCode.set(INVALID_TICKET_ERROR_CODE);
-                        return;
+                        throw new SQLException("Given tickets are invalid");
                     }
                     tt.updatePaidRecord(db,true);
                 }
             });
+            errorCode.set(SUCCESS_CODE);
         } catch (SQLException e) {
             logger.warn("Error paying booked tickets in database: {}",e.getMessage());
-            errorCode.set(GENERIC_ERROR_CODE);
         }
 
         b.setErrorCode(errorCode.get());
@@ -177,23 +203,35 @@ public class GrpcRequestImpl extends RequestServiceGrpc.RequestServiceImplBase {
 
         SQLiteTicket ticket = new SQLiteTicket(GrpcConverter.convert(request.getTicket()));
 
-        AtomicInteger errorCode = new AtomicInteger(SUCCESS_CODE);
+        AtomicInteger errorCode = new AtomicInteger(GENERIC_ERROR_CODE);
         try {
             db.atomicTransaction(() -> {
                 SQLiteTicket tt = ticket.getRecord(db);
                 if (tt == null || !tt.getUser().getEmail().equals(user.getEmail())) {
                     errorCode.set(INVALID_TICKET_ERROR_CODE);
-                    return;
+                    throw new SQLException("Given ticket is invalid");
                 }
                 if (tt.isBusiness() == ticket.isBusiness()) {
                     errorCode.set(NO_CHANGE_ERROR_CODE);
-                    return;
+                    throw new SQLException("Given ticket is the same as the one already in database");
+                }
+                SQLiteTrip tr = new SQLiteTrip(ticket.getTrip());
+                if (ticket.isBusiness()) {
+                    if (!tr.increaseEconomySeats(db) || !tr.decreaseBusinessSeats(db)) {
+                        errorCode.set(NOT_AVAILABLE_SEATS_ERROR_CODE);
+                        throw new SQLException("Business seats not available anymore");
+                    }
+                } else {
+                    if (!tr.increaseBusinessSeats(db) || !tr.decreaseEconomySeats(db)) {
+                        errorCode.set(NOT_AVAILABLE_SEATS_ERROR_CODE);
+                        throw new SQLException("Economy seats not available anymore");
+                    }
                 }
                 tt.updateBusinessRecord(db, ticket.isBusiness());
             });
+            errorCode.set(SUCCESS_CODE);
         } catch (SQLException e) {
             logger.warn("Error editing ticket in database: {}",e.getMessage());
-            errorCode.set(GENERIC_ERROR_CODE);
         }
 
         b.setErrorCode(errorCode.get());
@@ -236,21 +274,21 @@ public class GrpcRequestImpl extends RequestServiceGrpc.RequestServiceImplBase {
             return INVALID_TOKEN_ERROR_CODE;
         }
 
-        AtomicInteger errorCode = new AtomicInteger(SUCCESS_CODE);
+        AtomicInteger errorCode = new AtomicInteger(GENERIC_ERROR_CODE);
 
         SQLiteUser u = new SQLiteUser(new UserData(user.getEmail(),null,isFidelity));
         try {
             db.atomicTransaction(() -> {
                 if (u.getRecord(db).isFidelity() == isFidelity) {
                     errorCode.set(NO_CHANGE_ERROR_CODE);
-                    return;
+                    throw new SQLException("Given user has the same fidelity state as the one already in database");
                 }
                 new SQLiteUser(new UserData(user.getEmail(),null,isFidelity)).updateRecord(db);
             });
-            if (errorCode.get() == SUCCESS_CODE) logger.info("User {} {} Fidelity program.", user.getEmail(), isFidelity ? "subscribed to" : "unsubscribed from");
+            errorCode.set(SUCCESS_CODE);
+            logger.info("User {} {} Fidelity program.", user.getEmail(), isFidelity ? "subscribed to" : "unsubscribed from");
         } catch (SQLException e) {
             logger.warn("Error editing fidelity user in database: {}",e.getMessage());
-            errorCode.set(GENERIC_ERROR_CODE);
         }
 
         return errorCode.get();

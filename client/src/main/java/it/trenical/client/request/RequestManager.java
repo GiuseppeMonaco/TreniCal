@@ -1,5 +1,6 @@
 package it.trenical.client.request;
 
+import it.trenical.client.request.exceptions.InvalidSeatsNumberException;
 import it.trenical.common.SessionToken;
 import it.trenical.client.auth.exceptions.InvalidSessionTokenException;
 import it.trenical.client.connection.exceptions.UnreachableServer;
@@ -18,7 +19,7 @@ public interface RequestManager {
      * @throws UnreachableServer if server is unreachable
      * @throws InvalidSessionTokenException if token not exists
      */
-    void buyTickets(SessionToken token, Collection<Ticket> tickets) throws UnreachableServer, InvalidSessionTokenException;
+    void buyTickets(SessionToken token, Collection<Ticket> tickets) throws UnreachableServer, InvalidSessionTokenException, InvalidSeatsNumberException;
 
     /**
      * Book the given tickets for the user associated to the given token.
@@ -27,7 +28,7 @@ public interface RequestManager {
      * @throws UnreachableServer if server is unreachable
      * @throws InvalidSessionTokenException if token not exists
      */
-    void bookTickets(SessionToken token, Collection<Ticket> tickets) throws UnreachableServer, InvalidSessionTokenException;
+    void bookTickets(SessionToken token, Collection<Ticket> tickets) throws UnreachableServer, InvalidSessionTokenException, InvalidSeatsNumberException;
 
     /**
      * Pay the given booked tickets of the user associated to the given token.
@@ -48,7 +49,7 @@ public interface RequestManager {
      * @throws InvalidTicketException if at least one ticket is not a ticket of the user associated with the token
      * @throws NoChangeException if the ticket is already in the state passed as parameter
      */
-    void editTicket(SessionToken token, Ticket ticket) throws UnreachableServer, InvalidSessionTokenException, InvalidTicketException, NoChangeException;
+    void editTicket(SessionToken token, Ticket ticket) throws UnreachableServer, InvalidSessionTokenException, InvalidTicketException, NoChangeException, InvalidSeatsNumberException;
 
     /**
      * Subscribe the user associated to the given token to Fidelity program.

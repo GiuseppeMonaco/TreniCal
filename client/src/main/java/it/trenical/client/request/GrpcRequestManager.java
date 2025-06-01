@@ -1,6 +1,7 @@
 package it.trenical.client.request;
 
 import io.grpc.StatusRuntimeException;
+import it.trenical.client.request.exceptions.InvalidSeatsNumberException;
 import it.trenical.common.SessionToken;
 import it.trenical.client.auth.exceptions.InvalidSessionTokenException;
 import it.trenical.client.connection.GrpcConnection;
@@ -26,12 +27,14 @@ public class GrpcRequestManager implements RequestManager {
     }
 
     private static final int SUCCESS_CODE = 0;
-    private static final int INVALID_TOKEN_ERROR_CODE = 2;
+    private static final int INVALID_TOKEN_ERROR_CODE = 1;
+    private static final int GENERIC_ERROR_CODE = 2;
     private static final int INVALID_TICKET_ERROR_CODE = 3;
     private static final int NO_CHANGE_ERROR_CODE = 4;
+    private static final int NOT_AVAILABLE_SEATS_ERROR_CODE = 5;
 
     @Override
-    public void buyTickets(SessionToken token, Collection<Ticket> tickets) throws UnreachableServer, InvalidSessionTokenException {
+    public void buyTickets(SessionToken token, Collection<Ticket> tickets) throws UnreachableServer, InvalidSessionTokenException, InvalidSeatsNumberException {
         BuyTicketsRequest request = BuyTicketsRequest.newBuilder()
                 .setToken(GrpcConverter.convert(token))
                 .addAllTickets(tickets.stream().map(GrpcConverter::convert).toList())
@@ -41,6 +44,7 @@ public class GrpcRequestManager implements RequestManager {
             switch (blockingStub.buyTickets(request).getErrorCode()) {
                 case SUCCESS_CODE -> {}
                 case INVALID_TOKEN_ERROR_CODE -> throw new InvalidSessionTokenException("Given token is invalid");
+                case NOT_AVAILABLE_SEATS_ERROR_CODE -> throw new InvalidSeatsNumberException("There are not enough seats to buy");
                 default -> logger.warn("Unknown error on buyTickets request");
             }
         } catch (StatusRuntimeException e) {
@@ -50,7 +54,7 @@ public class GrpcRequestManager implements RequestManager {
     }
 
     @Override
-    public void bookTickets(SessionToken token, Collection<Ticket> tickets) throws UnreachableServer, InvalidSessionTokenException {
+    public void bookTickets(SessionToken token, Collection<Ticket> tickets) throws UnreachableServer, InvalidSessionTokenException, InvalidSeatsNumberException {
         BookTicketsRequest request = BookTicketsRequest.newBuilder()
                 .setToken(GrpcConverter.convert(token))
                 .addAllTickets(tickets.stream().map(GrpcConverter::convert).toList())
@@ -60,6 +64,7 @@ public class GrpcRequestManager implements RequestManager {
             switch (blockingStub.bookTickets(request).getErrorCode()) {
                 case SUCCESS_CODE -> {}
                 case INVALID_TOKEN_ERROR_CODE -> throw new InvalidSessionTokenException("Given token is invalid");
+                case NOT_AVAILABLE_SEATS_ERROR_CODE -> throw new InvalidSeatsNumberException("There are not enough seats to book");
                 default -> logger.warn("Unknown error on bookTickets request");
             }
         } catch (StatusRuntimeException e) {
@@ -89,7 +94,7 @@ public class GrpcRequestManager implements RequestManager {
     }
 
     @Override
-    public void editTicket(SessionToken token, Ticket ticket) throws UnreachableServer, InvalidSessionTokenException, InvalidTicketException, NoChangeException {
+    public void editTicket(SessionToken token, Ticket ticket) throws UnreachableServer, InvalidSessionTokenException, InvalidTicketException, NoChangeException, InvalidSeatsNumberException {
         EditTicketRequest request = EditTicketRequest.newBuilder()
                 .setToken(GrpcConverter.convert(token))
                 .setTicket(GrpcConverter.convert(ticket))
@@ -101,6 +106,7 @@ public class GrpcRequestManager implements RequestManager {
                 case INVALID_TOKEN_ERROR_CODE -> throw new InvalidSessionTokenException("Given token is invalid");
                 case INVALID_TICKET_ERROR_CODE -> throw new InvalidTicketException("Given ticket is invalid");
                 case NO_CHANGE_ERROR_CODE -> throw new NoChangeException("Given ticket has no change");
+                case NOT_AVAILABLE_SEATS_ERROR_CODE -> throw new InvalidSeatsNumberException("There are not enough seats for the switch");
                 default -> logger.warn("Unknown error on editTicket request");
             }
         } catch (StatusRuntimeException e) {

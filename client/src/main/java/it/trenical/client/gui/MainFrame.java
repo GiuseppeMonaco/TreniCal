@@ -1,5 +1,8 @@
 package it.trenical.client.gui;
 
+import com.intellij.uiDesigner.core.GridConstraints;
+import com.intellij.uiDesigner.core.GridLayoutManager;
+import com.intellij.uiDesigner.core.Spacer;
 import it.trenical.client.Client;
 import it.trenical.client.auth.exceptions.InvalidCredentialsException;
 import it.trenical.client.auth.exceptions.InvalidSessionTokenException;
@@ -7,6 +10,7 @@ import it.trenical.client.auth.exceptions.UserAlreadyExistsException;
 import it.trenical.client.connection.exceptions.UnreachableServer;
 import it.trenical.client.observer.Login;
 import it.trenical.client.observer.Logout;
+import it.trenical.client.request.exceptions.InvalidSeatsNumberException;
 import it.trenical.client.request.exceptions.InvalidTicketException;
 import it.trenical.client.request.exceptions.NoChangeException;
 import it.trenical.common.Promotion;
@@ -15,6 +19,8 @@ import it.trenical.common.Trip;
 import it.trenical.common.User;
 import it.trenical.common.gui.GenericConfirmDialog;
 import it.trenical.common.gui.GenericOKDialog;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import java.awt.*;
@@ -26,6 +32,8 @@ public class MainFrame extends JFrame implements Login.Observer, Logout.Observer
 
     // Singleton class
     private static MainFrame instance;
+
+    private static final Logger logger = LoggerFactory.getLogger(MainFrame.class);
 
     private final Client client;
 
@@ -199,6 +207,16 @@ public class MainFrame extends JFrame implements Login.Observer, Logout.Observer
         showDialog(new UnreachableServerDialog());
     }
 
+    public void invalidTokenDialog() {
+        // TODO
+        System.err.println("IMPLEMENTA IL DIALOGO TOKEN");
+    }
+
+    public void invalidSeatsNumberDialog() {
+        // TODO
+        System.err.println("IMPLEMENTA IL DIALOGO POSTI");
+    }
+
     void payBookedTicketDialog(Ticket ticket) {
         showDialog(new BuyBookedTicketDialog(ticket), customerAreaFrame);
     }
@@ -289,7 +307,7 @@ public class MainFrame extends JFrame implements Login.Observer, Logout.Observer
         } catch (UnreachableServer e) {
             unreachableServerDialog();
         } catch (InvalidSessionTokenException e) {
-            throw new RuntimeException(e); // TODO sistemare questo sistema
+            invalidTokenDialog();
         }
     }
 
@@ -300,7 +318,7 @@ public class MainFrame extends JFrame implements Login.Observer, Logout.Observer
         } catch (UnreachableServer e) {
             unreachableServerDialog();
         } catch (InvalidSessionTokenException e) {
-            throw new RuntimeException(e); // TODO sistemare questo sistema
+            invalidTokenDialog();
         }
         return ret;
     }
@@ -319,7 +337,9 @@ public class MainFrame extends JFrame implements Login.Observer, Logout.Observer
         } catch (UnreachableServer e) {
             unreachableServerDialog();
         } catch (InvalidSessionTokenException e) {
-            throw new RuntimeException(e);
+            invalidTokenDialog();
+        } catch (InvalidSeatsNumberException e) {
+            invalidSeatsNumberDialog();
         }
     }
 
@@ -329,7 +349,9 @@ public class MainFrame extends JFrame implements Login.Observer, Logout.Observer
         } catch (UnreachableServer e) {
             unreachableServerDialog();
         } catch (InvalidSessionTokenException e) {
-            throw new RuntimeException(e);
+            invalidTokenDialog();
+        } catch (InvalidSeatsNumberException e) {
+            invalidSeatsNumberDialog();
         }
     }
 
@@ -339,8 +361,10 @@ public class MainFrame extends JFrame implements Login.Observer, Logout.Observer
             GenericOKDialog.showDialog(dialogsParent, "Biglietto acquistato con successo!");
         } catch (UnreachableServer e) {
             unreachableServerDialog();
-        } catch (InvalidSessionTokenException | InvalidTicketException e) {
-            throw new RuntimeException(e);
+        } catch (InvalidSessionTokenException e) {
+            invalidTokenDialog();
+        } catch (InvalidTicketException e) {
+            logger.error(e.getMessage());
         }
     }
 
@@ -350,8 +374,12 @@ public class MainFrame extends JFrame implements Login.Observer, Logout.Observer
             GenericOKDialog.showDialog(dialogsParent, "Biglietto modificato con successo!");
         } catch (UnreachableServer e) {
             unreachableServerDialog();
-        } catch (InvalidSessionTokenException | InvalidTicketException | NoChangeException e) {
+        } catch (InvalidSessionTokenException e) {
             throw new RuntimeException(e);
+        } catch (InvalidSeatsNumberException e) {
+            invalidSeatsNumberDialog();
+        } catch (InvalidTicketException | NoChangeException e) {
+            logger.error(e.getMessage());
         }
     }
 
@@ -367,8 +395,10 @@ public class MainFrame extends JFrame implements Login.Observer, Logout.Observer
             client.becomeFidelity();
         } catch (UnreachableServer e) {
             unreachableServerDialog();
-        } catch (InvalidSessionTokenException | NoChangeException e) {
-            throw new RuntimeException(e);
+        } catch (InvalidSessionTokenException e) {
+            invalidTokenDialog();
+        } catch (NoChangeException e) {
+            logger.error(e.getMessage());
         }
     }
 
@@ -385,8 +415,10 @@ public class MainFrame extends JFrame implements Login.Observer, Logout.Observer
             client.cancelFidelity();
         } catch (UnreachableServer e) {
             unreachableServerDialog();
-        } catch (InvalidSessionTokenException | NoChangeException e) {
-            throw new RuntimeException(e);
+        } catch (InvalidSessionTokenException e) {
+            invalidTokenDialog();
+        } catch (NoChangeException e) {
+            logger.error(e.getMessage());
         }
     }
 
@@ -412,28 +444,28 @@ public class MainFrame extends JFrame implements Login.Observer, Logout.Observer
      */
     private void $$$setupUI$$$() {
         mainPanel = new JPanel();
-        mainPanel.setLayout(new com.intellij.uiDesigner.core.GridLayoutManager(2, 1, new Insets(5, 5, 5, 5), -1, -1));
+        mainPanel.setLayout(new GridLayoutManager(2, 1, new Insets(5, 5, 5, 5), -1, -1));
         final JPanel panel1 = new JPanel();
-        panel1.setLayout(new com.intellij.uiDesigner.core.GridLayoutManager(1, 5, new Insets(0, 0, 0, 0), -1, -1));
-        mainPanel.add(panel1, new com.intellij.uiDesigner.core.GridConstraints(0, 0, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER, com.intellij.uiDesigner.core.GridConstraints.FILL_BOTH, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK | com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_GROW, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK | com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
+        panel1.setLayout(new GridLayoutManager(1, 5, new Insets(0, 0, 0, 0), -1, -1));
+        mainPanel.add(panel1, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
         loginButton = new JButton();
         loginButton.setEnabled(true);
         loginButton.setHideActionText(false);
         loginButton.setText("Login");
-        panel1.add(loginButton, new com.intellij.uiDesigner.core.GridConstraints(0, 4, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER, com.intellij.uiDesigner.core.GridConstraints.FILL_HORIZONTAL, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK | com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_GROW, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(80, 35), null, 0, false));
+        panel1.add(loginButton, new GridConstraints(0, 4, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(80, 35), null, 0, false));
         authLabel = new JLabel();
         authLabel.setText("Utente non autenticato");
-        panel1.add(authLabel, new com.intellij.uiDesigner.core.GridConstraints(0, 2, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER, com.intellij.uiDesigner.core.GridConstraints.FILL_NONE, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        final com.intellij.uiDesigner.core.Spacer spacer1 = new com.intellij.uiDesigner.core.Spacer();
-        panel1.add(spacer1, new com.intellij.uiDesigner.core.GridConstraints(0, 3, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER, com.intellij.uiDesigner.core.GridConstraints.FILL_HORIZONTAL, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_WANT_GROW, 1, null, null, null, 0, false));
-        final com.intellij.uiDesigner.core.Spacer spacer2 = new com.intellij.uiDesigner.core.Spacer();
-        panel1.add(spacer2, new com.intellij.uiDesigner.core.GridConstraints(0, 1, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER, com.intellij.uiDesigner.core.GridConstraints.FILL_HORIZONTAL, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_WANT_GROW, 1, null, null, null, 0, false));
+        panel1.add(authLabel, new GridConstraints(0, 2, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        final Spacer spacer1 = new Spacer();
+        panel1.add(spacer1, new GridConstraints(0, 3, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, 1, null, null, null, 0, false));
+        final Spacer spacer2 = new Spacer();
+        panel1.add(spacer2, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, 1, null, null, null, 0, false));
         buttonCustomerArea = new JButton();
         buttonCustomerArea.setText("Area Personale");
-        panel1.add(buttonCustomerArea, new com.intellij.uiDesigner.core.GridConstraints(0, 0, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER, com.intellij.uiDesigner.core.GridConstraints.FILL_HORIZONTAL, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK | com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_GROW, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(-1, 35), null, 0, false));
+        panel1.add(buttonCustomerArea, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(-1, 35), null, 0, false));
         centerPanel = new JPanel();
         centerPanel.setLayout(new CardLayout(0, 0));
-        mainPanel.add(centerPanel, new com.intellij.uiDesigner.core.GridConstraints(1, 0, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER, com.intellij.uiDesigner.core.GridConstraints.FILL_BOTH, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK | com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_GROW, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_CAN_SHRINK | com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_WANT_GROW, null, new Dimension(533, 300), null, 0, false));
+        mainPanel.add(centerPanel, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, null, new Dimension(533, 300), null, 0, false));
     }
 
     /**

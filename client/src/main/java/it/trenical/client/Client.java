@@ -2,6 +2,7 @@ package it.trenical.client;
 
 import it.trenical.client.auth.AuthManager;
 import it.trenical.client.auth.GrpcAuthManager;
+import it.trenical.client.request.exceptions.InvalidSeatsNumberException;
 import it.trenical.common.SessionToken;
 import it.trenical.client.auth.exceptions.InvalidCredentialsException;
 import it.trenical.client.auth.exceptions.InvalidSessionTokenException;
@@ -262,11 +263,11 @@ public class Client {
         fidelityUserSub.notifyObs();
     }
 
-    public void buyTickets(Collection<Ticket> tickets) throws UnreachableServer, InvalidSessionTokenException {
+    public void buyTickets(Collection<Ticket> tickets) throws UnreachableServer, InvalidSessionTokenException, InvalidSeatsNumberException {
         request.buyTickets(currentToken, tickets);
         queryTickets();
     }
-    public void bookTickets(Collection<Ticket> tickets) throws UnreachableServer, InvalidSessionTokenException {
+    public void bookTickets(Collection<Ticket> tickets) throws UnreachableServer, InvalidSessionTokenException, InvalidSeatsNumberException {
         request.bookTickets(currentToken, tickets);
         queryTickets();
     }
@@ -274,7 +275,7 @@ public class Client {
         request.payBookedTickets(currentToken, tickets);
         queryTickets();
     }
-    public void editTicket(Ticket ticket) throws UnreachableServer, InvalidSessionTokenException, InvalidTicketException, NoChangeException {
+    public void editTicket(Ticket ticket) throws UnreachableServer, InvalidSessionTokenException, InvalidTicketException, NoChangeException, InvalidSeatsNumberException {
         request.editTicket(currentToken, ticket);
         queryTickets();
     }
