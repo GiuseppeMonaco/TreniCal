@@ -232,6 +232,72 @@ public class SQLiteTrip implements SQLiteTable<Trip>, Trip {
         st.executeUpdate();
     }
 
+    public boolean decreaseEconomySeats(DatabaseConnection db) throws SQLException {
+        Connection c = db.getConnection();
+        PreparedStatement st = c.prepareStatement(String.format("""
+                UPDATE %s
+                SET availableEconomySeats = availableEconomySeats - 1
+                WHERE train=? AND departureTime=? AND departureStation=? AND arrivalStation=? AND availableEconomySeats > 0
+                """,
+                TABLE_NAME
+        ));
+        st.setInt(1,getTrain().getId());
+        st.setLong(2,getDepartureTime().getTimeInMillis());
+        st.setString(3,getRoute().getDepartureStation().getName());
+        st.setString(4,getRoute().getArrivalStation().getName());
+        return st.executeUpdate() > 0;
+    }
+
+    public boolean decreaseBusinessSeats(DatabaseConnection db) throws SQLException {
+        Connection c = db.getConnection();
+        PreparedStatement st = c.prepareStatement(String.format("""
+                UPDATE %s
+                SET availableBusinessSeats = availableBusinessSeats - 1
+                WHERE train=? AND departureTime=? AND departureStation=? AND arrivalStation=? AND availableBusinessSeats > 0
+                """,
+                TABLE_NAME
+        ));
+        st.setInt(1,getTrain().getId());
+        st.setLong(2,getDepartureTime().getTimeInMillis());
+        st.setString(3,getRoute().getDepartureStation().getName());
+        st.setString(4,getRoute().getArrivalStation().getName());
+        return st.executeUpdate() > 0;
+    }
+
+    public boolean increaseEconomySeats(DatabaseConnection db) throws SQLException {
+        Connection c = db.getConnection();
+        PreparedStatement st = c.prepareStatement(String.format("""
+                UPDATE %s
+                SET availableEconomySeats = availableEconomySeats + 1
+                WHERE train=? AND departureTime=? AND departureStation=? AND arrivalStation=?
+                """,
+                TABLE_NAME
+        ));
+        st.setInt(1,getTrain().getId());
+        st.setLong(2,getDepartureTime().getTimeInMillis());
+        st.setString(3,getRoute().getDepartureStation().getName());
+        st.setString(4,getRoute().getArrivalStation().getName());
+        st.executeUpdate();
+        return true;
+    }
+
+    public boolean increaseBusinessSeats(DatabaseConnection db) throws SQLException {
+        Connection c = db.getConnection();
+        PreparedStatement st = c.prepareStatement(String.format("""
+                UPDATE %s
+                SET availableBusinessSeats = availableBusinessSeats + 1
+                WHERE train=? AND departureTime=? AND departureStation=? AND arrivalStation=?
+                """,
+                TABLE_NAME
+        ));
+        st.setInt(1,getTrain().getId());
+        st.setLong(2,getDepartureTime().getTimeInMillis());
+        st.setString(3,getRoute().getDepartureStation().getName());
+        st.setString(4,getRoute().getArrivalStation().getName());
+        st.executeUpdate();
+        return true;
+    }
+
     @Override
     public Train getTrain() {
         return data.getTrain();
