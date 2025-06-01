@@ -1,11 +1,12 @@
 package it.trenical.server.db.SQLite;
 
+import it.trenical.common.Trip;
 import it.trenical.server.db.DatabaseConnection;
 import org.junit.jupiter.api.*;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.sql.SQLException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,8 +18,7 @@ class SQLiteTest {
 
     static private final Logger logger = LoggerFactory.getLogger(SQLiteTest.class);
 
-    static private Path dbTempPath;
-    static private DatabaseConnection db;
+    private DatabaseConnection db;
 
     static private SQLiteUser userDb;
     static private SQLitePromotion promotionDb;
@@ -31,9 +31,7 @@ class SQLiteTest {
     static private SQLiteTicket ticketDb;
 
     @BeforeAll
-    static void initialize() throws IOException {
-        dbTempPath = Files.createTempFile("test",".db");
-        db = SQLiteConnection.getInstance(dbTempPath.toString());
+    static void initialize() {
         userDb = new SQLiteUser(user);
         promotionDb = new SQLitePromotion(promotion);
         trainTypeDb = new SQLiteTrainType(trainType);
@@ -45,19 +43,31 @@ class SQLiteTest {
         ticketDb = new SQLiteTicket(ticket);
     }
 
-    @AfterAll
-    static void cleanup() {
+    @BeforeEach
+    void newDatabase() throws IOException {
+        db = SQLiteConnection.getInstance(":memory:");
+    }
+
+    @AfterEach
+    void cleanup() {
         db.close();
-        try {
-            Files.deleteIfExists(dbTempPath);
-            logger.info("Database at {} deleted successfully", dbTempPath);
-        } catch (IOException e) {
-            logger.warn("Cannot delete test database file at {}.\n{}", dbTempPath, e.getMessage());
-        }
     }
 
     @Test
-    void databaseTest() {
+    void insertTest() {
+        assertDoesNotThrow(() -> userDb.insertRecord(db));
+        assertDoesNotThrow(() -> promotionDb.insertRecord(db));
+        assertDoesNotThrow(() -> trainTypeDb.insertRecord(db));
+        assertDoesNotThrow(() -> trainDb.insertRecord(db));
+        assertDoesNotThrow(() -> stationDb.insertRecord(db));
+        assertDoesNotThrow(() -> stationDb2.insertRecord(db));
+        assertDoesNotThrow(() -> routeDb.insertRecord(db));
+        assertDoesNotThrow(() -> tripDb.insertRecord(db));
+        assertDoesNotThrow(() -> ticketDb.insertRecord(db));
+    }
+
+    @Test
+    void getTest() {
 
         // INSERT METHODS //
         assertDoesNotThrow(() -> userDb.insertRecord(db));
@@ -69,7 +79,6 @@ class SQLiteTest {
         assertDoesNotThrow(() -> routeDb.insertRecord(db));
         assertDoesNotThrow(() -> tripDb.insertRecord(db));
         assertDoesNotThrow(() -> ticketDb.insertRecord(db));
-        logger.info("All sample records inserted successfully");
 
         // GET METHODS //
         assertDoesNotThrow(() -> assertUserEquals(userDb,userDb.getRecord(db)));
@@ -81,7 +90,21 @@ class SQLiteTest {
         assertDoesNotThrow(() -> assertRouteEquals(routeDb, routeDb.getRecord(db)));
         assertDoesNotThrow(() -> assertTripEquals(tripDb, tripDb.getRecord(db)));
         assertDoesNotThrow(() -> assertTicketEquals(ticketDb, ticketDb.getRecord(db)));
-        logger.info("All sample records getted successfully");
+    }
+
+    @Test
+    void getAllTest() {
+
+        // INSERT METHODS //
+        assertDoesNotThrow(() -> userDb.insertRecord(db));
+        assertDoesNotThrow(() -> promotionDb.insertRecord(db));
+        assertDoesNotThrow(() -> trainTypeDb.insertRecord(db));
+        assertDoesNotThrow(() -> trainDb.insertRecord(db));
+        assertDoesNotThrow(() -> stationDb.insertRecord(db));
+        assertDoesNotThrow(() -> stationDb2.insertRecord(db));
+        assertDoesNotThrow(() -> routeDb.insertRecord(db));
+        assertDoesNotThrow(() -> tripDb.insertRecord(db));
+        assertDoesNotThrow(() -> ticketDb.insertRecord(db));
 
         // GET ALL METHODS //
         assertDoesNotThrow(() -> assertFalse(userDb.getAllRecords(db).isEmpty()));
@@ -93,7 +116,21 @@ class SQLiteTest {
         assertDoesNotThrow(() -> assertFalse(routeDb.getAllRecords(db).isEmpty()));
         assertDoesNotThrow(() -> assertFalse(tripDb.getAllRecords(db).isEmpty()));
         assertDoesNotThrow(() -> assertFalse(ticketDb.getAllRecords(db).isEmpty()));
-        logger.info("All sample records getted successfully querying all");
+    }
+
+    @Test
+    void deleteTest() {
+
+        // INSERT METHODS //
+        assertDoesNotThrow(() -> userDb.insertRecord(db));
+        assertDoesNotThrow(() -> promotionDb.insertRecord(db));
+        assertDoesNotThrow(() -> trainTypeDb.insertRecord(db));
+        assertDoesNotThrow(() -> trainDb.insertRecord(db));
+        assertDoesNotThrow(() -> stationDb.insertRecord(db));
+        assertDoesNotThrow(() -> stationDb2.insertRecord(db));
+        assertDoesNotThrow(() -> routeDb.insertRecord(db));
+        assertDoesNotThrow(() -> tripDb.insertRecord(db));
+        assertDoesNotThrow(() -> ticketDb.insertRecord(db));
 
         // DELETE METHODS //
         assertDoesNotThrow(() -> ticketDb.deleteRecord(db));
@@ -114,7 +151,75 @@ class SQLiteTest {
         assertDoesNotThrow(() -> assertNull(promotionDb.getRecord(db)));
         assertDoesNotThrow(() -> userDb.deleteRecord(db));
         assertDoesNotThrow(() -> assertNull(userDb.getRecord(db)));
-        logger.info("All sample records removed successfully");
+    }
+
+    @Test
+    void rollbackTest() {
+
+        // INSERT METHODS //
+        assertDoesNotThrow(() -> userDb.insertRecord(db));
+        assertDoesNotThrow(() -> promotionDb.insertRecord(db));
+        assertDoesNotThrow(() -> trainTypeDb.insertRecord(db));
+        assertDoesNotThrow(() -> trainDb.insertRecord(db));
+        assertDoesNotThrow(() -> stationDb.insertRecord(db));
+        assertDoesNotThrow(() -> stationDb2.insertRecord(db));
+        assertDoesNotThrow(() -> routeDb.insertRecord(db));
+        assertDoesNotThrow(() -> tripDb.insertRecord(db));
+
+        int numEconomy = tripDb.getAvailableEconomySeats();
+        int numBusiness = tripDb.getAvailableBusinessSeats();
+        assertThrows(SQLException.class,() -> db.atomicTransaction(() -> {
+            for (int i=0; i < numEconomy; i++)
+                assertTrue(tripDb.increaseEconomySeats(db));
+            for (int i=0; i < numBusiness-2; i++)
+                assertTrue(tripDb.decreaseBusinessSeats(db));
+            throw new SQLException();
+        }));
+
+        Trip newTrip = null;
+        try {
+            newTrip = tripDb.getRecord(db);
+        } catch (SQLException e) {
+            fail();
+        }
+
+        assertEquals(numEconomy,newTrip.getAvailableEconomySeats());
+        assertEquals(numBusiness,newTrip.getAvailableBusinessSeats());
+
+    }
+
+    @Test
+    void commitTest() {
+
+        // INSERT METHODS //
+        assertDoesNotThrow(() -> userDb.insertRecord(db));
+        assertDoesNotThrow(() -> promotionDb.insertRecord(db));
+        assertDoesNotThrow(() -> trainTypeDb.insertRecord(db));
+        assertDoesNotThrow(() -> trainDb.insertRecord(db));
+        assertDoesNotThrow(() -> stationDb.insertRecord(db));
+        assertDoesNotThrow(() -> stationDb2.insertRecord(db));
+        assertDoesNotThrow(() -> routeDb.insertRecord(db));
+        assertDoesNotThrow(() -> tripDb.insertRecord(db));
+
+        int numEconomy = tripDb.getAvailableEconomySeats();
+        int numBusiness = tripDb.getAvailableBusinessSeats();
+        assertDoesNotThrow(() -> db.atomicTransaction(() -> {
+            for (int i=0; i < numEconomy; i++)
+                assertTrue(tripDb.increaseEconomySeats(db));
+            for (int i=0; i < numBusiness-2; i++)
+                assertTrue(tripDb.decreaseBusinessSeats(db));
+        }));
+
+        Trip newTrip = null;
+        try {
+            newTrip = tripDb.getRecord(db);
+        } catch (SQLException e) {
+            fail();
+        }
+
+        assertEquals(numEconomy*2, newTrip.getAvailableEconomySeats());
+        assertEquals(2, newTrip.getAvailableBusinessSeats());
+
     }
 
 }
