@@ -75,7 +75,7 @@ public class SQLiteConnection implements DatabaseConnection {
         }
 
         for(Path pp : instances.keySet()) {
-            if(areFilesEqual(p,pp)) {
+            if(Files.exists(pp) && areFilesEqual(p,pp)) {
                 return instances.get(pp);
             }
         }
@@ -94,9 +94,11 @@ public class SQLiteConnection implements DatabaseConnection {
     }
 
     @Override
-    public void close() {
+    public synchronized void close() {
         try {
             connection.close();
+            Path p = Path.of(dbPath);
+            instances.remove(p);
             logger.info("Database at {} closed successfully", dbPath);
         } catch (SQLException e) {
             logger.warn("Error closing SQLite database connection.\n{}", e.getMessage());
