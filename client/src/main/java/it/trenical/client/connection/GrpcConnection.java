@@ -1,9 +1,6 @@
 package it.trenical.client.connection;
 
-import io.grpc.Channel;
-import io.grpc.Grpc;
-import io.grpc.InsecureChannelCredentials;
-import io.grpc.ManagedChannel;
+import io.grpc.*;
 
 public class GrpcConnection {
 
@@ -16,10 +13,7 @@ public class GrpcConnection {
     private final ManagedChannel channel;
 
     private GrpcConnection() {
-        channel = Grpc.newChannelBuilder(
-                SERVERIP + ":" + SERVERPORT,
-                InsecureChannelCredentials.create()
-        ).build();
+        channel = ManagedChannelBuilder.forAddress(SERVERIP, SERVERPORT).usePlaintext().build();
     }
 
     public static synchronized GrpcConnection getInstance() {
