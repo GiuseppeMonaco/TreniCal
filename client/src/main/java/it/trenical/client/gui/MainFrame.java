@@ -286,7 +286,6 @@ public class MainFrame extends JFrame implements Login.Observer, Logout.Observer
     @Override
     public void updateOnNotificationChange() {
         int number = client.getNotificationsCount();
-        System.out.println(number);
         boolean canShow = number > 0;
         if (number > 1) notificationsButton.setText(String.format("%d nuove notifiche!", number));
         else if (canShow) notificationsButton.setText("1 nuova notifica!");
