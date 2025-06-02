@@ -255,8 +255,6 @@ public class SQLiteTicket implements SQLiteTable<Ticket>, Ticket {
         sb.delete(sb.length()-2, sb.length());
         sb.append(String.format(" WHERE id=%d",getId()));
 
-        System.out.println(sb);
-
         Connection c = db.getConnection();
         c.createStatement().executeUpdate(sb.toString());
     }
