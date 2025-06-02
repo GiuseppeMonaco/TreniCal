@@ -161,4 +161,14 @@ public class TicketData implements Ticket {
     public int hashCode() {
         return id;
     }
+
+    @Override
+    public String toString() {
+        return String.format("[%s] - %s %s - %s",
+                getTrip(),
+                getName(),
+                getSurname(),
+                isBusiness() ? "Business class" : "Economy class"
+        );
+    }
 }
