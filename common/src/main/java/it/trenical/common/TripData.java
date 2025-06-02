@@ -99,4 +99,13 @@ public class TripData implements Trip {
         result = 31 * result + Objects.hashCode(departureTime);
         return result;
     }
+
+    @Override
+    public String toString() {
+        return String.format("%s -> %s - on %s",
+                getRoute().getDepartureStation().getTown(),
+                getRoute().getArrivalStation().getTown(),
+                dateFormatter.format(getDepartureTime().getTime())
+        );
+    }
 }
