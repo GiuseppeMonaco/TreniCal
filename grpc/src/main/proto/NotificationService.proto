@@ -1,0 +1,56 @@
+syntax = "proto3";
+
+package NotificationService;
+
+option java_package = "it.trenical.grpc";
+option java_multiple_files = true;
+
+import "Data.proto";
+
+service NotificationService {
+  rpc AlmostExpiredBooking (Subscribe) returns (stream TicketStream);
+  rpc ExpiredBooking (Subscribe) returns (stream TicketStream);
+  rpc TripsDelete (Subscribe) returns (stream TripStream);
+  rpc FidelityPromotions (Subscribe) returns (stream PromotionStream);
+
+  rpc FidelityPromotionsStatus (Subscribe) returns (FidelityPromotionsStatusReply);
+  rpc FidelityPromotionsSubscribe (Subscribe) returns (SubscribeReply);
+  rpc FidelityPromotionsUnsubscribe (Subscribe) returns (SubscribeReply);
+}
+
+message Subscribe {
+  Data.SessionToken token = 1;
+}
+
+message FidelityPromotionsStatusReply {
+  bool isSubscribed = 1;
+  bool wasTokenValid = 2;
+}
+
+message SubscribeReply {
+  bool isDone = 1;
+  bool wasTokenValid = 2;
+}
+
+message TicketStream {
+  Data.Ticket ticket = 1;
+  uint64 timestamp = 2;
+  bool wasTokenValid = 3;
+}
+
+message TripSubscribe {
+  Data.SessionToken token = 1;
+  repeated Data.Trip trips = 2;
+}
+
+message TripStream {
+  Data.Trip trip = 1;
+  uint64 timestamp = 2;
+  bool wasTokenValid = 3;
+}
+
+message PromotionStream {
+  Data.Promotion promotion = 1;
+  uint64 timestamp = 2;
+  bool wasTokenValid = 3;
+}

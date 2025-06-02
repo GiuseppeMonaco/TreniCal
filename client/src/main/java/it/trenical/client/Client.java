@@ -2,6 +2,8 @@ package it.trenical.client;
 
 import it.trenical.client.auth.AuthManager;
 import it.trenical.client.auth.GrpcAuthManager;
+import it.trenical.client.notification.Notification;
+import it.trenical.client.notification.NotificationHandler;
 import it.trenical.client.request.exceptions.InvalidSeatsNumberException;
 import it.trenical.common.SessionToken;
 import it.trenical.client.auth.exceptions.InvalidCredentialsException;
@@ -17,8 +19,8 @@ import it.trenical.client.request.exceptions.InvalidTicketException;
 import it.trenical.client.request.exceptions.NoChangeException;
 import it.trenical.common.*;
 
-import java.util.Collection;
-import java.util.LinkedList;
+import java.util.*;
+import java.util.concurrent.ConcurrentLinkedDeque;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,11 +34,14 @@ public class Client {
 
     private User currentUser;
     private SessionToken currentToken;
+    private boolean isSubscribedToFidelityPromotion = false;
+
     private final Collection<Station> stationsCache = new LinkedList<>();
     private final Collection<Trip> tripsCache = new LinkedList<>();
     private final Collection<Trip> filteredTripsCache = new LinkedList<>();
     private final Collection<TrainType> trainTypesCache = new LinkedList<>();
     private final Collection<Ticket> ticketsCache = new LinkedList<>();
+
     private int currentPassengersNumber = 0;
     private int currentEconomyPassengers = 0;
     private int currentBusinessPassengers = 0;
@@ -46,9 +51,12 @@ public class Client {
     private float currentEconomyTicketPrice = 0;
     private float currentBusinessTicketPrice = 0;
 
+    private final Collection<Notification> notificationBuffer = new ConcurrentLinkedDeque<>();
+
     private final AuthManager auth;
     private final QueryManager query;
     private final RequestManager request;
+    private final NotificationHandler notification;
 
     // Subjects classes //
     public final Login.Subject loginSub = new LoginSubject();
@@ -63,11 +71,14 @@ public class Client {
     public final CurrentTrip.Subject currentTripSub = new CurrentTripSubject();
     public final CurrentPromotion.Subject currentPromoSub = new CurrentPromotionSubject();
     public final CurrentPrice.Subject currentPriceSub = new CurrentPriceSubject();
+    public final NotificationChange.Subject notificationChangeSub = new NotificationChangeSubject();
 
     private Client() {
         auth = new GrpcAuthManager();
         query = new GrpcQueryManager();
         request = new GrpcRequestManager();
+        notification = new NotificationHandler();
+        loginSub.attach(notification);
     }
 
     public static synchronized Client getInstance() {
@@ -77,6 +88,12 @@ public class Client {
 
     public User getCurrentUser() {
         return currentUser;
+    }
+    public SessionToken getCurrentToken() {
+        return currentToken;
+    }
+    public boolean isSubscribedToFidelityPromotion() {
+        return isSubscribedToFidelityPromotion;
     }
     public Collection<Station> getStationsCache() {
         return stationsCache;
@@ -154,6 +171,7 @@ public class Client {
         this.currentTotalPrice = price;
         currentPriceSub.notifyObs();
     }
+
     public void incrementCurrentEconomyPassengers() {
         setCurrentEconomyPassengers(currentEconomyPassengers + 1);
     }
@@ -166,7 +184,6 @@ public class Client {
     public void decrementCurrentBusinessPassengers() {
         setCurrentBusinessPassengers(currentBusinessPassengers - 1);
     }
-
     private void setCurrentEconomyPassengers(int number) {
         if (number < 0) throw new IllegalArgumentException("Passengers number cannot be negative");
         currentEconomyPassengers = number;
@@ -179,6 +196,21 @@ public class Client {
     }
     private void updateCurrentTotalPrice() {
         setCurrentTotalPrice(currentEconomyTicketPrice * currentEconomyPassengers + currentBusinessTicketPrice * currentBusinessPassengers);
+    }
+
+    public void addNotification(Notification notification) {
+        notificationBuffer.add(notification);
+        notificationChangeSub.notifyObs();
+    }
+    public void clearNotificationBuffer() {
+        notificationBuffer.clear();
+        notificationChangeSub.notifyObs();
+    }
+    public int getNotificationsCount() {
+        return notificationBuffer.size();
+    }
+    public Collection<Notification> getNotifications() {
+        return new LinkedList<>(notificationBuffer);
     }
 
     public void login(User user) throws InvalidCredentialsException, UnreachableServer {
@@ -269,6 +301,7 @@ public class Client {
     public void updateCurrentUser() throws UnreachableServer, InvalidSessionTokenException {
         try {
             currentUser = query.queryUser(currentToken);
+            isSubscribedToFidelityPromotion = notification.isUserSubscribedToFidelityPromotions(currentToken);
             fidelityUserSub.notifyObs();
         } catch (InvalidSessionTokenException e) {
             logout();
@@ -326,6 +359,24 @@ public class Client {
             request.cancelFidelity(currentToken);
             if(currentPromotion != null && currentPromotion.isOnlyFidelityUser()) setCurrentPromotion(null);
             updateCurrentUser();
+        } catch (InvalidSessionTokenException e) {
+            logout();
+            throw e;
+        }
+    }
+
+    public void subscribeToFidelityPromotions() throws UnreachableServer, InvalidSessionTokenException {
+        try {
+            if (notification.fidelityPromotionsSubscribe(currentToken)) isSubscribedToFidelityPromotion = true;
+        } catch (InvalidSessionTokenException e) {
+            logout();
+            throw e;
+        }
+    }
+
+    public void unsubscribeFromFidelityPromotions() throws UnreachableServer, InvalidSessionTokenException {
+        try {
+            if(notification.fidelityPromotionsUnubscribe(currentToken)) isSubscribedToFidelityPromotion = false;
         } catch (InvalidSessionTokenException e) {
             logout();
             throw e;

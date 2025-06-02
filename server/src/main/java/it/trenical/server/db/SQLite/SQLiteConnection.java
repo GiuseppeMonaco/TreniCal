@@ -43,6 +43,7 @@ public class SQLiteConnection implements DatabaseConnection {
             // Si inizializzano tutte le tabelle necessarie
             SQLiteUser.initTable(statement);
             SQLiteFidelityUser.initTable(statement);
+            SQLiteNotifiableFidelityUser.initTable(statement);
             SQLitePromotion.initTable(statement);
             SQLiteTrainType.initTable(statement);
             SQLiteTrain.initTable(statement);

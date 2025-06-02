@@ -442,6 +442,26 @@ public class MainFrame extends JFrame implements Login.Observer, Logout.Observer
         }
     }
 
+    void subscribeToFidelityPromotions() {
+        try {
+            client.subscribeToFidelityPromotions();
+        } catch (UnreachableServer e) {
+            unreachableServerDialog(customerAreaFrame);
+        } catch (InvalidSessionTokenException e) {
+            invalidTokenDialog();
+        }
+    }
+
+    void unsubscribeFromFidelityPromotions() {
+        try {
+            client.unsubscribeFromFidelityPromotions();
+        } catch (UnreachableServer e) {
+            unreachableServerDialog(customerAreaFrame);
+        } catch (InvalidSessionTokenException e) {
+            invalidTokenDialog();
+        }
+    }
+
     public static void main(String[] args) {
         MainFrame m = MainFrame.getInstance();
         m.display();

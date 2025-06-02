@@ -4,6 +4,7 @@ import io.grpc.Grpc;
 import io.grpc.InsecureServerCredentials;
 import io.grpc.Server;
 import it.trenical.server.auth.GrpcAuthImpl;
+import it.trenical.server.notifications.GrpcNotificationImpl;
 import it.trenical.server.query.GrpcQueryImpl;
 
 import java.io.IOException;
@@ -43,6 +44,7 @@ public class GrpcServerConnection implements ServerConnection {
                 .addService(new GrpcAuthImpl())
                 .addService(new GrpcQueryImpl())
                 .addService(new GrpcRequestImpl())
+                .addService(new GrpcNotificationImpl())
                 .build()
                 .start();
         logger.info("gRPC server started, listening on port {}", PORT);
