@@ -55,7 +55,7 @@ public class GrpcServerConnection implements ServerConnection {
                 this.stop();
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
-                e.printStackTrace(System.err);
+                logger.error(e.getMessage());
             } finally {
                 executor.shutdown();
             }
