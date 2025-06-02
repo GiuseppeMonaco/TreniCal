@@ -16,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.SQLException;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.Map;
@@ -102,6 +103,15 @@ public enum NotificationManager implements TicketsCache.Observer, TripsCache.Obs
         }
     }
 
+    public void alertBookExpire(Ticket book) {
+        TicketStream ts = TicketStream.newBuilder()
+                .setWasTokenValid(true)
+                .setTimestamp(System.currentTimeMillis())
+                .setTicket(convert(book))
+                .build();
+        almostExpiredBookingUsers.get(book.getUser()).onNext(ts);
+    }
+
     @Override
     public void updateTicketsCache() {
         if(currentTicketsList == null) {
@@ -109,8 +119,12 @@ public enum NotificationManager implements TicketsCache.Observer, TripsCache.Obs
             return;
         }
         Collection<Ticket> newTicketsList = new LinkedList<>(server.getTicketsCache());
+        Calendar now = Calendar.getInstance();
 
         currentTicketsList.stream().filter(t -> !t.isPaid() && !newTicketsList.contains(t)).forEach(delBooking -> {
+            Calendar departure = delBooking.getTrip().getDepartureTime();
+            if(now.after(departure)) return; // Check if the booking has been deleted because it's departed and not cancelled
+
             TicketStream ts = TicketStream.newBuilder()
                     .setWasTokenValid(true)
                     .setTimestamp(System.currentTimeMillis())
@@ -138,7 +152,8 @@ public enum NotificationManager implements TicketsCache.Observer, TripsCache.Obs
                     .build();
             tripsDeleteUsers.forEach((user, stream) -> {
                 if(server.getTicketsCache().stream().anyMatch(tk -> tk.getUser().equals(user) && tk.getTrip().equals(delTrip))) {
-                    stream.onNext(ts);}
+                    stream.onNext(ts);
+                }
             });
         });
         currentTripsList = newTripsList;
