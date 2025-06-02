@@ -10,6 +10,7 @@ import it.trenical.client.auth.exceptions.UserAlreadyExistsException;
 import it.trenical.client.connection.exceptions.UnreachableServer;
 import it.trenical.client.observer.Login;
 import it.trenical.client.observer.Logout;
+import it.trenical.client.observer.NotificationChange;
 import it.trenical.client.request.exceptions.InvalidSeatsNumberException;
 import it.trenical.client.request.exceptions.InvalidTicketException;
 import it.trenical.client.request.exceptions.NoChangeException;
@@ -28,7 +29,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.Collection;
 
-public class MainFrame extends JFrame implements Login.Observer, Logout.Observer {
+public class MainFrame extends JFrame implements Login.Observer, Logout.Observer, NotificationChange.Observer {
 
     // Singleton class
     private static MainFrame instance;
@@ -42,8 +43,10 @@ public class MainFrame extends JFrame implements Login.Observer, Logout.Observer
     private JPanel mainPanel;
     private JPanel centerPanel;
     private JButton buttonCustomerArea;
+    private JButton notificationsButton;
 
     private CustomerAreaFrame customerAreaFrame;
+    private NotificationsFrame notificationsFrame;
 
     private JPanel explorePanel;
     private JPanel tripsPanel;
@@ -53,6 +56,7 @@ public class MainFrame extends JFrame implements Login.Observer, Logout.Observer
         client = Client.getInstance();
         client.loginSub.attach(this);
         client.logoutSub.attach(this);
+        client.notificationChangeSub.attach(this);
 
         setContentPane(mainPanel);
         setTitle("TreniCal");
@@ -62,6 +66,9 @@ public class MainFrame extends JFrame implements Login.Observer, Logout.Observer
 
         buttonCustomerArea.setVisible(canShowCustomerAreaButton());
         buttonCustomerArea.addActionListener(actionEvent -> onCustomerAreaButton());
+
+        notificationsButton.setVisible(false);
+        notificationsButton.addActionListener(actionEvent -> onNotificationButton());
 
         addWindowListener(new WindowAdapter() {
             @Override
@@ -90,6 +97,12 @@ public class MainFrame extends JFrame implements Login.Observer, Logout.Observer
         });
     }
 
+    private void onNotificationButton() {
+        if (!canShowNotificationsButton()) return;
+        initNotificationsPanel();
+        notificationsFrame.display(this);
+    }
+
     Client getClient() {
         return client;
     }
@@ -109,6 +122,10 @@ public class MainFrame extends JFrame implements Login.Observer, Logout.Observer
         return client.getCurrentUser() != null;
     }
 
+    private boolean canShowNotificationsButton() {
+        return client.getNotificationsCount() > 0;
+    }
+
     public static synchronized MainFrame getInstance() {
         if (instance == null) instance = new MainFrame();
         return instance;
@@ -118,6 +135,7 @@ public class MainFrame extends JFrame implements Login.Observer, Logout.Observer
         initCustomerAreaFrame();
         initTripsPanel();
         initCheckoutPanel();
+        initNotificationsPanel();
         showExplorePanel();
         try {
             client.queryStations();
@@ -155,6 +173,10 @@ public class MainFrame extends JFrame implements Login.Observer, Logout.Observer
 
     void initCheckoutPanel() {
         if (checkoutPanel == null) checkoutPanel = new CheckoutPanel();
+    }
+
+    void initNotificationsPanel() {
+        if (notificationsFrame == null) notificationsFrame = new NotificationsFrame();
     }
 
     void showExplorePanel() {
@@ -259,6 +281,18 @@ public class MainFrame extends JFrame implements Login.Observer, Logout.Observer
         loginButton.setText("Login");
         buttonCustomerArea.setVisible(canShowCustomerAreaButton());
         customerAreaFrame.close();
+    }
+
+    @Override
+    public void updateOnNotificationChange() {
+        int number = client.getNotificationsCount();
+        System.out.println(number);
+        boolean canShow = number > 0;
+        if (number > 1) notificationsButton.setText(String.format("%d nuove notifiche!", number));
+        else if (canShow) notificationsButton.setText("1 nuova notifica!");
+        notificationsButton.setVisible(canShow);
+        notificationsButton.revalidate();
+        notificationsButton.repaint();
     }
 
     void login(User user) {
@@ -486,23 +520,26 @@ public class MainFrame extends JFrame implements Login.Observer, Logout.Observer
         mainPanel = new JPanel();
         mainPanel.setLayout(new GridLayoutManager(2, 1, new Insets(5, 5, 5, 5), -1, -1));
         final JPanel panel1 = new JPanel();
-        panel1.setLayout(new GridLayoutManager(1, 5, new Insets(0, 0, 0, 0), -1, -1));
+        panel1.setLayout(new GridLayoutManager(1, 6, new Insets(0, 0, 0, 0), -1, -1));
         mainPanel.add(panel1, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
         loginButton = new JButton();
         loginButton.setEnabled(true);
         loginButton.setHideActionText(false);
         loginButton.setText("Login");
-        panel1.add(loginButton, new GridConstraints(0, 4, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(80, 35), null, 0, false));
+        panel1.add(loginButton, new GridConstraints(0, 5, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(80, 35), null, 0, false));
         authLabel = new JLabel();
         authLabel.setText("Utente non autenticato");
-        panel1.add(authLabel, new GridConstraints(0, 2, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        panel1.add(authLabel, new GridConstraints(0, 3, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         final Spacer spacer1 = new Spacer();
-        panel1.add(spacer1, new GridConstraints(0, 3, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, 1, null, null, null, 0, false));
+        panel1.add(spacer1, new GridConstraints(0, 4, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, 1, null, null, null, 0, false));
         final Spacer spacer2 = new Spacer();
-        panel1.add(spacer2, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, 1, null, null, null, 0, false));
+        panel1.add(spacer2, new GridConstraints(0, 2, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, 1, null, null, null, 0, false));
         buttonCustomerArea = new JButton();
         buttonCustomerArea.setText("Area Personale");
         panel1.add(buttonCustomerArea, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(-1, 35), null, 0, false));
+        notificationsButton = new JButton();
+        notificationsButton.setText("%d nuove notifiche!");
+        panel1.add(notificationsButton, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(-1, 35), null, 0, false));
         centerPanel = new JPanel();
         centerPanel.setLayout(new CardLayout(0, 0));
         mainPanel.add(centerPanel, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, null, new Dimension(533, 300), null, 0, false));
@@ -514,4 +551,5 @@ public class MainFrame extends JFrame implements Login.Observer, Logout.Observer
     public JComponent $$$getRootComponent$$$() {
         return mainPanel;
     }
+
 }
