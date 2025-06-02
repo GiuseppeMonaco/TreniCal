@@ -62,20 +62,20 @@ public class TripsPanel implements TripsCache.Observer {
     public void updateTripsCache() {
         Collection<Trip> cache = client.getFilteredTripsCache();
         tripsListModel.clear();
-        if (cache.isEmpty()) {
-            if (main.getBorder() instanceof TitledBorder tb) {
-                tb.setTitle("Nessun viaggio trovato");
-            }
-            return;
-        }
-        if (main.getBorder() instanceof TitledBorder tb) {
-            tb.setTitle("Seleziona il tuo prossimo viaggio");
-        }
         tripsListModel.addAll(
                 cache.stream().filter(
                         t -> client.getCurrentPassengersNumber() <= t.getAvailableEconomySeats() + t.getAvailableBusinessSeats()
                 ).toList()
         );
+        if (tripsListModel.isEmpty()) {
+            if (main.getBorder() instanceof TitledBorder tb) {
+                tb.setTitle("Nessun viaggio trovato");
+            }
+        } else {
+            if (main.getBorder() instanceof TitledBorder tb) {
+                tb.setTitle("Seleziona il tuo prossimo viaggio");
+            }
+        }
     }
 
     {
