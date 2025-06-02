@@ -235,6 +235,7 @@ public class Client {
         }
         currentToken = null;
         currentUser = null;
+        clearNotificationBuffer();
         logoutSub.notifyObs();
     }
 
