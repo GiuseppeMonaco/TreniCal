@@ -171,13 +171,11 @@ public class Client {
         if (number < 0) throw new IllegalArgumentException("Passengers number cannot be negative");
         currentEconomyPassengers = number;
         updateCurrentTotalPrice();
-        //passengersNumberSub.notifyObs();
     }
     private void setCurrentBusinessPassengers(int number) {
         if (number < 0) throw new IllegalArgumentException("Passengers number cannot be negative");
         currentBusinessPassengers = number;
         updateCurrentTotalPrice();
-        //passengersNumberSub.notifyObs();
     }
     private void updateCurrentTotalPrice() {
         setCurrentTotalPrice(currentEconomyTicketPrice * currentEconomyPassengers + currentBusinessTicketPrice * currentBusinessPassengers);
