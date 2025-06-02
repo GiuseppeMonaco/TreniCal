@@ -70,7 +70,8 @@ public class TripData implements Trip {
 
     @Override
     public Calendar getDepartureTime() {
-        return departureTime;
+        if (departureTime == null) return null;
+        return (Calendar) departureTime.clone();
     }
 
     @Override
