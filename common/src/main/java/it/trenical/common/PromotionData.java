@@ -96,10 +96,10 @@ public class PromotionData implements Promotion {
 
     @Override
     public String toString() {
-        return String.format("%s - %s - %d",
+        return String.format("%s - %s - %s",
                 getCode(),
-                getName(),
-                (int)((1 - getDiscount())*100)
-        )+"%";
+                getDiscountPercentage() + "%",
+                getName()
+        );
     }
 }

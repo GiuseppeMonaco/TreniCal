@@ -1,5 +1,7 @@
 package it.trenical.server.gui;
 
+import com.intellij.uiDesigner.core.GridConstraints;
+import com.intellij.uiDesigner.core.GridLayoutManager;
 import it.trenical.common.Promotion;
 
 import javax.swing.*;
@@ -24,12 +26,8 @@ public class DeletePromotionDialog extends DeleteDialog<Promotion> {
         formatLabel(codeLabel, item.getCode());
         formatLabel(nameLabel, item.getName());
         formatLabel(descriptionLabel, item.getDescription());
-        formatLabel(discountLabel, convertDiscount(item.getDiscount()));
+        formatLabel(discountLabel, item.getDiscountPercentage() + "%");
         formatLabel(onlyFidelityLabel, item.isOnlyFidelityUser() ? "Si" : "No");
-    }
-
-    private int convertDiscount(float x) {
-        return (int) (1 - x) * 100;
     }
 
     @Override
@@ -53,23 +51,23 @@ public class DeletePromotionDialog extends DeleteDialog<Promotion> {
      */
     private void $$$setupUI$$$() {
         main = new JPanel();
-        main.setLayout(new com.intellij.uiDesigner.core.GridLayoutManager(5, 1, new Insets(0, 0, 0, 0), -1, -1));
+        main.setLayout(new GridLayoutManager(5, 1, new Insets(0, 0, 0, 0), -1, -1));
         main.setBorder(BorderFactory.createTitledBorder(null, "Promozione", TitledBorder.CENTER, TitledBorder.DEFAULT_POSITION, null, null));
         nameLabel = new JLabel();
         nameLabel.setText("Nome: %s");
-        main.add(nameLabel, new com.intellij.uiDesigner.core.GridConstraints(1, 0, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER, com.intellij.uiDesigner.core.GridConstraints.FILL_NONE, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        main.add(nameLabel, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         descriptionLabel = new JLabel();
         descriptionLabel.setText("Descrizione: %s");
-        main.add(descriptionLabel, new com.intellij.uiDesigner.core.GridConstraints(2, 0, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER, com.intellij.uiDesigner.core.GridConstraints.FILL_NONE, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        main.add(descriptionLabel, new GridConstraints(2, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         discountLabel = new JLabel();
-        discountLabel.setText("Sconto: %d perc.");
-        main.add(discountLabel, new com.intellij.uiDesigner.core.GridConstraints(4, 0, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER, com.intellij.uiDesigner.core.GridConstraints.FILL_NONE, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        discountLabel.setText("Sconto: %s");
+        main.add(discountLabel, new GridConstraints(4, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         codeLabel = new JLabel();
         codeLabel.setText("Codice: %s");
-        main.add(codeLabel, new com.intellij.uiDesigner.core.GridConstraints(0, 0, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER, com.intellij.uiDesigner.core.GridConstraints.FILL_NONE, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        main.add(codeLabel, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         onlyFidelityLabel = new JLabel();
         onlyFidelityLabel.setText("Solo per fedeli: %s");
-        main.add(onlyFidelityLabel, new com.intellij.uiDesigner.core.GridConstraints(3, 0, 1, 1, com.intellij.uiDesigner.core.GridConstraints.ANCHOR_CENTER, com.intellij.uiDesigner.core.GridConstraints.FILL_NONE, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, com.intellij.uiDesigner.core.GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        main.add(onlyFidelityLabel, new GridConstraints(3, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
     }
 
     /**
@@ -78,4 +76,5 @@ public class DeletePromotionDialog extends DeleteDialog<Promotion> {
     public JComponent $$$getRootComponent$$$() {
         return main;
     }
+
 }

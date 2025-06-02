@@ -1,5 +1,6 @@
 package it.trenical.common;
 
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Objects;
 
@@ -10,6 +11,8 @@ public class TripData implements Trip {
     private final Calendar departureTime;
     private final int availableEconomySeats;
     private final int availableBusinessSeats;
+
+    static private final SimpleDateFormat dateFormatter = new SimpleDateFormat("dd/MM/yyyy HH:mm");
 
     private TripData(Builder builder) {
         this.train = builder.train;
