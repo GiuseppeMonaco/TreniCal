@@ -20,6 +20,8 @@ public class GrpcAuthImpl extends AuthServiceGrpc.AuthServiceImplBase {
 
     private final DatabaseConnection db = Server.INSTANCE.getDatabase();
 
+    private final Server server = Server.INSTANCE;
+
     private final TokenManager tokenManager = BiMapTokenManager.INSTANCE;
 
     @Override
@@ -71,6 +73,7 @@ public class GrpcAuthImpl extends AuthServiceGrpc.AuthServiceImplBase {
             exists = user.checkIfExists(db);
             if (!exists) {
                 new SQLiteUser(user.getEmail(), hashPassword(user.getPassword())).insertRecord(db);
+                server.updateUsersCache();
             }
         } catch (SQLException e) {
             logger.warn(e.getMessage());

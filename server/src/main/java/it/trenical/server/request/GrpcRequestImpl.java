@@ -30,6 +30,8 @@ public class GrpcRequestImpl extends RequestServiceGrpc.RequestServiceImplBase {
 
     private final TokenManager tokenManager = BiMapTokenManager.INSTANCE;
 
+    private final Server server = Server.INSTANCE;
+
     private static final int SUCCESS_CODE = 0;
     private static final int INVALID_TOKEN_ERROR_CODE = 1;
     private static final int GENERIC_ERROR_CODE = 2;
@@ -82,6 +84,7 @@ public class GrpcRequestImpl extends RequestServiceGrpc.RequestServiceImplBase {
                 }
             });
             errorCode.set(SUCCESS_CODE);
+            server.updateTicketsCache();
         } catch (SQLException e) {
             logger.warn("Error adding buyed tickets to database: {}",e.getMessage());
         }
@@ -136,6 +139,7 @@ public class GrpcRequestImpl extends RequestServiceGrpc.RequestServiceImplBase {
                 }
             });
             errorCode.set(SUCCESS_CODE);
+            server.updateTicketsCache();
         } catch (SQLException e) {
             logger.warn("Error adding booked tickets to database: {}",e.getMessage());
         }
@@ -178,6 +182,7 @@ public class GrpcRequestImpl extends RequestServiceGrpc.RequestServiceImplBase {
                 }
             });
             errorCode.set(SUCCESS_CODE);
+            server.updateTicketsCache();
         } catch (SQLException e) {
             logger.warn("Error paying booked tickets in database: {}",e.getMessage());
         }
@@ -230,6 +235,7 @@ public class GrpcRequestImpl extends RequestServiceGrpc.RequestServiceImplBase {
                 tt.updateBusinessRecord(db, ticket.isBusiness());
             });
             errorCode.set(SUCCESS_CODE);
+            server.updateTicketsCache();
         } catch (SQLException e) {
             logger.warn("Error editing ticket in database: {}",e.getMessage());
         }
@@ -286,6 +292,7 @@ public class GrpcRequestImpl extends RequestServiceGrpc.RequestServiceImplBase {
                 new SQLiteUser(new UserData(user.getEmail(),null,isFidelity)).updateRecord(db);
             });
             errorCode.set(SUCCESS_CODE);
+            server.updateUsersCache();
             logger.info("User {} {} Fidelity program.", user.getEmail(), isFidelity ? "subscribed to" : "unsubscribed from");
         } catch (SQLException e) {
             logger.warn("Error editing fidelity user in database: {}",e.getMessage());
