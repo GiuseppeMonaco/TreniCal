@@ -207,14 +207,34 @@ public class MainFrame extends JFrame implements Login.Observer, Logout.Observer
         showDialog(new UnreachableServerDialog());
     }
 
+    void unreachableServerDialog(Component parent) {
+        showDialog(new UnreachableServerDialog(), parent);
+    }
+
     public void invalidTokenDialog() {
-        // TODO
-        System.err.println("IMPLEMENTA IL DIALOGO TOKEN");
+        invalidTokenDialog(this);
+    }
+
+    public void invalidTokenDialog(Component parent) {
+        GenericOKDialog.showDialog(parent, """
+                <html><div style='text-align: center; width: 300px;'>
+                La sessione non è più valida.<br>
+                Perfavore esegui nuovamente il login.
+                </div></html>
+                """);
     }
 
     public void invalidSeatsNumberDialog() {
-        // TODO
-        System.err.println("IMPLEMENTA IL DIALOGO POSTI");
+        invalidSeatsNumberDialog(this);
+    }
+
+    public void invalidSeatsNumberDialog(Component parent) {
+        GenericOKDialog.showDialog(parent, """
+                <html><div style='text-align: center; width: 300px;'>
+                Il numero di posti selezionato non è più disponibile.<br>
+                Perfavore esegui una nuova ricerca.
+                </div></html>
+                """);
     }
 
     void payBookedTicketDialog(Ticket ticket) {
@@ -360,7 +380,7 @@ public class MainFrame extends JFrame implements Login.Observer, Logout.Observer
             client.payBookedTickets(tickets);
             GenericOKDialog.showDialog(dialogsParent, "Biglietto acquistato con successo!");
         } catch (UnreachableServer e) {
-            unreachableServerDialog();
+            unreachableServerDialog(customerAreaFrame);
         } catch (InvalidSessionTokenException e) {
             invalidTokenDialog();
         } catch (InvalidTicketException e) {
@@ -375,9 +395,9 @@ public class MainFrame extends JFrame implements Login.Observer, Logout.Observer
         } catch (UnreachableServer e) {
             unreachableServerDialog();
         } catch (InvalidSessionTokenException e) {
-            throw new RuntimeException(e);
+            invalidTokenDialog();
         } catch (InvalidSeatsNumberException e) {
-            invalidSeatsNumberDialog();
+            invalidSeatsNumberDialog(customerAreaFrame);
         } catch (InvalidTicketException | NoChangeException e) {
             logger.error(e.getMessage());
         }
@@ -385,7 +405,7 @@ public class MainFrame extends JFrame implements Login.Observer, Logout.Observer
 
     void becomeFidelity() {
         try {
-            if (!GenericConfirmDialog.showDialog(this, """
+            if (!GenericConfirmDialog.showDialog(customerAreaFrame, """
                     <html><div style='text-align: center;'>
                     Ottieni tantissimi vantaggi diventando un utente fedele!<br>
                     Il programma FedeltàTreno ha un costo di 9,99€ al mese.<br>
@@ -394,7 +414,7 @@ public class MainFrame extends JFrame implements Login.Observer, Logout.Observer
                     """)) return;
             client.becomeFidelity();
         } catch (UnreachableServer e) {
-            unreachableServerDialog();
+            unreachableServerDialog(customerAreaFrame);
         } catch (InvalidSessionTokenException e) {
             invalidTokenDialog();
         } catch (NoChangeException e) {
@@ -404,7 +424,7 @@ public class MainFrame extends JFrame implements Login.Observer, Logout.Observer
 
     void cancelFidelity() {
         try {
-            if (!GenericConfirmDialog.showDialog(this, """
+            if (!GenericConfirmDialog.showDialog(customerAreaFrame, """
                     <html><div style='text-align: center;'>
                     Attenzione, ti stai disiscrivendo dal programma FedeltàTreno.<br>
                     Così facendo perderai tutti gli incredibili ed esclusivi vantaggi.<br>
@@ -414,7 +434,7 @@ public class MainFrame extends JFrame implements Login.Observer, Logout.Observer
                     """)) return;
             client.cancelFidelity();
         } catch (UnreachableServer e) {
-            unreachableServerDialog();
+            unreachableServerDialog(customerAreaFrame);
         } catch (InvalidSessionTokenException e) {
             invalidTokenDialog();
         } catch (NoChangeException e) {
