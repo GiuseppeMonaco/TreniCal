@@ -63,6 +63,67 @@ public class AdminMainFrame extends JFrame {
         });
     }
 
+    private void initMenu() {
+        JMenuBar menuBar = new JMenuBar();
+        JMenu visibleManagementPanelsMenu = new JMenu("Pannelli di gestione");
+
+        JCheckBoxMenuItem trainTypesManagementPanelMenuToggle = new JCheckBoxMenuItem("Tipi di treno");
+        JCheckBoxMenuItem trainsManagementPanelMenuToggle = new JCheckBoxMenuItem("Treni");
+        JCheckBoxMenuItem stationsManagementPanelMenuToggle = new JCheckBoxMenuItem("Stazioni");
+        JCheckBoxMenuItem routesManagementPanelMenuToggle = new JCheckBoxMenuItem("Tratte");
+        JCheckBoxMenuItem tripsManagementPanelMenuToggle = new JCheckBoxMenuItem("Viaggi");
+        JCheckBoxMenuItem promotionsManagementPanelMenuToggle = new JCheckBoxMenuItem("Promozioni");
+        JCheckBoxMenuItem usersManagementPanelMenuToggle = new JCheckBoxMenuItem("Utenti");
+        JCheckBoxMenuItem ticketsManagementPanelMenuToggle = new JCheckBoxMenuItem("Biglietti");
+
+        visibleManagementPanelsMenu.add(trainTypesManagementPanelMenuToggle);
+        visibleManagementPanelsMenu.add(trainsManagementPanelMenuToggle);
+        visibleManagementPanelsMenu.add(stationsManagementPanelMenuToggle);
+        visibleManagementPanelsMenu.add(routesManagementPanelMenuToggle);
+        visibleManagementPanelsMenu.add(tripsManagementPanelMenuToggle);
+        visibleManagementPanelsMenu.add(promotionsManagementPanelMenuToggle);
+        visibleManagementPanelsMenu.add(usersManagementPanelMenuToggle);
+        visibleManagementPanelsMenu.add(ticketsManagementPanelMenuToggle);
+
+        addManagementPanelMenuToggleListener(trainTypesManagementPanelMenuToggle, trainTypesManagementPanel);
+        addManagementPanelMenuToggleListener(trainsManagementPanelMenuToggle, trainsManagementPanel);
+        addManagementPanelMenuToggleListener(stationsManagementPanelMenuToggle, stationsManagementPanel);
+        addManagementPanelMenuToggleListener(routesManagementPanelMenuToggle, routesManagementPanel);
+        addManagementPanelMenuToggleListener(tripsManagementPanelMenuToggle, tripsManagementPanel);
+        addManagementPanelMenuToggleListener(promotionsManagementPanelMenuToggle, promotionsManagementPanel);
+        addManagementPanelMenuToggleListener(usersManagementPanelMenuToggle, usersManagementPanel);
+        addManagementPanelMenuToggleListener(ticketsManagementPanelMenuToggle, ticketsManagementPanel);
+
+        trainTypesManagementPanelMenuToggle.setSelected(true);
+        trainsManagementPanelMenuToggle.setSelected(true);
+        stationsManagementPanelMenuToggle.setSelected(true);
+        routesManagementPanelMenuToggle.setSelected(true);
+        tripsManagementPanelMenuToggle.setSelected(true);
+        promotionsManagementPanelMenuToggle.setSelected(true);
+        usersManagementPanelMenuToggle.setSelected(false);
+        ticketsManagementPanelMenuToggle.setSelected(false);
+
+        trainTypesManagementPanel.setVisible(trainTypesManagementPanelMenuToggle.isSelected());
+        trainsManagementPanel.setVisible(trainsManagementPanelMenuToggle.isSelected());
+        stationsManagementPanel.setVisible(stationsManagementPanelMenuToggle.isSelected());
+        routesManagementPanel.setVisible(routesManagementPanelMenuToggle.isSelected());
+        tripsManagementPanel.setVisible(tripsManagementPanelMenuToggle.isSelected());
+        promotionsManagementPanel.setVisible(promotionsManagementPanelMenuToggle.isSelected());
+        usersManagementPanel.setVisible(usersManagementPanelMenuToggle.isSelected());
+        ticketsManagementPanel.setVisible(ticketsManagementPanelMenuToggle.isSelected());
+
+        menuBar.add(visibleManagementPanelsMenu);
+
+        setJMenuBar(menuBar);
+    }
+
+    private void addManagementPanelMenuToggleListener(JCheckBoxMenuItem box, JPanel panel) {
+        box.addItemListener(e -> {
+            panel.setVisible(box.isSelected());
+            pack();
+        });
+    }
+
     public static synchronized AdminMainFrame getInstance() {
         if (INSTANCE == null) INSTANCE = new AdminMainFrame();
         return INSTANCE;
@@ -116,6 +177,8 @@ public class AdminMainFrame extends JFrame {
         managementPanel.add(promotionsManagementPanel);
         managementPanel.add(usersManagementPanel);
         managementPanel.add(ticketsManagementPanel);
+
+        initMenu();
 
         server.updateTrainTypesCache();
         server.updateTrainsCache();
