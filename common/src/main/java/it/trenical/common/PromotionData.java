@@ -93,4 +93,13 @@ public class PromotionData implements Promotion {
     public int hashCode() {
         return code.hashCode();
     }
+
+    @Override
+    public String toString() {
+        return String.format("%s - %s - %d",
+                getCode(),
+                getName(),
+                (int)((1 - getDiscount())*100)
+        )+"%";
+    }
 }
