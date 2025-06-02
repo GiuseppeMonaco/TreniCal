@@ -327,6 +327,9 @@ public enum Server {
             logger.error(e.getMessage());
         }
         updateTrainTypesCache();
+        updateTrainsCache();
+        updateTripsCache();
+        updateTicketsCache();
     }
     public void deleteTrain(Train train) {
         try {
@@ -335,6 +338,8 @@ public enum Server {
             logger.error(e.getMessage());
         }
         updateTrainsCache();
+        updateTripsCache();
+        updateTicketsCache();
     }
     public void deleteStation(Station station) {
         try {
@@ -343,6 +348,9 @@ public enum Server {
             logger.error(e.getMessage());
         }
         updateStationsCache();
+        updateRoutesCache();
+        updateTripsCache();
+        updateTicketsCache();
     }
     public void deleteRoute(Route route) {
         try {
@@ -351,6 +359,8 @@ public enum Server {
             logger.error(e.getMessage());
         }
         updateRoutesCache();
+        updateTripsCache();
+        updateTicketsCache();
     }
     public void deleteTrip(Trip trip) {
         try {
@@ -359,6 +369,7 @@ public enum Server {
             logger.error(e.getMessage());
         }
         updateTripsCache();
+        updateTicketsCache();
     }
     public void deletePromotion(Promotion promotion) {
         try {
@@ -375,6 +386,7 @@ public enum Server {
             logger.error(e.getMessage());
         }
         updateUsersCache();
+        updateTicketsCache();
     }
     public void deleteTicket(Ticket ticket) {
         try {
