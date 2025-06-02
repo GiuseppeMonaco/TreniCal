@@ -8,6 +8,7 @@ import it.trenical.server.db.SQLite.*;
 import it.trenical.server.db.exceptions.ForeignKeyException;
 import it.trenical.server.db.exceptions.PrimaryKeyException;
 import it.trenical.server.observer.*;
+import it.trenical.server.scheduler.Scheduler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,6 +25,7 @@ public enum Server {
 
     private ServerConnection serverConnection;
     private DatabaseConnection database;
+    private Scheduler scheduler;
 
     public void initDatabase(DatabaseConnection db) {
         this.database = db;
@@ -37,6 +39,13 @@ public enum Server {
             if(database != null) closeDatabase();
             System.exit(-1);
         }
+    }
+    public void initScheduler() {
+        if(scheduler == null) scheduler = Scheduler.INSTANCE;
+        scheduler.startSchedules();
+    }
+    public void stopScheduler() {
+        scheduler.shutdown();
     }
     public void closeDatabase() {
         database.close();
@@ -400,9 +409,11 @@ public enum Server {
     public static void main(String[] args) throws Exception {
         Server server = Server.INSTANCE;
         server.initDatabase(SQLiteConnection.getInstance());
+        server.initScheduler();
         server.initServerConnection(GrpcServerConnection.getInstance());
 
         server.waitUntilServerConnectionShutdown();
+        server.stopScheduler();
         server.closeDatabase();
     }
 }

@@ -35,6 +35,7 @@ public class AdminMainFrame extends JFrame {
 
         server = Server.INSTANCE;
         server.initDatabase(SQLiteConnection.getInstance());
+        server.initScheduler();
         server.initServerConnection(GrpcServerConnection.getInstance());
 
         setContentPane(mainPanel);
@@ -202,6 +203,7 @@ public class AdminMainFrame extends JFrame {
         m.init();
         m.display();
         server.waitUntilServerConnectionShutdown();
+        server.stopScheduler();
         server.closeDatabase();
     }
 
