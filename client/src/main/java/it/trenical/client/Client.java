@@ -248,42 +248,87 @@ public class Client {
 
     public void queryTickets() throws UnreachableServer, InvalidSessionTokenException {
         ticketsCache.clear();
-        ticketsCache.addAll(query.queryTickets(currentToken));
+        try {
+            ticketsCache.addAll(query.queryTickets(currentToken));
+        } catch (InvalidSessionTokenException e) {
+            logout();
+            throw e;
+        }
         ticketsCacheSub.notifyObs();
     }
 
     public Promotion queryPromotion(Promotion promotion) throws UnreachableServer, InvalidSessionTokenException {
-        return query.queryPromotion(currentToken,promotion);
+        try {
+            return query.queryPromotion(currentToken,promotion);
+        } catch (InvalidSessionTokenException e) {
+            logout();
+            throw e;
+        }
     }
 
     public void updateCurrentUser() throws UnreachableServer, InvalidSessionTokenException {
-        currentUser = query.queryUser(currentToken);
-        fidelityUserSub.notifyObs();
+        try {
+            currentUser = query.queryUser(currentToken);
+            fidelityUserSub.notifyObs();
+        } catch (InvalidSessionTokenException e) {
+            logout();
+            throw e;
+        }
     }
 
     public void buyTickets(Collection<Ticket> tickets) throws UnreachableServer, InvalidSessionTokenException, InvalidSeatsNumberException {
-        request.buyTickets(currentToken, tickets);
-        queryTickets();
+        try {
+            request.buyTickets(currentToken, tickets);
+            queryTickets();
+        } catch (InvalidSessionTokenException e) {
+            logout();
+            throw e;
+        }
     }
     public void bookTickets(Collection<Ticket> tickets) throws UnreachableServer, InvalidSessionTokenException, InvalidSeatsNumberException {
-        request.bookTickets(currentToken, tickets);
-        queryTickets();
+        try {
+            request.bookTickets(currentToken, tickets);
+            queryTickets();
+        } catch (InvalidSessionTokenException e) {
+            logout();
+            throw e;
+        }
     }
     public void payBookedTickets(Collection<Ticket> tickets) throws InvalidTicketException, UnreachableServer, InvalidSessionTokenException {
-        request.payBookedTickets(currentToken, tickets);
-        queryTickets();
+        try {
+            request.payBookedTickets(currentToken, tickets);
+            queryTickets();
+        } catch (InvalidSessionTokenException e) {
+            logout();
+            throw e;
+        }
     }
     public void editTicket(Ticket ticket) throws UnreachableServer, InvalidSessionTokenException, InvalidTicketException, NoChangeException, InvalidSeatsNumberException {
-        request.editTicket(currentToken, ticket);
-        queryTickets();
+        try {
+            request.editTicket(currentToken, ticket);
+            queryTickets();
+        } catch (InvalidSessionTokenException e) {
+            logout();
+            throw e;
+        }
     }
     public void becomeFidelity() throws UnreachableServer, InvalidSessionTokenException, NoChangeException {
-        request.becomeFidelity(currentToken);
-        updateCurrentUser();
+        try {
+            request.becomeFidelity(currentToken);
+            updateCurrentUser();
+        } catch (InvalidSessionTokenException e) {
+            logout();
+            throw e;
+        }
     }
     public void cancelFidelity() throws UnreachableServer, InvalidSessionTokenException, NoChangeException {
-        request.cancelFidelity(currentToken);
-        if(currentPromotion != null && currentPromotion.isOnlyFidelityUser()) setCurrentPromotion(null);
-        updateCurrentUser();
+        try {
+            request.cancelFidelity(currentToken);
+            if(currentPromotion != null && currentPromotion.isOnlyFidelityUser()) setCurrentPromotion(null);
+            updateCurrentUser();
+        } catch (InvalidSessionTokenException e) {
+            logout();
+            throw e;
+        }
     }
 }
