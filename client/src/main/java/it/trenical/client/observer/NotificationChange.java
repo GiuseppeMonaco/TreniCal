@@ -1,6 +1,6 @@
 package it.trenical.client.observer;
 
-public interface NewNotification {
+public interface NotificationChange {
 
     interface Subject {
         void attach(Observer obs);
@@ -9,6 +9,6 @@ public interface NewNotification {
     }
 
     interface Observer {
-        void updateOnNewNotification();
+        void updateOnNotificationChange();
     }
 }
