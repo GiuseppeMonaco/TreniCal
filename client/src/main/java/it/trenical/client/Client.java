@@ -214,8 +214,8 @@ public class Client {
             logger.error("Critical error during signup, aborting. Please contact software developer");
             System.exit(-1);
         }
-        logger.info("Signup effettuato come {}", user.getEmail());
         loginSub.notifyObs();
+        logger.info("Signup effettuato come {}", user.getEmail());
     }
 
     public boolean isAuthenticated() {
