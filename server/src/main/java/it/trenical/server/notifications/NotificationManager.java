@@ -8,7 +8,7 @@ import it.trenical.common.User;
 import it.trenical.grpc.*;
 import it.trenical.server.Server;
 import it.trenical.server.db.DatabaseConnection;
-import it.trenical.server.db.SQLite.SQLiteNotifiableFidelityUser;
+import it.trenical.server.db.SQLite.*;
 import it.trenical.server.observer.PromotionsCache;
 import it.trenical.server.observer.TicketsCache;
 import it.trenical.server.observer.TripsCache;
@@ -16,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.LinkedList;
@@ -42,24 +43,46 @@ public enum NotificationManager implements TicketsCache.Observer, TripsCache.Obs
     private Collection<Trip> currentTripsList;
     private Collection<Promotion> currentPromotionsList;
 
+    private boolean enableNotificationPersistance = true;
+
     NotificationManager() {
         this.server = Server.INSTANCE;
         server.ticketsCacheObs.attach(this);
         server.tripsCacheObs.attach(this);
         server.promotionsCacheObs.attach(this);
+
+        initDatabase();
+    }
+
+    private void initDatabase() {
+        try (Statement st = db.getConnection().createStatement()){
+            db.atomicTransaction(() -> {
+                SQLiteExpiredBookingNotification.initTable(st);
+                SQLiteAlmostExpiredBookingNotification.initTable(st);
+                SQLiteCancelledTripNotification.initTable(st);
+                SQLiteNewFidelityPromotionNotification.initTable(st);
+            });
+        } catch (SQLException e) {
+            logger.error(e.getMessage());
+            enableNotificationPersistance = false;
+        }
     }
 
     public void addAlmostExpiredBookingUser(User user, StreamObserver<TicketStream> observer) {
         almostExpiredBookingUsers.put(user,observer);
+        getStoredAlmostExpiredBookingNotifications(user).forEach(this::sendAlmostExpiredBookingNotification);
     }
     public void addExpiredBookingUser(User user, StreamObserver<TicketStream> observer) {
         expiredBookingUsers.put(user,observer);
+        getStoredExpiredBookingNotifications(user).forEach(this::sendExpiredBookingNotification);
     }
     public void addTripsDeleteUser(User user, StreamObserver<TripStream> observer) {
         tripsDeleteUsers.put(user,observer);
+        getStoredTripsDeleteNotifications(user).forEach(this::sendTripsDeleteNotification);
     }
     public void addFidelityPromotionsUser(User user, StreamObserver<PromotionStream> observer) {
         fidelityPromotionsUsers.put(user,observer);
+        getStoredFidelityPromotionsNotifications(user).forEach(this::sendFidelityPromotionsNotification);
     }
     public boolean removeAlmostExpiredBookingUser(User user) {
         return almostExpiredBookingUsers.remove(user) != null;
@@ -104,12 +127,7 @@ public enum NotificationManager implements TicketsCache.Observer, TripsCache.Obs
     }
 
     public void alertBookExpire(Ticket book) {
-        TicketStream ts = TicketStream.newBuilder()
-                .setWasTokenValid(true)
-                .setTimestamp(System.currentTimeMillis())
-                .setTicket(convert(book))
-                .build();
-        almostExpiredBookingUsers.get(book.getUser()).onNext(ts);
+        sendAlmostExpiredBookingNotification(book);
     }
 
     @Override
@@ -124,14 +142,7 @@ public enum NotificationManager implements TicketsCache.Observer, TripsCache.Obs
         currentTicketsList.stream().filter(t -> !t.isPaid() && !newTicketsList.contains(t)).forEach(delBooking -> {
             Calendar departure = delBooking.getTrip().getDepartureTime();
             if(now.after(departure)) return; // Check if the booking has been deleted because it's departed and not cancelled
-
-            TicketStream ts = TicketStream.newBuilder()
-                    .setWasTokenValid(true)
-                    .setTimestamp(System.currentTimeMillis())
-                    .setTicket(convert(delBooking))
-                    .build();
-            StreamObserver<TicketStream> stream = expiredBookingUsers.get(delBooking.getUser());
-            if (stream != null) stream.onNext(ts);
+            sendExpiredBookingNotification(delBooking);
         });
         currentTicketsList = newTicketsList;
     }
@@ -144,18 +155,7 @@ public enum NotificationManager implements TicketsCache.Observer, TripsCache.Obs
         }
         Collection<Trip> newTripsList = new LinkedList<>(server.getTripsCache());
 
-        currentTripsList.stream().filter(t -> !newTripsList.contains(t)).forEach(delTrip -> {
-            TripStream ts = TripStream.newBuilder()
-                    .setWasTokenValid(true)
-                    .setTimestamp(System.currentTimeMillis())
-                    .setTrip(convert(delTrip))
-                    .build();
-            tripsDeleteUsers.forEach((user, stream) -> {
-                if(server.getTicketsCache().stream().anyMatch(tk -> tk.getUser().equals(user) && tk.getTrip().equals(delTrip))) {
-                    stream.onNext(ts);
-                }
-            });
-        });
+        currentTripsList.stream().filter(t -> !newTripsList.contains(t)).forEach(this::sendTripsDeleteNotification);
         currentTripsList = newTripsList;
     }
 
@@ -168,15 +168,172 @@ public enum NotificationManager implements TicketsCache.Observer, TripsCache.Obs
         Collection<Promotion> newPromotionsList = new LinkedList<>(server.getPromotionsCache());
 
         newPromotionsList.stream().filter(p -> p.isOnlyFidelityUser() && !currentPromotionsList.contains(p)).forEach(newPromo -> {
+            long timestamp = System.currentTimeMillis();
             PromotionStream ps = PromotionStream.newBuilder()
                     .setWasTokenValid(true)
-                    .setTimestamp(System.currentTimeMillis())
+                    .setTimestamp(timestamp)
                     .setPromotion(convert(newPromo))
                     .build();
-            fidelityPromotionsUsers.forEach((user,stream) -> {
-                if(isFidelityUserSubscribed(user)) stream.onNext(ps);
-            });
+            sendFidelityPromotionsNotification(ps,newPromo,timestamp);
         });
         currentPromotionsList = newPromotionsList;
+    }
+
+    private void sendAlmostExpiredBookingNotification(Ticket book) {
+        long timestamp = System.currentTimeMillis();
+        TicketStream ts = TicketStream.newBuilder()
+                .setWasTokenValid(true)
+                .setTimestamp(timestamp)
+                .setTicket(convert(book))
+                .build();
+        User u = book.getUser();
+        if (almostExpiredBookingUsers.containsKey(u)) {
+            almostExpiredBookingUsers.get(u).onNext(ts);
+        } else {
+            storeAlmostExpiredBookingNotification(u, book, timestamp);
+        }
+    }
+    private void sendExpiredBookingNotification(Ticket delBooking) {
+        long timestamp = System.currentTimeMillis();
+        TicketStream ts = TicketStream.newBuilder()
+                .setWasTokenValid(true)
+                .setTimestamp(timestamp)
+                .setTicket(convert(delBooking))
+                .build();
+        User user = delBooking.getUser();
+        if(expiredBookingUsers.containsKey(user)) {
+            expiredBookingUsers.get(user).onNext(ts);
+        } else {
+            storeExpiredBookingNotification(user, delBooking, timestamp);
+        }
+    }
+    private void sendTripsDeleteNotification(Trip delTrip) {
+        long timestamp = System.currentTimeMillis();
+        TripStream ts = TripStream.newBuilder()
+                .setWasTokenValid(true)
+                .setTimestamp(timestamp)
+                .setTrip(convert(delTrip))
+                .build();
+        server.getTicketsCache().stream().filter(t -> delTrip.equals(t.getTrip())).forEach(delTk -> {
+            User u = delTk.getUser();
+            if(tripsDeleteUsers.containsKey(u)) {
+                tripsDeleteUsers.get(u).onNext(ts);
+            } else {
+                storeTripsDeleteNotification(u, delTrip, timestamp);
+            }
+        });
+    }
+    private void sendFidelityPromotionsNotification(PromotionStream ps, Promotion promotion, long timestamp) {
+        server.getUsersCache().stream().filter(u -> u.isFidelity() && isFidelityUserSubscribed(u)).forEach(u -> {
+            if(fidelityPromotionsUsers.containsKey(u)) {
+                fidelityPromotionsUsers.get(u).onNext(ps);
+            } else {
+                storeFidelityPromotionsNotification(u, promotion, timestamp);
+            }
+        });
+    }
+    private void sendFidelityPromotionsNotification(Promotion promotion) {
+        long timestamp = System.currentTimeMillis();
+        PromotionStream ps = PromotionStream.newBuilder()
+                .setWasTokenValid(true)
+                .setTimestamp(timestamp)
+                .setPromotion(convert(promotion))
+                .build();
+        server.getUsersCache().stream().filter(u -> u.isFidelity() && isFidelityUserSubscribed(u)).forEach(u -> {
+            if(fidelityPromotionsUsers.containsKey(u)) {
+                fidelityPromotionsUsers.get(u).onNext(ps);
+            } else {
+                storeFidelityPromotionsNotification(u, promotion, timestamp);
+            }
+        });
+    }
+
+    private void storeExpiredBookingNotification(User user, Ticket booking, long timestamp) {
+        if (!enableNotificationPersistance) return;
+        try {
+            new SQLiteExpiredBookingNotification(user, booking, timestamp).insertRecord(db);
+        } catch (SQLException e) {
+            logger.error(e.getMessage());
+        }
+    }
+    private void storeAlmostExpiredBookingNotification(User user, Ticket booking, long timestamp) {
+        if (!enableNotificationPersistance) return;
+        try {
+            new SQLiteAlmostExpiredBookingNotification(user, booking, timestamp).insertRecord(db);
+        } catch (SQLException e) {
+            logger.error(e.getMessage());
+        }
+    }
+    private void storeTripsDeleteNotification(User user, Trip trip, long timestamp) {
+        if (!enableNotificationPersistance) return;
+        try {
+            new SQLiteCancelledTripNotification(user, trip, timestamp).insertRecord(db);
+        } catch (SQLException e) {
+            logger.error(e.getMessage());
+        }
+    }
+    private void storeFidelityPromotionsNotification(User user, Promotion promotion, long timestamp) {
+        if (!enableNotificationPersistance) return;
+        try {
+            new SQLiteNewFidelityPromotionNotification(user, promotion, timestamp).insertRecord(db);
+        } catch (SQLException e) {
+            logger.error(e.getMessage());
+        }
+    }
+    private Collection<Ticket> getStoredExpiredBookingNotifications(User user) {
+        Collection<Ticket> ret = new LinkedList<>();
+        if (!enableNotificationPersistance) return ret;
+        SQLiteExpiredBookingNotification q = new SQLiteExpiredBookingNotification(user, null, -1);
+        try {
+            db.atomicTransaction(() -> {
+                ret.addAll(q.getSimilarRecords(db).stream().map(SQLiteExpiredBookingNotification::book).toList());
+                q.deleteRecord(db);
+            });
+        } catch (SQLException e) {
+            logger.error(e.getMessage());
+        }
+        return ret;
+    }
+    private Collection<Ticket> getStoredAlmostExpiredBookingNotifications(User user) {
+        Collection<Ticket> ret = new LinkedList<>();
+        if (!enableNotificationPersistance) return ret;
+        SQLiteExpiredBookingNotification q = new SQLiteExpiredBookingNotification(user, null, -1);
+        try {
+            db.atomicTransaction(() -> {
+                ret.addAll(q.getSimilarRecords(db).stream().map(SQLiteExpiredBookingNotification::book).toList());
+                q.deleteRecord(db);
+            });
+        } catch (SQLException e) {
+            logger.error(e.getMessage());
+        }
+        return ret;
+    }
+    private Collection<Trip> getStoredTripsDeleteNotifications(User user) {
+        Collection<Trip> ret = new LinkedList<>();
+        if (!enableNotificationPersistance) return ret;
+        SQLiteCancelledTripNotification q = new SQLiteCancelledTripNotification(user, null, -1);
+        try {
+            db.atomicTransaction(() -> {
+                ret.addAll(q.getSimilarRecords(db).stream().map(SQLiteCancelledTripNotification::trip).toList());
+                q.deleteRecord(db);
+            });
+        } catch (SQLException e) {
+            logger.error(e.getMessage());
+        }
+        return ret;
+    }
+    private Collection<Promotion> getStoredFidelityPromotionsNotifications(User user) {
+        Collection<Promotion> ret = new LinkedList<>();
+        if (!enableNotificationPersistance) return ret;
+        SQLiteNewFidelityPromotionNotification q = new SQLiteNewFidelityPromotionNotification(user, null,-1);
+        try {
+            db.atomicTransaction(() -> {
+                ret.addAll(q.getSimilarRecords(db).stream().map(SQLiteNewFidelityPromotionNotification::promotion).toList());
+                q.deleteRecord(db);
+            });
+        } catch (SQLException e) {
+            logger.error(e.getMessage());
+        }
+        return ret;
     }
 }
