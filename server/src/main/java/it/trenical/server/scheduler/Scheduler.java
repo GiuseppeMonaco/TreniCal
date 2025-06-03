@@ -39,6 +39,7 @@ public enum Scheduler {
 
     public void startExpireTask() {
         Runnable task = () -> {
+            logger.debug("Executing bookingExpire task");
             Calendar now = Calendar.getInstance();
             Collection<Ticket> tickets = new LinkedList<>(server.getTicketsCache());
             tickets.stream().filter(t -> !t.isPaid()).forEach(book -> {
@@ -64,6 +65,7 @@ public enum Scheduler {
 
     public void startTripsCleanupTask() {
         Runnable task = () -> {
+            logger.debug("Executing cleanup task");
             Calendar now = Calendar.getInstance();
             Collection<Trip> trips = new LinkedList<>(server.getTripsCache());
             trips.forEach(trip -> {

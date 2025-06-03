@@ -10,7 +10,7 @@ import java.util.LinkedList;
 
 public class SQLiteTicket implements SQLiteTable<Ticket>, Ticket {
 
-    static private final String TABLE_NAME = "Tickets";
+    static final String TABLE_NAME = "Tickets";
     static private final int COLUMNS_NUMBER = 11;
 
     static private final String COLUMNS = """

@@ -189,6 +189,7 @@ public enum NotificationManager implements TicketsCache.Observer, TripsCache.Obs
         User u = book.getUser();
         if (almostExpiredBookingUsers.containsKey(u)) {
             almostExpiredBookingUsers.get(u).onNext(ts);
+            logger.info("Sending alert for expiring booking: {}", book);
         } else {
             storeAlmostExpiredBookingNotification(u, book, timestamp);
         }
@@ -203,6 +204,7 @@ public enum NotificationManager implements TicketsCache.Observer, TripsCache.Obs
         User user = delBooking.getUser();
         if(expiredBookingUsers.containsKey(user)) {
             expiredBookingUsers.get(user).onNext(ts);
+            logger.info("Sending notification for expired booking: {}", delBooking);
         } else {
             storeExpiredBookingNotification(user, delBooking, timestamp);
         }
@@ -218,6 +220,7 @@ public enum NotificationManager implements TicketsCache.Observer, TripsCache.Obs
             User u = delTk.getUser();
             if(tripsDeleteUsers.containsKey(u)) {
                 tripsDeleteUsers.get(u).onNext(ts);
+                logger.info("Sending notification for cancelled trip: {}", delTk);
             } else {
                 storeTripsDeleteNotification(u, delTrip, timestamp);
             }
@@ -227,6 +230,7 @@ public enum NotificationManager implements TicketsCache.Observer, TripsCache.Obs
         server.getUsersCache().stream().filter(u -> u.isFidelity() && isFidelityUserSubscribed(u)).forEach(u -> {
             if(fidelityPromotionsUsers.containsKey(u)) {
                 fidelityPromotionsUsers.get(u).onNext(ps);
+                logger.info("Sending notification for new Fidelity promotion: {}", promotion);
             } else {
                 storeFidelityPromotionsNotification(u, promotion, timestamp);
             }
@@ -258,8 +262,10 @@ public enum NotificationManager implements TicketsCache.Observer, TripsCache.Obs
     }
     private void storeAlmostExpiredBookingNotification(User user, Ticket booking, long timestamp) {
         if (!enableNotificationPersistance) return;
+        SQLiteAlmostExpiredBookingNotification q = new SQLiteAlmostExpiredBookingNotification(user, booking, timestamp);
         try {
-            new SQLiteAlmostExpiredBookingNotification(user, booking, timestamp).insertRecord(db);
+            if(q.getRecord(db) != null) return;
+            q.insertRecord(db);
         } catch (SQLException e) {
             logger.error(e.getMessage());
         }
@@ -297,10 +303,10 @@ public enum NotificationManager implements TicketsCache.Observer, TripsCache.Obs
     private Collection<Ticket> getStoredAlmostExpiredBookingNotifications(User user) {
         Collection<Ticket> ret = new LinkedList<>();
         if (!enableNotificationPersistance) return ret;
-        SQLiteExpiredBookingNotification q = new SQLiteExpiredBookingNotification(user, null, -1);
+        SQLiteAlmostExpiredBookingNotification q = new SQLiteAlmostExpiredBookingNotification(user, null, -1);
         try {
             db.atomicTransaction(() -> {
-                ret.addAll(q.getSimilarRecords(db).stream().map(SQLiteExpiredBookingNotification::book).toList());
+                ret.addAll(q.getSimilarRecords(db).stream().map(SQLiteAlmostExpiredBookingNotification::book).toList());
                 q.deleteRecord(db);
             });
         } catch (SQLException e) {
