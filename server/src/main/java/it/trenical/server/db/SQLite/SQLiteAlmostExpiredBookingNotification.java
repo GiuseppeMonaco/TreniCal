@@ -138,7 +138,7 @@ public record SQLiteAlmostExpiredBookingNotification(User user, Ticket book, lon
     );
 
     static final String DELETE_QUERY = String.format("""
-            DELETE FROM %s t
+            DELETE FROM %s AS t
             WHERE EXISTS (
                 SELECT 1
                 FROM %s tt
