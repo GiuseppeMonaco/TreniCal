@@ -1,10 +1,14 @@
 package it.trenical.common;
 
+import java.io.Serial;
+import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Objects;
 
-public class TripData implements Trip {
+public class TripData implements Trip, Serializable {
+    @Serial
+    private static final long serialVersionUID = 1L;
 
     private final Train train;
     private final Route route;

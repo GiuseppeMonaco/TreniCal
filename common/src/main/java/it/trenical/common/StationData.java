@@ -1,6 +1,11 @@
 package it.trenical.common;
 
-public class StationData implements Station {
+import java.io.Serial;
+import java.io.Serializable;
+
+public class StationData implements Station, Serializable {
+    @Serial
+    private static final long serialVersionUID = 1L;
 
     private final String name;
     private final String address;

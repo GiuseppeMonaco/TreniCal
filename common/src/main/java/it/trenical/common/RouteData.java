@@ -1,6 +1,11 @@
 package it.trenical.common;
 
-public class RouteData implements Route {
+import java.io.Serial;
+import java.io.Serializable;
+
+public class RouteData implements Route, Serializable {
+    @Serial
+    private static final long serialVersionUID = 1L;
 
     private final Station departureStation;
     private final Station arrivalStation;

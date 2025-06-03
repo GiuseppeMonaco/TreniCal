@@ -1,6 +1,11 @@
 package it.trenical.common;
 
-public class PromotionData implements Promotion {
+import java.io.Serial;
+import java.io.Serializable;
+
+public class PromotionData implements Promotion, Serializable {
+    @Serial
+    private static final long serialVersionUID = 1L;
 
     private final String code;
     private final String name;

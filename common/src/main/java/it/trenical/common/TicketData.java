@@ -1,6 +1,11 @@
 package it.trenical.common;
 
-public class TicketData implements Ticket {
+import java.io.Serial;
+import java.io.Serializable;
+
+public class TicketData implements Ticket, Serializable {
+    @Serial
+    private static final long serialVersionUID = 1L;
 
     private final int id;
     private final User user;

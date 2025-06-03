@@ -1,6 +1,11 @@
 package it.trenical.common;
 
-public class TrainData implements Train {
+import java.io.Serial;
+import java.io.Serializable;
+
+public class TrainData implements Train, Serializable {
+    @Serial
+    private static final long serialVersionUID = 1L;
 
     private final int id;
     private final TrainType type;
