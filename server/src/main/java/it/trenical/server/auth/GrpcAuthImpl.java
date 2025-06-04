@@ -22,10 +22,22 @@ public class GrpcAuthImpl extends AuthServiceGrpc.AuthServiceImplBase {
 
     private final Server server = Server.INSTANCE;
 
+    private static final String VALID_EMAIL_REGEX = "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$";
+
     private final TokenManager tokenManager = BiMapTokenManager.INSTANCE;
 
     @Override
     public void login(LoginRequest request, StreamObserver<LoginReply> responseObserver) {
+
+        // Email format check
+        if (!request.getEmail().matches(VALID_EMAIL_REGEX)) {
+            LoginReply reply = LoginReply.newBuilder()
+                    .setToken(SessionToken.newInvalidToken().token())
+                    .build();
+            responseObserver.onNext(reply);
+            responseObserver.onCompleted();
+            return;
+        }
 
         SQLiteUser user = new SQLiteUser(request.getEmail(), request.getPassword());
 
@@ -65,6 +77,15 @@ public class GrpcAuthImpl extends AuthServiceGrpc.AuthServiceImplBase {
 
     @Override
     public void signup(SignupRequest request, StreamObserver<SignupReply> responseObserver) {
+
+        // Email format check
+        if (!request.getEmail().matches(VALID_EMAIL_REGEX)) {
+            SignupReply reply = SignupReply.newBuilder()
+                    .setToken(SessionToken.newInvalidToken().token())
+                    .build();
+            responseObserver.onNext(reply);
+            responseObserver.onCompleted();
+        }
 
         SQLiteUser user = new SQLiteUser(request.getEmail(), request.getPassword());
 

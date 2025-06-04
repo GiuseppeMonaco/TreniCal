@@ -32,6 +32,8 @@ public class Client {
 
     private static final Logger logger = LoggerFactory.getLogger(Client.class);
 
+    public static String VALID_EMAIL_REGEX = "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$";
+
     private User currentUser;
     private SessionToken currentToken;
     private boolean isSubscribedToFidelityPromotion = false;

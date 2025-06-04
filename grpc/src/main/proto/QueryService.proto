@@ -38,7 +38,7 @@ message QueryStationsResponse {
 }
 
 message QueryTicketsRequest {
-  string token = 1; // TODO sostituire con Data.SessionToken
+  string token = 1;
 }
 
 message QueryTicketsResponse {

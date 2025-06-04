@@ -13,6 +13,8 @@ import it.trenical.grpc.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static it.trenical.client.Client.VALID_EMAIL_REGEX;
+
 public class GrpcAuthManager implements AuthManager {
 
     private static final Logger logger = LoggerFactory.getLogger(GrpcAuthManager.class);
@@ -25,6 +27,9 @@ public class GrpcAuthManager implements AuthManager {
 
     @Override
     public SessionToken login(User user) throws InvalidCredentialsException, UnreachableServer {
+
+        // Controllo validità mail
+        if(!user.getEmail().matches(VALID_EMAIL_REGEX)) throw new InvalidCredentialsException("email format is not valid");
 
         LoginRequest request = LoginRequest.newBuilder()
                 .setEmail(user.getEmail())
@@ -60,6 +65,9 @@ public class GrpcAuthManager implements AuthManager {
 
     @Override
     public SessionToken signup(User user) throws InvalidCredentialsException, UserAlreadyExistsException, UnreachableServer { // TODO gestire l'eccezione
+
+        // Controllo validità mail
+        if(!user.getEmail().matches(VALID_EMAIL_REGEX)) throw new InvalidCredentialsException("email format is not valid");
 
         SignupRequest request = SignupRequest.newBuilder()
                 .setEmail(user.getEmail())
