@@ -113,7 +113,7 @@ public record SQLiteCancelledTripNotification(User user, Trip trip, long timesta
 
     @Override
     public SQLiteCancelledTripNotification toRecord(ResultSet rs) throws SQLException {
-        ByteArrayInputStream bis = new ByteArrayInputStream(rs.getBytes("ticket"));
+        ByteArrayInputStream bis = new ByteArrayInputStream(rs.getBytes("trip"));
         Trip t;
         try {
             ObjectInputStream in = new ObjectInputStream(bis);
