@@ -45,6 +45,8 @@ public enum NotificationManager implements TicketsCache.Observer, TripsCache.Obs
 
     private boolean enableNotificationPersistance = true;
 
+    private final Collection<Ticket> almostExpiredBookingNotificationSended = new LinkedList<>();
+
     NotificationManager() {
         this.server = Server.INSTANCE;
         server.ticketsCacheObs.attach(this);
@@ -188,6 +190,8 @@ public enum NotificationManager implements TicketsCache.Observer, TripsCache.Obs
                 .build();
         User u = book.getUser();
         if (almostExpiredBookingUsers.containsKey(u)) {
+            if (almostExpiredBookingNotificationSended.contains(book)) return;
+            almostExpiredBookingNotificationSended.add(book);
             almostExpiredBookingUsers.get(u).onNext(ts);
             logger.info("Sending alert for expiring booking: {}", book);
         } else {
@@ -195,6 +199,7 @@ public enum NotificationManager implements TicketsCache.Observer, TripsCache.Obs
         }
     }
     private void sendExpiredBookingNotification(Ticket delBooking) {
+        almostExpiredBookingNotificationSended.remove(delBooking);
         long timestamp = System.currentTimeMillis();
         TicketStream ts = TicketStream.newBuilder()
                 .setWasTokenValid(true)
