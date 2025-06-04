@@ -64,7 +64,7 @@ public class GrpcAuthManager implements AuthManager {
     }
 
     @Override
-    public SessionToken signup(User user) throws InvalidCredentialsException, UserAlreadyExistsException, UnreachableServer { // TODO gestire l'eccezione
+    public SessionToken signup(User user) throws InvalidCredentialsException, UserAlreadyExistsException, UnreachableServer {
 
         // Controllo validità mail
         if(!user.getEmail().matches(VALID_EMAIL_REGEX)) throw new InvalidCredentialsException("email format is not valid");
