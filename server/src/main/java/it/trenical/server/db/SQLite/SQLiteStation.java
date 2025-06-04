@@ -77,11 +77,6 @@ public class SQLiteStation implements SQLiteTable<Station>, Station {
     }
 
     @Override
-    public void updateRecord(DatabaseConnection db) throws SQLException {
-        throw new UnsupportedOperationException("updateRecord"); // TODO
-    }
-
-    @Override
     public SQLiteStation getRecord(DatabaseConnection db) throws SQLException {
         Connection c = db.getConnection();
         PreparedStatement st = c.prepareStatement("SELECT * FROM " + TABLE_NAME + " WHERE name=?;");

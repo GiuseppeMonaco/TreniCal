@@ -80,11 +80,6 @@ public class SQLiteTrain implements SQLiteTable<Train>, Train {
     }
 
     @Override
-    public void updateRecord(DatabaseConnection db) throws SQLException {
-        throw new UnsupportedOperationException("updateRecord"); // TODO
-    }
-
-    @Override
     public SQLiteTrain getRecord(DatabaseConnection db) throws SQLException {
         Connection c = db.getConnection();
         PreparedStatement st = c.prepareStatement(GET_QUERY);

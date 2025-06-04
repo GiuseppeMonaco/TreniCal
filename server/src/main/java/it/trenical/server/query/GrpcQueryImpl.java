@@ -154,7 +154,7 @@ public class GrpcQueryImpl extends QueryServiceGrpc.QueryServiceImplBase {
         responseObserver.onCompleted();
     }
 
-    @Override // TODO aggiungere nella risposta se la promozione è stata già utilizzata
+    @Override
     public void queryPromotion(QueryPromotionRequest request, StreamObserver<QueryPromotionResponse> responseObserver) {
 
         QueryPromotionResponse.Builder b = QueryPromotionResponse.newBuilder();

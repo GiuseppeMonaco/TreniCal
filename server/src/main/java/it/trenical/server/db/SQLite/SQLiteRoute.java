@@ -104,11 +104,6 @@ public class SQLiteRoute implements SQLiteTable<Route>, Route {
     }
 
     @Override
-    public void updateRecord(DatabaseConnection db) throws SQLException {
-        throw new UnsupportedOperationException("updateRecord"); // TODO
-    }
-
-    @Override
     public SQLiteRoute getRecord(DatabaseConnection db) throws SQLException {
         Connection c = db.getConnection();
         PreparedStatement st = c.prepareStatement(GET_QUERY);

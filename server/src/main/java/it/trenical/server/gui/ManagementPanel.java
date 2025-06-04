@@ -47,7 +47,7 @@ abstract class ManagementPanel<T> {
         buttonDelete.setEnabled(false);
         buttonDelete.addActionListener(actionEvent -> onButtonDelete());
 
-        buttonEdit.setVisible(false); // TODO implement edit functions
+        buttonEdit.setVisible(false);
         buttonEdit.setEnabled(false);
         buttonEdit.addActionListener(actionEvent -> onButtonEdit());
     }

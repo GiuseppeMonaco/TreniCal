@@ -75,11 +75,6 @@ public class SQLitePromotion implements SQLiteTable<Promotion>, Promotion {
     }
 
     @Override
-    public void updateRecord(DatabaseConnection db) throws SQLException {
-        throw new UnsupportedOperationException("updateRecord"); // TODO
-    }
-
-    @Override
     public SQLitePromotion getRecord(DatabaseConnection db) throws SQLException {
         Connection c = db.getConnection();
         PreparedStatement st = c.prepareStatement("SELECT * FROM " + TABLE_NAME + " WHERE code=?;");

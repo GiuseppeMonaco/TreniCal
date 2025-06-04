@@ -77,11 +77,6 @@ public class SQLiteTrainType implements SQLiteTable<TrainType>, TrainType {
     }
 
     @Override
-    public void updateRecord(DatabaseConnection db) throws SQLException {
-        throw new UnsupportedOperationException("updateRecord"); // TODO
-    }
-
-    @Override
     public SQLiteTrainType getRecord(DatabaseConnection db) throws SQLException {
         Connection c = db.getConnection();
         PreparedStatement st = c.prepareStatement("SELECT * FROM " + TABLE_NAME + " WHERE name=?;");
