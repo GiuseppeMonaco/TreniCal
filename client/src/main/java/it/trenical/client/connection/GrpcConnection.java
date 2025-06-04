@@ -1,19 +1,19 @@
 package it.trenical.client.connection;
 
 import io.grpc.*;
+import it.trenical.client.config.Config;
+import it.trenical.client.config.ConfigManager;
 
 public class GrpcConnection {
 
     // Singleton class
     private static GrpcConnection instance;
 
-    private static final String SERVERIP = "localhost";
-    private static final int SERVERPORT = 8008;
-
     private final ManagedChannel channel;
 
     private GrpcConnection() {
-        channel = ManagedChannelBuilder.forAddress(SERVERIP, SERVERPORT).usePlaintext().build();
+        Config config = ConfigManager.INSTANCE.config;
+        channel = ManagedChannelBuilder.forAddress(config.server.address, config.server.port).usePlaintext().build();
     }
 
     public static synchronized GrpcConnection getInstance() {

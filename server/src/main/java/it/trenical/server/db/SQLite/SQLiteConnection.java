@@ -1,5 +1,6 @@
 package it.trenical.server.db.SQLite;
 
+import it.trenical.server.config.ConfigManager;
 import it.trenical.server.db.DatabaseConnection;
 
 import java.io.IOException;
@@ -23,7 +24,7 @@ public class SQLiteConnection implements DatabaseConnection {
 
     private static final Logger logger = LoggerFactory.getLogger(SQLiteConnection.class);
 
-    private static final String DEFAULT_PATH = "./database.db";
+    private static final String DEFAULT_PATH = ConfigManager.INSTANCE.config.database.path;
 
     private Connection connection;
 

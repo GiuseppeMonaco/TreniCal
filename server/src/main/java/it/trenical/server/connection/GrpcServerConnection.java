@@ -4,6 +4,8 @@ import io.grpc.Grpc;
 import io.grpc.InsecureServerCredentials;
 import io.grpc.Server;
 import it.trenical.server.auth.GrpcAuthImpl;
+import it.trenical.server.config.Config;
+import it.trenical.server.config.ConfigManager;
 import it.trenical.server.notifications.GrpcNotificationImpl;
 import it.trenical.server.query.GrpcQueryImpl;
 
@@ -23,9 +25,6 @@ public class GrpcServerConnection implements ServerConnection {
 
     private final Logger logger = LoggerFactory.getLogger(GrpcServerConnection.class);
 
-    private static final int PORT = 8008;
-    private static final int THREAD_NUMBER = 4;
-
     private Server server;
 
     private GrpcServerConnection() {}
@@ -38,8 +37,11 @@ public class GrpcServerConnection implements ServerConnection {
     @Override
     public void start() throws IOException {
 
-        ExecutorService executor = Executors.newFixedThreadPool(THREAD_NUMBER);
-        server = Grpc.newServerBuilderForPort(PORT, InsecureServerCredentials.create())
+        Config config = ConfigManager.INSTANCE.config;
+        final int port = config.server.port;
+
+        ExecutorService executor = Executors.newFixedThreadPool(config.server.threadNumber);
+        server = Grpc.newServerBuilderForPort(port, InsecureServerCredentials.create())
                 .executor(executor)
                 .addService(new GrpcAuthImpl())
                 .addService(new GrpcQueryImpl())
@@ -47,7 +49,7 @@ public class GrpcServerConnection implements ServerConnection {
                 .addService(new GrpcNotificationImpl())
                 .build()
                 .start();
-        logger.info("gRPC server started, listening on port {}", PORT);
+        logger.info("gRPC server started, listening on port {}", port);
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             server.shutdown();

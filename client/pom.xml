@@ -35,6 +35,14 @@
             <artifactId>forms_rt</artifactId>
             <version>7.0.3</version>
         </dependency>
+
+        <!-- TOML parser -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformat-toml</artifactId>
+            <version>2.18.1</version>
+        </dependency>
+
     </dependencies>
 
     <build>
