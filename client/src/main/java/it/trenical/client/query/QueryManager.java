@@ -67,4 +67,11 @@ public interface QueryManager {
      * @throws InvalidSessionTokenException if token not exists
      */
     Promotion queryPromotion(SessionToken token, Promotion promotion) throws UnreachableServer, InvalidSessionTokenException;
+
+    /**
+     * Query the multipliers needed to calculate the price of a ticket
+     * @return a record that contains the multipliers (float)
+     * @throws UnreachableServer if server is unreachable
+     */
+    PriceMultipliers queryPriceData() throws UnreachableServer;
 }

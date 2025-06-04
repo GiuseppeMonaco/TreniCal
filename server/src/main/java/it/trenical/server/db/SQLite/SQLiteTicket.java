@@ -1,6 +1,8 @@
 package it.trenical.server.db.SQLite;
 
 import it.trenical.common.*;
+import it.trenical.server.config.Config;
+import it.trenical.server.config.ConfigManager;
 import it.trenical.server.db.DatabaseConnection;
 
 import java.sql.*;
@@ -9,6 +11,10 @@ import java.util.Collection;
 import java.util.LinkedList;
 
 public class SQLiteTicket implements SQLiteTable<Ticket>, Ticket {
+
+    private final Config config = ConfigManager.INSTANCE.config;
+    private final float priceDistanceMultiplier = config.logic.price.distanceMultiplier;
+    private final float priceBusinessMultiplier = config.logic.price.businessMultiplier;
 
     static final String TABLE_NAME = "Tickets";
     static private final int COLUMNS_NUMBER = 11;
@@ -282,7 +288,7 @@ public class SQLiteTicket implements SQLiteTable<Ticket>, Ticket {
                     TABLE_NAME
             ));
             st.setBoolean(1,newBusinessValue);
-            st.setFloat(2,temp.calculatePrice());
+            st.setFloat(2,temp.calculatePrice(priceDistanceMultiplier,priceBusinessMultiplier));
             st.setInt(3,getId());
             st.executeUpdate();
         });

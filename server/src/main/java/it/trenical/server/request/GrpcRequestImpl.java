@@ -10,6 +10,8 @@ import it.trenical.grpcUtil.GrpcConverter;
 import it.trenical.server.Server;
 import it.trenical.server.auth.BiMapTokenManager;
 import it.trenical.server.auth.TokenManager;
+import it.trenical.server.config.Config;
+import it.trenical.server.config.ConfigManager;
 import it.trenical.server.db.DatabaseConnection;
 import it.trenical.server.db.SQLite.SQLiteTicket;
 import it.trenical.server.db.SQLite.SQLiteTrip;
@@ -25,6 +27,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class GrpcRequestImpl extends RequestServiceGrpc.RequestServiceImplBase {
 
     private static final Logger logger = LoggerFactory.getLogger(GrpcRequestImpl.class);
+
+    private final Config config = ConfigManager.INSTANCE.config;
+    private final float priceDistanceMultiplier = config.logic.price.distanceMultiplier;
+    private final float priceBusinessMultiplier = config.logic.price.businessMultiplier;
 
     private final DatabaseConnection db = Server.INSTANCE.getDatabase();
 
@@ -310,7 +316,7 @@ public class GrpcRequestImpl extends RequestServiceGrpc.RequestServiceImplBase {
                 .setTrip(t.getTrip())
                 .setBusiness(t.isBusiness())
                 .setPaid(isPaid)
-                .setPrice(t.calculatePrice())
+                .setPrice(t.calculatePrice(priceDistanceMultiplier, priceBusinessMultiplier))
                 .build();
     }
 

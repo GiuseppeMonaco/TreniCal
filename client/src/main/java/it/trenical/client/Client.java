@@ -4,6 +4,7 @@ import it.trenical.client.auth.AuthManager;
 import it.trenical.client.auth.GrpcAuthManager;
 import it.trenical.client.notification.Notification;
 import it.trenical.client.notification.NotificationHandler;
+import it.trenical.client.query.PriceMultipliers;
 import it.trenical.client.request.exceptions.InvalidSeatsNumberException;
 import it.trenical.common.SessionToken;
 import it.trenical.client.auth.exceptions.InvalidCredentialsException;
@@ -52,6 +53,9 @@ public class Client {
     private float currentTotalPrice;
     private float currentEconomyTicketPrice = 0;
     private float currentBusinessTicketPrice = 0;
+
+    private float priceDistanceMultiplier = 0;
+    private float priceBusinessMultiplier = 0;
 
     private final Collection<Notification> notificationBuffer = new ConcurrentLinkedDeque<>();
 
@@ -131,6 +135,9 @@ public class Client {
     public float getCurrentBusinessTicketPrice() {
         return currentBusinessTicketPrice;
     }
+    public float getTicketPrice(Ticket t) {
+        return t.calculatePrice(priceDistanceMultiplier, priceBusinessMultiplier);
+    }
 
     public void setCurrentPassengersNumber(int number) {
         if (number < 0) throw new IllegalArgumentException("Passengers number cannot be negative");
@@ -142,8 +149,10 @@ public class Client {
     public void setCurrentTrip(Trip currentTrip) {
         this.currentTrip = currentTrip;
         if (currentTrip != null) {
-            currentEconomyTicketPrice = TicketData.newBuilder(-1).setTrip(currentTrip).setBusiness(false).build().calculatePrice();
-            currentBusinessTicketPrice = TicketData.newBuilder(-1).setTrip(currentTrip).setBusiness(true).build().calculatePrice();
+            currentEconomyTicketPrice = TicketData.newBuilder(-1).setTrip(currentTrip)
+                    .setBusiness(false).build().calculatePrice(priceDistanceMultiplier, priceBusinessMultiplier);
+            currentBusinessTicketPrice = TicketData.newBuilder(-1).setTrip(currentTrip)
+                    .setBusiness(true).build().calculatePrice(priceDistanceMultiplier, priceBusinessMultiplier);
         } else {
             currentEconomyTicketPrice = 0;
             currentBusinessTicketPrice = 0;
@@ -218,6 +227,7 @@ public class Client {
 
     public void login(User user) throws InvalidCredentialsException, UnreachableServer {
         currentToken = auth.login(user);
+        updatePriceMultipliers();
         try {
             updateCurrentUser();
         } catch (InvalidSessionTokenException e) {
@@ -244,6 +254,7 @@ public class Client {
 
     public void signup(User user) throws InvalidCredentialsException, UserAlreadyExistsException, UnreachableServer {
         currentToken = auth.signup(user);
+        updatePriceMultipliers();
         try {
             updateCurrentUser();
         } catch (InvalidSessionTokenException e) {
@@ -271,6 +282,7 @@ public class Client {
     }
 
     public void queryTrips(Trip trip) throws UnreachableServer {
+        updatePriceMultipliers();
         filteredTripsCache.clear();
         filteredTripsCache.addAll(query.queryTrips(trip));
         filteredTripsCacheSub.notifyObs();
@@ -300,6 +312,12 @@ public class Client {
             logout();
             throw e;
         }
+    }
+
+    public void updatePriceMultipliers() throws UnreachableServer {
+        PriceMultipliers pm = query.queryPriceData();
+        priceDistanceMultiplier = pm.distance();
+        priceBusinessMultiplier = pm.business();
     }
 
     public void updateCurrentUser() throws UnreachableServer, InvalidSessionTokenException {

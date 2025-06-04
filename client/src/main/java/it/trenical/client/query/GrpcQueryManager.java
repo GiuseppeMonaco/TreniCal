@@ -153,5 +153,28 @@ public class GrpcQueryManager implements QueryManager {
         }
     }
 
+    /**
+     * Query the multipliers needed to calculate the price of a ticket
+     *
+     * @return a record that contains the multipliers (float)
+     * @throws UnreachableServer if server is unreachable
+     */
+    @Override
+    public PriceMultipliers queryPriceData() throws UnreachableServer {
+
+        QueryPriceDataRequest request = QueryPriceDataRequest.newBuilder().build();
+
+        try {
+            QueryPriceDataResponse reply = blockingStub.queryPriceData(request);
+            return new PriceMultipliers(
+                    reply.getDistanceMultiplier(),
+                    reply.getBusinessMultiplier()
+            );
+        } catch (StatusRuntimeException e) {
+            logger.warn("Unreachable server trying queryPriceData");
+            throw new UnreachableServer("Unreachable server");
+        }
+    }
+
 
 }

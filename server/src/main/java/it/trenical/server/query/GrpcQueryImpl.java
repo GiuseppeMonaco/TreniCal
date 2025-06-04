@@ -13,6 +13,8 @@ import it.trenical.grpcUtil.GrpcConverter;
 import it.trenical.server.Server;
 import it.trenical.server.auth.BiMapTokenManager;
 import it.trenical.server.auth.TokenManager;
+import it.trenical.server.config.Config;
+import it.trenical.server.config.ConfigManager;
 import it.trenical.server.db.DatabaseConnection;
 import it.trenical.server.db.SQLite.*;
 
@@ -27,6 +29,10 @@ import org.slf4j.LoggerFactory;
 public class GrpcQueryImpl extends QueryServiceGrpc.QueryServiceImplBase {
 
     private static final Logger logger = LoggerFactory.getLogger(GrpcQueryImpl.class);
+
+    private final Config config = ConfigManager.INSTANCE.config;
+    private final float priceDistanceMultiplier = config.logic.price.distanceMultiplier;
+    private final float priceBusinessMultiplier = config.logic.price.businessMultiplier;
 
     private final DatabaseConnection db = Server.INSTANCE.getDatabase();
 
@@ -183,6 +189,17 @@ public class GrpcQueryImpl extends QueryServiceGrpc.QueryServiceImplBase {
         if (dbPromotion.get() != null) b.setPromotion(GrpcConverter.convert(dbPromotion.get()));
 
         responseObserver.onNext(b.build());
+        responseObserver.onCompleted();
+    }
+
+    @Override
+    public void queryPriceData(QueryPriceDataRequest request, StreamObserver<QueryPriceDataResponse> responseObserver) {
+        QueryPriceDataResponse reply = QueryPriceDataResponse.newBuilder()
+                .setDistanceMultiplier(priceDistanceMultiplier)
+                .setBusinessMultiplier(priceBusinessMultiplier)
+                .build();
+
+        responseObserver.onNext(reply);
         responseObserver.onCompleted();
     }
 }

@@ -14,6 +14,7 @@ service QueryService {
   rpc QueryTickets (QueryTicketsRequest) returns (QueryTicketsResponse);
   rpc QueryUser (QueryUserRequest) returns (QueryUserResponse);
   rpc QueryPromotion (QueryPromotionRequest) returns (QueryPromotionResponse);
+  rpc QueryPriceData (QueryPriceDataRequest) returns (QueryPriceDataResponse);
 }
 
 message QueryTripsRequest {
@@ -65,10 +66,10 @@ message QueryPromotionResponse {
   bool wasTokenValid = 2;
 }
 
-// message QueryTicketsPriceRequest {
-//   repeated Data.Ticket tickets = 1;
-// }
-//
-// message QueryTicketsPriceResponse {
-//   repeated Data.Ticket tickets = 1;
-// }
+message QueryPriceDataRequest {
+}
+
+message QueryPriceDataResponse {
+  float distanceMultiplier = 1;
+  float businessMultiplier = 2;
+}
