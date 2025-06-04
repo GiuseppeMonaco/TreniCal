@@ -79,6 +79,7 @@ public class Client {
         request = new GrpcRequestManager();
         notification = new NotificationHandler();
         loginSub.attach(notification);
+        logoutSub.attach(notification);
     }
 
     public static synchronized Client getInstance() {

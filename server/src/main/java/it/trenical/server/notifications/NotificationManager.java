@@ -86,17 +86,17 @@ public enum NotificationManager implements TicketsCache.Observer, TripsCache.Obs
         fidelityPromotionsUsers.put(user,observer);
         getStoredFidelityPromotionsNotifications(user).forEach(this::sendFidelityPromotionsNotification);
     }
-    public boolean removeAlmostExpiredBookingUser(User user) {
-        return almostExpiredBookingUsers.remove(user) != null;
+    public void removeAlmostExpiredBookingUser(User user) {
+        almostExpiredBookingUsers.remove(user);
     }
-    public boolean removeExpiredBookingUser(User user) {
-        return expiredBookingUsers.remove(user) != null;
+    public void removeExpiredBookingUser(User user) {
+        expiredBookingUsers.remove(user);
     }
-    public boolean removeTripsDeleteUser(User user) {
-        return tripsDeleteUsers.remove(user) != null;
+    public void removeTripsDeleteUser(User user) {
+        tripsDeleteUsers.remove(user);
     }
-    public boolean removeFidelityPromotionsUser(User user) {
-        return fidelityPromotionsUsers.remove(user) != null;
+    public void removeFidelityPromotionsUser(User user) {
+        fidelityPromotionsUsers.remove(user);
     }
 
     public boolean isFidelityUserSubscribed(User user) {

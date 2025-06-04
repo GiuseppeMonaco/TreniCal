@@ -1,12 +1,14 @@
 package it.trenical.client.notification;
 
 import io.grpc.StatusRuntimeException;
-import io.grpc.stub.StreamObserver;
+import io.grpc.stub.ClientCallStreamObserver;
+import io.grpc.stub.ClientResponseObserver;
 import it.trenical.client.Client;
 import it.trenical.client.auth.exceptions.InvalidSessionTokenException;
 import it.trenical.client.connection.GrpcConnection;
 import it.trenical.client.connection.exceptions.UnreachableServer;
 import it.trenical.client.observer.Login;
+import it.trenical.client.observer.Logout;
 import it.trenical.common.Promotion;
 import it.trenical.common.SessionToken;
 import it.trenical.common.Ticket;
@@ -18,12 +20,17 @@ import org.slf4j.LoggerFactory;
 
 import static it.trenical.grpcUtil.GrpcConverter.convert;
 
-public class NotificationHandler implements Login.Observer {
+public class NotificationHandler implements Login.Observer, Logout.Observer {
 
     private static final Logger logger = LoggerFactory.getLogger(NotificationHandler.class);
 
     private final NotificationServiceGrpc.NotificationServiceStub asyncStub;
     private final NotificationServiceGrpc.NotificationServiceBlockingStub blockingStub;
+
+    private volatile ClientCallStreamObserver<Subscribe> almostExpiredBookingRequestStream;
+    private volatile ClientCallStreamObserver<Subscribe> expiredBookingRequestStream;
+    private volatile ClientCallStreamObserver<Subscribe> tripsDeleteRequestStream;
+    private volatile ClientCallStreamObserver<Subscribe> fidelityPromotionsRequestStream;
 
     public NotificationHandler() {
         asyncStub = NotificationServiceGrpc.newStub(GrpcConnection.getChannel());
@@ -33,6 +40,15 @@ public class NotificationHandler implements Login.Observer {
     @Override
     public void updateOnLogin() {
         subscribeUserToStreams(Client.getInstance().getCurrentToken());
+    }
+
+    private final String CLIENT_CLOSE_MESSAGE = "Client cancel";
+    @Override
+    public void updateOnLogout() {
+        if(almostExpiredBookingRequestStream != null) almostExpiredBookingRequestStream.cancel(CLIENT_CLOSE_MESSAGE, null);
+        if(expiredBookingRequestStream != null) expiredBookingRequestStream.cancel(CLIENT_CLOSE_MESSAGE, null);
+        if(tripsDeleteRequestStream != null) tripsDeleteRequestStream.cancel(CLIENT_CLOSE_MESSAGE, null);
+        if(fidelityPromotionsRequestStream != null) fidelityPromotionsRequestStream.cancel(CLIENT_CLOSE_MESSAGE, null);
     }
 
     public boolean isUserSubscribedToFidelityPromotions(SessionToken token) throws UnreachableServer, InvalidSessionTokenException {
@@ -101,7 +117,13 @@ public class NotificationHandler implements Login.Observer {
                 .setToken(convert(token))
                 .build();
 
-        asyncStub.almostExpiredBooking(request, new StreamObserver<>() {
+        asyncStub.almostExpiredBooking(request, new ClientResponseObserver<Subscribe, TicketStream>() {
+
+            @Override
+            public void beforeStart(ClientCallStreamObserver<Subscribe> clientCallStreamObserver) {
+                almostExpiredBookingRequestStream = clientCallStreamObserver;
+            }
+
             @Override
             public void onNext(TicketStream ticketStream) {
                 if (!ticketStream.getWasTokenValid()) {
@@ -117,6 +139,7 @@ public class NotificationHandler implements Login.Observer {
 
             @Override
             public void onError(Throwable t) {
+                if (t.getMessage().contains(CLIENT_CLOSE_MESSAGE)) return;
                 logger.error("[NOTIFICATION] almostExpiredBooking errore: {}", t.getMessage());
             }
 
@@ -131,14 +154,20 @@ public class NotificationHandler implements Login.Observer {
      * Subscribes to the expiredBooking stream.
      * The server will send a TicketStream whenever a booking has expired.
      */
-    private void subscribeExpiredBooking(SessionToken token) { // TODO mettere il controllo se il trip non è stato cancellato perché è partito
+    private void subscribeExpiredBooking(SessionToken token) {
         Client client = Client.getInstance();
 
         Subscribe request = Subscribe.newBuilder()
                 .setToken(convert(token))
                 .build();
 
-        asyncStub.expiredBooking(request, new StreamObserver<>() {
+        asyncStub.expiredBooking(request, new ClientResponseObserver<Subscribe, TicketStream>() {
+
+            @Override
+            public void beforeStart(ClientCallStreamObserver<Subscribe> clientCallStreamObserver) {
+                expiredBookingRequestStream = clientCallStreamObserver;
+            }
+
             @Override
             public void onNext(TicketStream ticketStream) {
                 if (!ticketStream.getWasTokenValid()) {
@@ -158,6 +187,7 @@ public class NotificationHandler implements Login.Observer {
 
             @Override
             public void onError(Throwable t) {
+                if (t.getMessage().contains(CLIENT_CLOSE_MESSAGE)) return;
                 logger.error("[NOTIFICATION] expiredBooking error: {}", t.getMessage());
             }
 
@@ -179,7 +209,13 @@ public class NotificationHandler implements Login.Observer {
                 .setToken(convert(token))
                 .build();
 
-        asyncStub.tripsDelete(request, new StreamObserver<>() {
+        asyncStub.tripsDelete(request, new ClientResponseObserver<Subscribe, TripStream>() {
+
+            @Override
+            public void beforeStart(ClientCallStreamObserver<Subscribe> clientCallStreamObserver) {
+                tripsDeleteRequestStream = clientCallStreamObserver;
+            }
+
             @Override
             public void onNext(TripStream tripStream) {
                 if (!tripStream.getWasTokenValid()) {
@@ -199,6 +235,7 @@ public class NotificationHandler implements Login.Observer {
 
             @Override
             public void onError(Throwable t) {
+                if (t.getMessage().contains(CLIENT_CLOSE_MESSAGE)) return;
                 logger.error("[NOTIFICATION] tripsDelete error: {}", t.getMessage());
             }
 
@@ -220,7 +257,13 @@ public class NotificationHandler implements Login.Observer {
                 .setToken(convert(token))
                 .build();
 
-        asyncStub.fidelityPromotions(request, new StreamObserver<>() {
+        asyncStub.fidelityPromotions(request, new ClientResponseObserver<Subscribe, PromotionStream>() {
+
+            @Override
+            public void beforeStart(ClientCallStreamObserver<Subscribe> clientCallStreamObserver) {
+                fidelityPromotionsRequestStream = clientCallStreamObserver;
+            }
+
             @Override
             public void onNext(PromotionStream promoStream) {
                 if (!promoStream.getWasTokenValid()) {
@@ -236,6 +279,7 @@ public class NotificationHandler implements Login.Observer {
 
             @Override
             public void onError(Throwable t) {
+                if (t.getMessage().contains(CLIENT_CLOSE_MESSAGE)) return;
                 logger.error("[NOTIFICATION] fidelityPromotions error: {}", t.getMessage());
             }
 
