@@ -107,7 +107,7 @@ public record SQLiteCancelledTripNotification(User user, Trip trip, long timesta
     }
 
     @Override
-    public SQLiteCancelledTripNotification getRecord(DatabaseConnection db) throws SQLException {
+    public SQLiteCancelledTripNotification getRecord(DatabaseConnection db) {
         throw new UnsupportedOperationException("getRecord not supported");
     }
 

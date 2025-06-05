@@ -107,7 +107,7 @@ public record SQLiteExpiredBookingNotification(User user, Ticket book, long time
     }
 
     @Override
-    public SQLiteExpiredBookingNotification getRecord(DatabaseConnection db) throws SQLException {
+    public SQLiteExpiredBookingNotification getRecord(DatabaseConnection db) {
         throw new UnsupportedOperationException("getRecord not supported");
     }
 

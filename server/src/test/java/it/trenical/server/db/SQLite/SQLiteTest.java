@@ -4,19 +4,13 @@ import it.trenical.common.Trip;
 import it.trenical.server.db.DatabaseConnection;
 import org.junit.jupiter.api.*;
 
-import java.io.IOException;
 import java.sql.SQLException;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import static it.trenical.common.testUtil.DataEquals.*;
 import static it.trenical.common.testUtil.DataSamples.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 class SQLiteTest {
-
-    static private final Logger logger = LoggerFactory.getLogger(SQLiteTest.class);
 
     private DatabaseConnection db;
 
@@ -44,7 +38,7 @@ class SQLiteTest {
     }
 
     @BeforeEach
-    void newDatabase() throws IOException {
+    void newDatabase() {
         db = SQLiteConnection.getInstance(":memory:");
     }
 

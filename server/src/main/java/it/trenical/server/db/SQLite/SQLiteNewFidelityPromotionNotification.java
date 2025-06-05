@@ -84,7 +84,7 @@ public record SQLiteNewFidelityPromotionNotification(User user, Promotion promot
     }
 
     @Override
-    public SQLiteNewFidelityPromotionNotification getRecord(DatabaseConnection db) throws SQLException {
+    public SQLiteNewFidelityPromotionNotification getRecord(DatabaseConnection db) {
         throw new UnsupportedOperationException("getRecord not supported");
     }
 

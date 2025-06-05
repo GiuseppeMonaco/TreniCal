@@ -406,7 +406,7 @@ public enum Server {
         updateTicketsCache();
     }
 
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) {
         Server server = Server.INSTANCE;
         server.initDatabase(SQLiteConnection.getInstance());
         server.initScheduler();
