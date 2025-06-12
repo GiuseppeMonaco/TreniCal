@@ -407,6 +407,8 @@ public class MainFrame extends JFrame implements Login.Observer, Logout.Observer
             client.setCurrentPromotion(promotion);
         } catch (UnreachableServer e) {
             unreachableServerDialog();
+        } catch (InvalidSessionTokenException e) {
+            invalidTokenDialog();
         }
     }
 

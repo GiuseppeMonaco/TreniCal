@@ -158,13 +158,15 @@ public class Client {
         updateCurrentTotalPrice();
         currentTripSub.notifyObs();
     }
-    public void setCurrentPromotion(Promotion promotion) throws UnreachableServer {
+    public void setCurrentPromotion(Promotion promotion) throws UnreachableServer, InvalidSessionTokenException {
         Promotion previousPromo = currentPromotion;
         Promotion promo = null;
+
+        InvalidSessionTokenException iste = null;
         if (promotion != null) try {
             promo = queryPromotion(promotion);
         } catch (InvalidSessionTokenException e) {
-            logger.warn(e.getMessage());
+            iste = e;
         }
         currentPromotion = promo;
         if (promo != null && promo.isOnlyFidelityUser() &&  !getCurrentUser().isFidelity()) {
@@ -173,6 +175,7 @@ public class Client {
         if(previousPromo != null) setCurrentTotalPrice(getCurrentTotalPrice() / previousPromo.getDiscount());
         updateCurrentTotalPrice();
         currentPromoSub.notifyObs();
+        if (iste != null) throw iste;
     }
     public void setCurrentTotalPrice(float price) {
         if(currentPromotion != null) {
