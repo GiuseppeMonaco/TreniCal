@@ -7,6 +7,8 @@ import it.trenical.client.Client;
 import it.trenical.client.auth.exceptions.InvalidSessionTokenException;
 import it.trenical.client.connection.exceptions.UnreachableServer;
 import it.trenical.client.observer.*;
+import it.trenical.client.request.exceptions.CancelledPromotionException;
+import it.trenical.client.request.exceptions.CancelledTripException;
 import it.trenical.client.request.exceptions.InvalidSeatsNumberException;
 import it.trenical.common.*;
 import it.trenical.common.gui.GenericOKDialog;
@@ -167,6 +169,13 @@ public class CheckoutPanel implements
             return;
         } catch (InvalidSeatsNumberException e) {
             mainFrame.invalidSeatsNumberDialog();
+            return;
+        } catch (CancelledPromotionException e) {
+            mainFrame.invalidPromotionDialog();
+            return;
+        } catch (CancelledTripException e) {
+            mainFrame.invalidTripDialog();
+            mainFrame.showExplorePanel();
             return;
         }
         promoValidLabel.setVisible(false);

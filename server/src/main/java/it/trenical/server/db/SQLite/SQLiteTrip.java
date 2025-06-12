@@ -317,4 +317,9 @@ public class SQLiteTrip implements SQLiteTable<Trip>, Trip {
     public int getAvailableBusinessSeats() {
         return data.getAvailableBusinessSeats();
     }
+
+    @Override
+    public String toString() {
+        return data.toString();
+    }
 }

@@ -13,6 +13,7 @@ import it.trenical.server.auth.TokenManager;
 import it.trenical.server.config.Config;
 import it.trenical.server.config.ConfigManager;
 import it.trenical.server.db.DatabaseConnection;
+import it.trenical.server.db.SQLite.SQLitePromotion;
 import it.trenical.server.db.SQLite.SQLiteTicket;
 import it.trenical.server.db.SQLite.SQLiteTrip;
 import it.trenical.server.db.SQLite.SQLiteUser;
@@ -44,6 +45,8 @@ public class GrpcRequestImpl extends RequestServiceGrpc.RequestServiceImplBase {
     private static final int INVALID_TICKET_ERROR_CODE = 3;
     private static final int NO_CHANGE_ERROR_CODE = 4;
     private static final int NOT_AVAILABLE_SEATS_ERROR_CODE = 5;
+    private static final int CANCELLED_TRIP = 6;
+    private static final int CANCELLED_PROMOTION = 7;
 
     @Override
     public void buyTickets(BuyTicketsRequest request, StreamObserver<BuyTicketsReply> responseObserver) {
@@ -70,7 +73,23 @@ public class GrpcRequestImpl extends RequestServiceGrpc.RequestServiceImplBase {
             db.atomicTransaction(() -> {
                 Collection<Promotion> currentUsedPromo = new LinkedList<>();
                 for(SQLiteTicket t : tickets) {
+
+                    Promotion p = t.getPromotion();
+
+                    // Check if the promotion still exists
+                    if (p != null && new SQLitePromotion(p).getRecord(db) == null) {
+                        errorCode.set(CANCELLED_PROMOTION);
+                        throw new SQLException(String.format("The promotion %s is not longer valid", p.getName()));
+                    }
+
                     SQLiteTrip tr = new SQLiteTrip(t.getTrip());
+
+                    // Check if the trip still exists
+                    if (tr.getRecord(db) == null) {
+                        errorCode.set(CANCELLED_TRIP);
+                        throw new SQLException(String.format("The trip %s is not longer valid", tr));
+                    }
+
                     if (t.isBusiness()) {
                         if (!tr.decreaseBusinessSeats(db)) {
                             errorCode.set(NOT_AVAILABLE_SEATS_ERROR_CODE);
@@ -82,8 +101,8 @@ public class GrpcRequestImpl extends RequestServiceGrpc.RequestServiceImplBase {
                             throw new SQLException("Economy seats not available anymore");
                         }
                     }
-                    Promotion p = t.getPromotion();
-                    if(!currentUsedPromo.contains(p) && SQLiteTicket.hasUserUtilizedPromotion(db,user,t.getPromotion()))
+
+                    if(!currentUsedPromo.contains(p) && SQLiteTicket.hasUserUtilizedPromotion(db,user,p))
                         throw new SQLException("Promo already used for this user, cannot buy tickets");
                     currentUsedPromo.add(p);
                     t.insertRecord(db);
@@ -125,7 +144,23 @@ public class GrpcRequestImpl extends RequestServiceGrpc.RequestServiceImplBase {
             Collection<Promotion> currentUsedPromo = new LinkedList<>();
             db.atomicTransaction(() -> {
                 for(SQLiteTicket t : tickets) {
+
+                    Promotion p = t.getPromotion();
+
+                    // Check if the promotion still exists
+                    if (p != null && new SQLitePromotion(p).getRecord(db) == null) {
+                        errorCode.set(CANCELLED_PROMOTION);
+                        throw new SQLException(String.format("The promotion %s is not longer valid", p.getName()));
+                    }
+
                     SQLiteTrip tr = new SQLiteTrip(t.getTrip());
+
+                    // Check if the trip still exists
+                    if (tr.getRecord(db) == null) {
+                        errorCode.set(CANCELLED_TRIP);
+                        throw new SQLException(String.format("The trip %s is not longer valid", tr));
+                    }
+
                     if (t.isBusiness()) {
                         if (!tr.decreaseBusinessSeats(db)) {
                             errorCode.set(NOT_AVAILABLE_SEATS_ERROR_CODE);
@@ -137,8 +172,8 @@ public class GrpcRequestImpl extends RequestServiceGrpc.RequestServiceImplBase {
                             throw new SQLException("Economy seats not available anymore");
                         }
                     }
-                    Promotion p = t.getPromotion();
-                    if(!currentUsedPromo.contains(p) && SQLiteTicket.hasUserUtilizedPromotion(db,user,t.getPromotion()))
+
+                    if(!currentUsedPromo.contains(p) && SQLiteTicket.hasUserUtilizedPromotion(db,user,p))
                         throw new SQLException("Promo already used for this user, cannot book tickets");
                     currentUsedPromo.add(p);
                     t.insertRecord(db);
