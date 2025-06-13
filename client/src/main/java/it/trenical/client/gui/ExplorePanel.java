@@ -240,10 +240,10 @@ class ExplorePanel implements
 
         @Override
         public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-            if (value instanceof Station) {
-                value = ((Station) value).getName();
-            } else if (value instanceof TrainType) {
-                value = ((TrainType) value).getName();
+            if (value instanceof Station st) {
+                value = String.format("%s - %s", st.getName(), st.getTown());
+            } else if (value instanceof TrainType tt) {
+                value = tt.getName();
             }
             return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
         }

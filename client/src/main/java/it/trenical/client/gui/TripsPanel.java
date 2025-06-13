@@ -127,11 +127,15 @@ public class TripsPanel implements TripsCache.Observer {
             if (value instanceof Trip t) {
                 String date = dateFormatter.format(t.getDepartureTime().getTime());
 
-                value = String.format("## Da %s a %s ##\nGiorno %s\nTreno: %s\n",
+                value = String.format("## Da %s - %s ##\n## A %s - %s ##\nGiorno %s\nTreno: %s\nPosti Economy disponibili: %d\nPosti Business disponibili: %d\n",
+                        t.getRoute().getDepartureStation().getName(),
                         t.getRoute().getDepartureStation().getTown(),
+                        t.getRoute().getArrivalStation().getName(),
                         t.getRoute().getArrivalStation().getTown(),
                         date,
-                        t.getTrain().getType().getName()
+                        t.getTrain().getType().getName(),
+                        t.getAvailableEconomySeats(),
+                        t.getAvailableBusinessSeats()
                 );
             }
 

@@ -164,7 +164,7 @@ abstract class CreateDialog extends JDialog {
             } else if (value instanceof Station st) {
                 value = String.format("%s - %s", st.getName(), st.getTown());
             } else if (value instanceof Route r) {
-                value = String.format("Da %s a %s", r.getDepartureStation().getTown(), r.getArrivalStation().getTown());
+                value = String.format("Da %s a %s", r.getDepartureStation().getName(), r.getArrivalStation().getName());
             }
             return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
         }

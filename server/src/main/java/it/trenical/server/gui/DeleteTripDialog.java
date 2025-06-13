@@ -33,7 +33,7 @@ public class DeleteTripDialog extends DeleteDialog<Trip> {
         Train tr = item.getTrain();
         formatLabel(trainLabel, tr.getId(), tr.getType().getName());
         formatLabel(dateLabel, dateFormatter.format(item.getDepartureTime().getTime()));
-        formatLabel(routeLabel, r.getDepartureStation().getTown(), r.getArrivalStation().getTown());
+        formatLabel(routeLabel, r.getDepartureStation().getName(), r.getArrivalStation().getName());
         formatLabel(economySeatsLabel, item.getAvailableEconomySeats());
         formatLabel(businessSeatsLabel, item.getAvailableBusinessSeats());
     }
