@@ -11,9 +11,7 @@ import it.trenical.client.connection.exceptions.UnreachableServer;
 import it.trenical.client.observer.Login;
 import it.trenical.client.observer.Logout;
 import it.trenical.client.observer.NotificationChange;
-import it.trenical.client.request.exceptions.InvalidSeatsNumberException;
-import it.trenical.client.request.exceptions.InvalidTicketException;
-import it.trenical.client.request.exceptions.NoChangeException;
+import it.trenical.client.request.exceptions.*;
 import it.trenical.common.Promotion;
 import it.trenical.common.Ticket;
 import it.trenical.common.Trip;
@@ -259,6 +257,34 @@ public class MainFrame extends JFrame implements Login.Observer, Logout.Observer
                 """);
     }
 
+    public void invalidTripDialog() {
+        invalidTripDialog(this);
+    }
+
+    public void invalidTripDialog(Component parent) {
+        GenericOKDialog.showDialog(parent, """
+                <html><div style='text-align: center; width: 300px;'>
+                Il viaggio selezionato non è più disponibile.<br>
+                Ci scusiamo per il disagio.<br>
+                Per favore esegui una nuova ricerca.
+                </div></html>
+                """);
+    }
+
+    public void invalidPromotionDialog() {
+        invalidPromotionDialog(this);
+    }
+
+    public void invalidPromotionDialog(Component parent) {
+        GenericOKDialog.showDialog(parent, """
+                <html><div style='text-align: center; width: 300px;'>
+                La promozione applicata non è più disponibile.<br>
+                L'operazione è stata sospesa.<br>
+                Ci scusiamo per il disagio.
+                </div></html>
+                """);
+    }
+
     void payBookedTicketDialog(Ticket ticket) {
         showDialog(new BuyBookedTicketDialog(ticket), customerAreaFrame);
     }
@@ -381,6 +407,8 @@ public class MainFrame extends JFrame implements Login.Observer, Logout.Observer
             client.setCurrentPromotion(promotion);
         } catch (UnreachableServer e) {
             unreachableServerDialog();
+        } catch (InvalidSessionTokenException e) {
+            invalidTokenDialog();
         }
     }
 
@@ -393,6 +421,10 @@ public class MainFrame extends JFrame implements Login.Observer, Logout.Observer
             invalidTokenDialog();
         } catch (InvalidSeatsNumberException e) {
             invalidSeatsNumberDialog();
+        } catch (CancelledPromotionException e) {
+            invalidPromotionDialog();
+        } catch (CancelledTripException e) {
+            invalidTripDialog();
         }
     }
 
@@ -405,6 +437,10 @@ public class MainFrame extends JFrame implements Login.Observer, Logout.Observer
             invalidTokenDialog();
         } catch (InvalidSeatsNumberException e) {
             invalidSeatsNumberDialog();
+        } catch (CancelledPromotionException e) {
+            invalidPromotionDialog();
+        } catch (CancelledTripException e) {
+            invalidTripDialog();
         }
     }
 

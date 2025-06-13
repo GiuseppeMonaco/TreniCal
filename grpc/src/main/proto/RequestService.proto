@@ -34,6 +34,8 @@ message BuyTicketsReply {
  * 1 = generic error
  * 2 = invalid token
  * 5 = no available seats
+ * 6 = cancelled trip
+ * 7 = cancelled promotion
  */
 
 
@@ -54,6 +56,8 @@ message BookTicketsReply {
  * 1 = generic error
  * 2 = invalid token
  * 5 = no available seats
+ * 6 = cancelled trip
+ * 7 = cancelled promotion
  */
 
 

@@ -5,7 +5,7 @@ import it.trenical.client.auth.GrpcAuthManager;
 import it.trenical.client.notification.Notification;
 import it.trenical.client.notification.NotificationHandler;
 import it.trenical.client.query.PriceMultipliers;
-import it.trenical.client.request.exceptions.InvalidSeatsNumberException;
+import it.trenical.client.request.exceptions.*;
 import it.trenical.common.SessionToken;
 import it.trenical.client.auth.exceptions.InvalidCredentialsException;
 import it.trenical.client.auth.exceptions.InvalidSessionTokenException;
@@ -16,8 +16,6 @@ import it.trenical.client.query.GrpcQueryManager;
 import it.trenical.client.query.QueryManager;
 import it.trenical.client.request.GrpcRequestManager;
 import it.trenical.client.request.RequestManager;
-import it.trenical.client.request.exceptions.InvalidTicketException;
-import it.trenical.client.request.exceptions.NoChangeException;
 import it.trenical.common.*;
 
 import java.util.*;
@@ -160,13 +158,15 @@ public class Client {
         updateCurrentTotalPrice();
         currentTripSub.notifyObs();
     }
-    public void setCurrentPromotion(Promotion promotion) throws UnreachableServer {
+    public void setCurrentPromotion(Promotion promotion) throws UnreachableServer, InvalidSessionTokenException {
         Promotion previousPromo = currentPromotion;
         Promotion promo = null;
+
+        InvalidSessionTokenException iste = null;
         if (promotion != null) try {
             promo = queryPromotion(promotion);
         } catch (InvalidSessionTokenException e) {
-            logger.warn(e.getMessage());
+            iste = e;
         }
         currentPromotion = promo;
         if (promo != null && promo.isOnlyFidelityUser() &&  !getCurrentUser().isFidelity()) {
@@ -175,6 +175,7 @@ public class Client {
         if(previousPromo != null) setCurrentTotalPrice(getCurrentTotalPrice() / previousPromo.getDiscount());
         updateCurrentTotalPrice();
         currentPromoSub.notifyObs();
+        if (iste != null) throw iste;
     }
     public void setCurrentTotalPrice(float price) {
         if(currentPromotion != null) {
@@ -331,21 +332,27 @@ public class Client {
         }
     }
 
-    public void buyTickets(Collection<Ticket> tickets) throws UnreachableServer, InvalidSessionTokenException, InvalidSeatsNumberException {
+    public void buyTickets(Collection<Ticket> tickets) throws UnreachableServer, InvalidSessionTokenException, InvalidSeatsNumberException, CancelledTripException, CancelledPromotionException {
         try {
             request.buyTickets(currentToken, tickets);
             queryTickets();
         } catch (InvalidSessionTokenException e) {
             logout();
             throw e;
+        } catch (CancelledPromotionException e) {
+            setCurrentPromotion(null);
+            throw e;
         }
     }
-    public void bookTickets(Collection<Ticket> tickets) throws UnreachableServer, InvalidSessionTokenException, InvalidSeatsNumberException {
+    public void bookTickets(Collection<Ticket> tickets) throws UnreachableServer, InvalidSessionTokenException, InvalidSeatsNumberException, CancelledTripException, CancelledPromotionException {
         try {
             request.bookTickets(currentToken, tickets);
             queryTickets();
         } catch (InvalidSessionTokenException e) {
             logout();
+            throw e;
+        } catch (CancelledPromotionException e) {
+            setCurrentPromotion(null);
             throw e;
         }
     }

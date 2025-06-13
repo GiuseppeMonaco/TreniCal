@@ -165,8 +165,8 @@ abstract class ManagementPanel<T> {
                 Train tr = t.getTrain();
                 value = String.format(
                         "### Da %s a %s ###\nData: %s\nTreno: %d - %s\nPosti Economy: %d - Business: %d",
-                        r.getDepartureStation().getTown(),
-                        r.getArrivalStation().getTown(),
+                        r.getDepartureStation().getName(),
+                        r.getArrivalStation().getName(),
                         date,
                         tr.getId(),
                         tr.getType().getName(),
@@ -227,8 +227,8 @@ abstract class ManagementPanel<T> {
                         tk.getUser().getEmail(),
                         tk.getName(),
                         tk.getSurname(),
-                        r.getDepartureStation().getTown(),
-                        r.getArrivalStation().getTown(),
+                        r.getDepartureStation().getName(),
+                        r.getArrivalStation().getName(),
                         date,
                         tr.getId(),
                         tr.getType().getName()

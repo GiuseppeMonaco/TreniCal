@@ -1,13 +1,11 @@
 package it.trenical.client.request;
 
 import io.grpc.StatusRuntimeException;
-import it.trenical.client.request.exceptions.InvalidSeatsNumberException;
+import it.trenical.client.request.exceptions.*;
 import it.trenical.common.SessionToken;
 import it.trenical.client.auth.exceptions.InvalidSessionTokenException;
 import it.trenical.client.connection.GrpcConnection;
 import it.trenical.client.connection.exceptions.UnreachableServer;
-import it.trenical.client.request.exceptions.InvalidTicketException;
-import it.trenical.client.request.exceptions.NoChangeException;
 import it.trenical.grpcUtil.GrpcConverter;
 import it.trenical.common.Ticket;
 import it.trenical.grpc.*;
@@ -32,9 +30,11 @@ public class GrpcRequestManager implements RequestManager {
     private static final int INVALID_TICKET_ERROR_CODE = 3;
     private static final int NO_CHANGE_ERROR_CODE = 4;
     private static final int NOT_AVAILABLE_SEATS_ERROR_CODE = 5;
+    private static final int CANCELLED_TRIP = 6;
+    private static final int CANCELLED_PROMOTION = 7;
 
     @Override
-    public void buyTickets(SessionToken token, Collection<Ticket> tickets) throws UnreachableServer, InvalidSessionTokenException, InvalidSeatsNumberException {
+    public void buyTickets(SessionToken token, Collection<Ticket> tickets) throws UnreachableServer, InvalidSessionTokenException, InvalidSeatsNumberException, CancelledTripException, CancelledPromotionException {
         BuyTicketsRequest request = BuyTicketsRequest.newBuilder()
                 .setToken(GrpcConverter.convert(token))
                 .addAllTickets(tickets.stream().map(GrpcConverter::convert).toList())
@@ -45,6 +45,8 @@ public class GrpcRequestManager implements RequestManager {
                 case SUCCESS_CODE -> {}
                 case INVALID_TOKEN_ERROR_CODE -> throw new InvalidSessionTokenException("Given token is invalid");
                 case NOT_AVAILABLE_SEATS_ERROR_CODE -> throw new InvalidSeatsNumberException("There are not enough seats to buy");
+                case CANCELLED_PROMOTION -> throw new CancelledPromotionException("The applied promotion is no longer valid");
+                case CANCELLED_TRIP -> throw new CancelledTripException("The selected trip is no longer valid");
                 default -> logger.warn("Unknown error on buyTickets request");
             }
         } catch (StatusRuntimeException e) {
@@ -54,7 +56,7 @@ public class GrpcRequestManager implements RequestManager {
     }
 
     @Override
-    public void bookTickets(SessionToken token, Collection<Ticket> tickets) throws UnreachableServer, InvalidSessionTokenException, InvalidSeatsNumberException {
+    public void bookTickets(SessionToken token, Collection<Ticket> tickets) throws UnreachableServer, InvalidSessionTokenException, InvalidSeatsNumberException, CancelledTripException, CancelledPromotionException {
         BookTicketsRequest request = BookTicketsRequest.newBuilder()
                 .setToken(GrpcConverter.convert(token))
                 .addAllTickets(tickets.stream().map(GrpcConverter::convert).toList())
@@ -65,6 +67,8 @@ public class GrpcRequestManager implements RequestManager {
                 case SUCCESS_CODE -> {}
                 case INVALID_TOKEN_ERROR_CODE -> throw new InvalidSessionTokenException("Given token is invalid");
                 case NOT_AVAILABLE_SEATS_ERROR_CODE -> throw new InvalidSeatsNumberException("There are not enough seats to book");
+                case CANCELLED_PROMOTION -> throw new CancelledPromotionException("The applied promotion is no longer valid");
+                case CANCELLED_TRIP -> throw new CancelledTripException("The selected trip is no longer valid");
                 default -> logger.warn("Unknown error on bookTickets request");
             }
         } catch (StatusRuntimeException e) {
