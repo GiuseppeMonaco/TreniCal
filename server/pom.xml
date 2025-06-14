@@ -6,7 +6,7 @@
     <parent>
         <groupId>it.trenical</groupId>
         <artifactId>TreniCal</artifactId>
-        <version>1.0.0</version>
+        <version>1.0.1</version>
     </parent>
 
     <artifactId>server</artifactId>
@@ -21,12 +21,12 @@
         <dependency>
             <groupId>it.trenical</groupId>
             <artifactId>common</artifactId>
-            <version>1.0.0</version>
+            <version>1.0.1</version>
         </dependency>
         <dependency>
             <groupId>it.trenical</groupId>
             <artifactId>grpc</artifactId>
-            <version>1.0.0</version>
+            <version>1.0.1</version>
         </dependency>
 
         <!-- GUI dependencies -->
