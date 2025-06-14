@@ -71,7 +71,7 @@
         <li><a href="#installation">Installation</a></li>
       </ul>
     </li>
-    <!-- <li><a href="#usage">Usage</a></li> -->
+    <li><a href="#usage">Usage</a></li>
     <!-- <li><a href="#roadmap">Roadmap</a></li> -->
     <!-- <li><a href="#contributing">Contributing</a></li> -->
     <li><a href="#license">License</a></li>
@@ -155,15 +155,63 @@ Or to get a local copy up and running follow these simple example steps.
 
 
 <!-- USAGE EXAMPLES -->
-<!--
 ## Usage
 
-Use this space to show useful examples of how a project can be used. Additional screenshots, code examples and demos work well in this space. You may also link to more resources.
+### Configuration
 
-_For more examples, please refer to the [Documentation](https://example.com)_
+The project supports the use of configuration files to customize the behavior of the application without having to modify the source code, both for the client and the server.
+
+#### Server
+
+A configuration file named `TreniCalServerConfig.toml` can be placed in the same folder of the executable file of the server.
+
+Or in the root directory of the project:
+
+```
+Trenical/
+├── .idea
+├── .mvn
+├── client
+├── common
+└── TreniCalServerConfig.toml
+```
+
+**Content of `TreniCalServerConfig.toml`**
+
+```toml
+server.port = 8008
+server.threadNumber = 2
+
+database.path = "./TreniCal.db"
+
+[logic.price]
+distanceMultiplier = 0.05
+businessMultiplier = 1.3
+```
+
+#### Client
+
+A configuration file named `TreniCalClientConfig.toml` can be placed in the same folder of the executable file of the client.
+
+Or in the root directory of the project:
+
+```
+Trenical/
+├── .idea
+├── .mvn
+├── client
+├── common
+└── TreniCalClientConfig.toml
+```
+
+**Content of `TreniCalClientConfig.toml`**
+
+```toml
+server.address = "localhost"
+server.port = 8008
+```
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
--->
 
 
 <!-- ROADMAP -->
